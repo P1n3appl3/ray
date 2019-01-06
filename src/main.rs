@@ -1,9 +1,11 @@
 mod ray;
 mod vec3;
+use self::ray::Ray;
+use self::vec3::Vec3;
 use std::fs;
 
-type Pixel = vec3::Vec3;
-type Color = vec3::Vec3;
+type Pixel = Vec3;
+type Color = Vec3;
 
 impl From<&Pixel> for String {
     fn from(item: &Pixel) -> Self {
@@ -48,23 +50,29 @@ impl Image {
     }
 }
 
-fn color(r: ray::Ray) -> Color {
-    if hit_sphere(vec3::Vec3::new(0.0, 0.0, -1.0), 0.5, r) {
-        return Color::new(1.0, 0.0, 0.0);
-    }
-    let unit_dir = r.dir.normalize();
-    let t = (unit_dir.y + 1.0) / 2.0;
-    vec3::Vec3::from_scalar(1.0 - t) * vec3::Vec3::from_scalar(1.0)
-        + vec3::Vec3::from_scalar(t) * vec3::Vec3::new(0.5, 0.7, 1.0)
-}
-
-fn hit_sphere(center: vec3::Vec3, radius: f32, r: ray::Ray) -> bool {
+fn hit_sphere(center: Vec3, radius: f32, r: Ray) -> f32 {
     let origin_to_center = r.origin - center;
     let a = r.dir.dot(r.dir);
     let b = 2.0 * origin_to_center.dot(r.dir);
     let c = origin_to_center.dot(origin_to_center) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-b - discriminant.sqrt()) / (2.0 * a)
+    }
+}
+
+fn color(r: Ray) -> Color {
+    let sphere_pos = Vec3::new(0.0, 0.0, -1.0);
+    let t = hit_sphere(sphere_pos, 0.5, r);
+    if t > 0.0 {
+        let surface_normal = (r.point_at_param(t) - sphere_pos).normalize();
+        return (Color::from_scalar(1.0) + surface_normal).scale(0.5);
+    }
+    let unit_dir = r.dir.normalize();
+    let t = (unit_dir.y + 1.0) * 0.5;
+    Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
 }
 
 fn main() {
@@ -72,20 +80,21 @@ fn main() {
     let height = 100;
     let mut img = Image::new(width, height);
 
-    let lower_left_corner = vec3::Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = vec3::Vec3::new(4.0, 0.0, 0.0);
-    let vertical = vec3::Vec3::new(0.0, 2.0, 0.0);
-    let origin = vec3::Vec3::new(0.0, 0.0, 0.0);
+    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
+    let horizontal = Vec3::new(4.0, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, 2.0, 0.0);
+    let origin = Vec3::new(0.0, 0.0, 0.0);
 
-    for x in 0..width {
-        for y in 0..height {
+    for y in 0..height {
+        for x in 0..width {
+            if !(width / 2 - 7 < x && width / 2 + 8 > x) {
+                // continue;
+            }
             let u = x as f32 / width as f32;
             let v = y as f32 / height as f32;
-            let r = ray::Ray::new(
+            let r = Ray::new(
                 origin,
-                lower_left_corner
-                    + vec3::Vec3::from_scalar(u) * horizontal
-                    + vec3::Vec3::from_scalar(v) * vertical,
+                lower_left_corner + horizontal.scale(u) + vertical.scale(v),
             );
             img.content[y][x] = color(r);
         }

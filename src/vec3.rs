@@ -1,6 +1,7 @@
+use std::fmt;
 use std::ops::*;
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -12,10 +13,13 @@ impl Vec3 {
         Vec3 { x: x, y: y, z: z }
     }
     pub fn len(&self) -> f32 {
-        (self.x.powi(2) + self.x.powi(2) + self.z.powi(2)).sqrt()
+        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
     pub fn sqare_len(&self) -> f32 {
-        self.x.powi(2) + self.x.powi(2) + self.z.powi(2)
+        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
+    }
+    pub fn scale(&self, amt: f32) -> Self {
+        *self * Self::from_scalar(amt)
     }
     pub fn normalize(self) -> Self {
         self / Self::from_scalar(self.len())
@@ -32,6 +36,12 @@ impl Vec3 {
     }
     pub fn from_scalar(n: f32) -> Self {
         Vec3 { x: n, y: n, z: n }
+    }
+}
+
+impl fmt::Display for Vec3 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({:.4}, {:.4}, {:.4})", self.x, self.y, self.z)
     }
 }
 
@@ -112,4 +122,59 @@ impl DivAssign for Vec3 {
     fn div_assign(&mut self, other: Self) {
         *self = *self / other;
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::random;
+    use std::f32::EPSILON;
+    #[test]
+    fn test_construct() {
+        assert_eq!(
+            Vec3 {
+                x: 1.5,
+                y: 0.0,
+                z: -0.5
+            },
+            Vec3::new(1.5, 0.0, -0.5)
+        );
+        assert_eq!(
+            Vec3 {
+                x: 0.25,
+                y: 0.25,
+                z: 0.25
+            },
+            Vec3::from_scalar(0.25)
+        );
+    }
+
+    #[test]
+    fn test_arithmetic() {
+        let a = Vec3::new(-4.0, 1.25, 16.5);
+        let b = Vec3::new(4.0, 5.0, 4.0);
+        assert_eq!(a + b, Vec3::new(0.0, 6.25, 20.5));
+        assert_eq!(a - b, Vec3::new(-8.0, -3.75, 12.5));
+        assert_eq!(a / b, Vec3::new(-1.0, 0.25, 4.125));
+        assert_eq!(a * b, Vec3::new(-16.0, 6.25, 66.0));
+    }
+
+    #[test]
+    fn test_len() {
+        assert!(Vec3::new(1.0, 0.0, 0.0).len() - 1.0 <= EPSILON);
+        assert!(Vec3::new(4.0, 4.0, 4.0).len() - (48.0f32).sqrt() <= EPSILON);
+        assert!(Vec3::new(-3.0, 0.0, 4.0).len() - 5.0 <= EPSILON);
+    }
+
+    #[test]
+    fn test_norm() {
+        assert_eq!(
+            Vec3::new(8.0, 4.0, 8.0).normalize(),
+            Vec3::new(2.0, 1.0, 2.0) / Vec3::from_scalar(3.0)
+        );
+        for _ in 0..10 {
+            assert!(Vec3::new(random(), random(), random()).normalize().len() <= 1.0);
+        }
+    }
+    //untested operations: dot, cross, scale
 }

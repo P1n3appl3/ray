@@ -12,6 +12,6 @@ impl Ray {
     }
 
     pub fn point_at_param(&self, t: f32) -> Vec3{
-        self.origin + Vec3::from_scalar(t) / self.dir
+        self.origin + self.dir.scale(t)
     }
 }
