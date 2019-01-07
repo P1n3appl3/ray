@@ -10,8 +10,8 @@ use std::fs;
 type Pixel = Vec3;
 type Color = Vec3;
 
-impl From<&Pixel> for String {
-    fn from(item: &Pixel) -> Self {
+impl From<Pixel> for String {
+    fn from(item: Pixel) -> Self {
         format!(
             "{} {} {}",
             (item.x * 255.99) as u8,
@@ -44,6 +44,8 @@ impl Image {
             .rev()
             .map(|row| {
                 row.iter()
+                    // gamma 2 correction
+                    .map(|p| Color::new(p.x.sqrt(), p.y.sqrt(), p.z.sqrt()))
                     .map(Into::into)
                     .collect::<Vec<String>>()
                     .join(" ")
@@ -55,13 +57,22 @@ impl Image {
 }
 
 fn color(r: Ray, world: &impl hitable::Hitable) -> Color {
-    if let Some(rec) = world.hit(r, 0.0, std::f32::MAX) {
-        (Color::from_scalar(1.0) + rec.normal).scale(0.5)
+    if let Some(rec) = world.hit(r, 0.001, std::f32::MAX) {
+        let target = rec.point + rec.normal + rand_in_sphere();
+        color(Ray::new(rec.point, target - rec.point), world).scale(0.5)
     } else {
-        let unit_dir = r.dir.normalize();
-        let t = (unit_dir.y + 1.0) * 0.5;
+        let t = (r.dir.normalize().y + 1.0) * 0.5;
         Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
     }
+}
+
+fn rand_in_sphere() -> Vec3 {
+    let mut p;
+    while {
+        p = (Vec3::new(random(), random(), random()) - Vec3::from_scalar(1.0)).scale(2.0);
+        p.square_len() > 1.0
+    } {}
+    p
 }
 
 struct Camera {

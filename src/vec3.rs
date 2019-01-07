@@ -12,11 +12,11 @@ impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vec3 { x: x, y: y, z: z }
     }
-    pub fn len(&self) -> f32 {
-        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
-    }
-    pub fn sqare_len(&self) -> f32 {
+    pub fn square_len(&self) -> f32 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
+    }
+    pub fn len(&self) -> f32 {
+        self.square_len().sqrt()
     }
     pub fn scale(&self, amt: f32) -> Self {
         *self * Self::from_scalar(amt)
