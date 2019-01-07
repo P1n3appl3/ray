@@ -1,16 +1,19 @@
 mod camera;
 mod hitable;
-mod image;
 mod material;
 mod ray;
 mod vec3;
 use self::camera::Camera;
 use self::hitable::{HitableGroup, Sphere};
-use self::image::Image;
 use self::material::{scatter, Material};
 use self::ray::Ray;
 use self::vec3::Vec3;
+use itertools::iproduct;
+use png::HasParameters;
+use progressive::progress;
 use rand::random;
+use std::fs;
+use std::io::BufWriter;
 
 const WIDTH: usize = 200;
 const HEIGHT: usize = 100;
@@ -35,7 +38,6 @@ fn color(r: Ray, world: &impl hitable::Hitable, depth: u16) -> Color {
 
 fn main() {
     let cam = Camera::default();
-    let mut img = Image::new(WIDTH, HEIGHT);
     let mut world = HitableGroup::default();
     world.items = vec![
         Box::new(Sphere::new(
@@ -60,8 +62,13 @@ fn main() {
         )),
     ];
 
-    for y in 0..HEIGHT {
-        for x in 0..WIDTH {
+    let file = fs::File::create("test.png").unwrap();
+    let ref mut writer = BufWriter::new(file);
+    let mut encoder = png::Encoder::new(writer, WIDTH as u32, HEIGHT as u32);
+    encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
+    let mut writer = encoder.write_header().unwrap();
+    let data = progress(iproduct!((0..HEIGHT).rev(), 0..WIDTH))
+        .map(|(y, x)| {
             let mut col = Color::default();
             for _ in 0..SAMPLES {
                 let u = (x as f32 + random::<f32>()) / WIDTH as f32;
@@ -69,8 +76,15 @@ fn main() {
                 let r = cam.get_ray(u, v);
                 col += color(r, &world, 0)
             }
-            img.content[y][x] = col.scale(1.0 / SAMPLES as f32);
-        }
-    }
-    img.output_png("test.png");
+            let temp = col.scale(1.0 / SAMPLES as f32);
+            vec![
+                // sqrt for gamma 2 correction
+                (temp.x.sqrt() * 255.99) as u8,
+                (temp.y.sqrt() * 255.99) as u8,
+                (temp.z.sqrt() * 255.99) as u8,
+            ]
+        })
+        .flatten()
+        .collect::<Vec<u8>>();
+    writer.write_image_data(&data).unwrap();
 }
