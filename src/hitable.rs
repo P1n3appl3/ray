@@ -1,28 +1,32 @@
+use super::material::Material;
 use super::ray::Ray;
 use super::vec3::Vec3;
 
-#[derive(Copy, Clone)]
+/// The relevant information for a ray collision with an object
 pub struct HitRecord {
     pub t: f32,
     pub point: Vec3,
     pub normal: Vec3,
+    pub material: Material,
 }
 
 pub trait Hitable {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
+    fn get_material(&self) -> Material;
 }
 
-#[derive(Copy, Clone)]
 pub struct Sphere {
     center: Vec3,
     radius: f32,
+    material: Material,
 }
 
 impl Sphere {
-    pub fn new(c: Vec3, r: f32) -> Self {
+    pub fn new(c: Vec3, r: f32, mat: Material) -> Self {
         Sphere {
             center: c,
             radius: r,
+            material: mat,
         }
     }
 }
@@ -43,6 +47,7 @@ impl Hitable for Sphere {
                         t: temp,
                         point: p,
                         normal: (p - self.center).scale(1.0 / self.radius),
+                        material: self.get_material(),
                     });
                 }
                 // retry with the other quadratic formula solution
@@ -50,6 +55,9 @@ impl Hitable for Sphere {
             }
         }
         None
+    }
+    fn get_material(&self) -> Material {
+        self.material
     }
 }
 
@@ -64,5 +72,8 @@ impl Hitable for HitableGroup {
             .iter()
             .filter_map(|n| n.hit(r, t_min, t_max)) // heheheheheheheh
             .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap()) // because floating point
+    }
+    fn get_material(&self) -> Material {
+        Material::default()
     }
 }

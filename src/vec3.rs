@@ -24,6 +24,9 @@ impl Vec3 {
     pub fn normalize(self) -> Self {
         self / Self::from_scalar(self.len())
     }
+    pub fn reflect(&self, normal: &Self) -> Self {
+        *self - normal.scale(self.dot(*normal) * 2.0)
+    }
     pub fn dot(&self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
