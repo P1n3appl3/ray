@@ -1,5 +1,7 @@
+mod hitable;
 mod ray;
 mod vec3;
+use self::hitable::{HitableGroup, Sphere};
 use self::ray::Ray;
 use self::vec3::Vec3;
 use std::fs;
@@ -50,29 +52,14 @@ impl Image {
     }
 }
 
-fn hit_sphere(center: Vec3, radius: f32, r: Ray) -> f32 {
-    let origin_to_center = r.origin - center;
-    let a = r.dir.dot(r.dir);
-    let b = 2.0 * origin_to_center.dot(r.dir);
-    let c = origin_to_center.dot(origin_to_center) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    if discriminant < 0.0 {
-        -1.0
+fn color(r: Ray, world: &impl hitable::Hitable) -> Color {
+    if let Some(rec) = world.hit(r, 0.0, std::f32::MAX) {
+        (Color::from_scalar(1.0) + rec.normal).scale(0.5)
     } else {
-        (-b - discriminant.sqrt()) / (2.0 * a)
+        let unit_dir = r.dir.normalize();
+        let t = (unit_dir.y + 1.0) * 0.5;
+        Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
     }
-}
-
-fn color(r: Ray) -> Color {
-    let sphere_pos = Vec3::new(0.0, 0.0, -1.0);
-    let t = hit_sphere(sphere_pos, 0.5, r);
-    if t > 0.0 {
-        let surface_normal = (r.point_at_param(t) - sphere_pos).normalize();
-        return (Color::from_scalar(1.0) + surface_normal).scale(0.5);
-    }
-    let unit_dir = r.dir.normalize();
-    let t = (unit_dir.y + 1.0) * 0.5;
-    Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
 }
 
 fn main() {
@@ -84,6 +71,13 @@ fn main() {
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
+    let mut world = HitableGroup::default();
+    world
+        .items
+        .push(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
+    world
+        .items
+        .push(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
 
     for y in 0..height {
         for x in 0..width {
@@ -96,7 +90,7 @@ fn main() {
                 origin,
                 lower_left_corner + horizontal.scale(u) + vertical.scale(v),
             );
-            img.content[y][x] = color(r);
+            img.content[y][x] = color(r, &world);
         }
     }
     img.output_ppm("test.ppm");
