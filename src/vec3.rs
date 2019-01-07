@@ -27,6 +27,19 @@ impl Vec3 {
     pub fn reflect(&self, normal: &Self) -> Self {
         *self - normal.scale(self.dot(*normal) * 2.0)
     }
+    pub fn refract(&self, normal: &Self, index_ratio: f32) -> Option<Self> {
+        let unit = self.normalize();
+        let dt = unit.dot(*normal);
+        let discriminant = 1.0 - index_ratio * index_ratio * (1.0 - dt * dt);
+        if discriminant > 0.0 {
+            Some(
+                (unit - normal.scale(dt)).scale(index_ratio)
+                    - normal.scale(discriminant.sqrt()),
+            )
+        } else {
+            None
+        }
+    }
     pub fn dot(&self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }

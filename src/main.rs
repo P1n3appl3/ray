@@ -5,7 +5,7 @@ mod ray;
 mod vec3;
 use self::camera::Camera;
 use self::hitable::{HitableGroup, Sphere};
-use self::material::{scatter, Material};
+use self::material::{scatter, Material::*};
 use self::ray::Ray;
 use self::vec3::Vec3;
 use itertools::iproduct;
@@ -15,8 +15,8 @@ use rand::random;
 use std::fs;
 use std::io::BufWriter;
 
-const WIDTH: usize = 200;
-const HEIGHT: usize = 100;
+const WIDTH: usize = 600;
+const HEIGHT: usize = 300;
 const SAMPLES: u16 = 100;
 const BOUNCES: u16 = 50;
 
@@ -43,22 +43,27 @@ fn main() {
         Box::new(Sphere::new(
             Vec3::new(0.0, 0.0, -1.0),
             0.5,
-            Material::Diffuse(Vec3::new(0.8, 0.3, 0.3)),
+            Diffuse(Vec3::new(0.1, 0.2, 0.5)),
         )),
         Box::new(Sphere::new(
             Vec3::new(0.0, -100.5, -1.0),
             100.0,
-            Material::Diffuse(Vec3::new(0.8, 0.8, 0.0)),
+            Diffuse(Vec3::new(0.8, 0.8, 0.0)),
         )),
         Box::new(Sphere::new(
             Vec3::new(1.0, 0.0, -1.0),
             0.5,
-            Material::Metal(Vec3::new(0.8, 0.6, 0.2)),
+            Metal(Vec3::new(0.8, 0.6, 0.2), 0.8),
         )),
         Box::new(Sphere::new(
-            Vec3::new(-1.0, 0.0, -1.0),
-            0.5,
-            Material::Metal(Vec3::new(0.8, 0.8, 0.8)),
+            Vec3::new(0.2, 0.0, -0.5),
+            0.25,
+            Dielectric(1.5),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.2, 0.0, -0.5),
+            -0.20,
+            Dielectric(1.5),
         )),
     ];
 
