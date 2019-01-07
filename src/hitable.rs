@@ -36,7 +36,7 @@ impl Hitable for Sphere {
         let discriminant = b * b - 4.0 * a * c;
         if discriminant > 0.0 {
             let mut temp = (-b - discriminant.sqrt()) / (2.0 * a);
-            for _ in 0..2 { // retry with the other quadratic formula solution
+            for _ in 0..2 {
                 if temp < t_max && temp > t_min {
                     let p = r.point_at_param(temp);
                     return Some(HitRecord {
@@ -45,6 +45,7 @@ impl Hitable for Sphere {
                         normal: (p - self.center).scale(1.0 / self.radius),
                     });
                 }
+                // retry with the other quadratic formula solution
                 temp = (-b + discriminant.sqrt()) / (2.0 * a);
             }
         }
@@ -62,6 +63,6 @@ impl Hitable for HitableGroup {
         self.items
             .iter()
             .filter_map(|n| n.hit(r, t_min, t_max)) // heheheheheheheh
-            .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap()) // yay floating point
+            .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap()) // because floating point
     }
 }

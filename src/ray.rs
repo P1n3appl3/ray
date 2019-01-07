@@ -11,7 +11,7 @@ impl Ray {
         Ray { origin: a, dir: b }
     }
 
-    pub fn point_at_param(&self, t: f32) -> Vec3{
+    pub fn point_at_param(&self, t: f32) -> Vec3 {
         self.origin + self.dir.scale(t)
     }
 }
