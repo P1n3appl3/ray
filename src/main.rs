@@ -15,8 +15,8 @@ use rand::random;
 use std::fs;
 use std::io::BufWriter;
 
-const WIDTH: usize = 600;
-const HEIGHT: usize = 300;
+const WIDTH: usize = 200;
+const HEIGHT: usize = 100;
 const SAMPLES: u16 = 100;
 const BOUNCES: u16 = 50;
 
@@ -37,13 +37,18 @@ fn color(r: Ray, world: &impl hitable::Hitable, depth: u16) -> Color {
 }
 
 fn main() {
-    let cam = Camera::default();
-    let mut world = HitableGroup::default();
-    world.items = vec![
+    let cam = Camera::new(
+        Vec3::new(-2.0, 2.0, 1.0),
+        Vec3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        40.0,
+        WIDTH as f32 / HEIGHT as f32,
+    );
+    let world = HitableGroup::new(vec![
         Box::new(Sphere::new(
             Vec3::new(0.0, 0.0, -1.0),
             0.5,
-            Diffuse(Vec3::new(0.1, 0.2, 0.5)),
+            Diffuse(Vec3::new(0.2, 0.3, 0.7)),
         )),
         Box::new(Sphere::new(
             Vec3::new(0.0, -100.5, -1.0),
@@ -56,16 +61,16 @@ fn main() {
             Metal(Vec3::new(0.8, 0.6, 0.2), 0.8),
         )),
         Box::new(Sphere::new(
-            Vec3::new(0.2, 0.0, -0.5),
-            0.25,
+            Vec3::new(-1.0, 0.0, -1.0),
+            0.5,
             Dielectric(1.5),
         )),
         Box::new(Sphere::new(
-            Vec3::new(0.2, 0.0, -0.5),
-            -0.20,
+            Vec3::new(-1.0, 0.0, -1.0),
+            -0.45,
             Dielectric(1.5),
         )),
-    ];
+    ]);
 
     let file = fs::File::create("test.png").unwrap();
     let ref mut writer = BufWriter::new(file);
@@ -74,19 +79,20 @@ fn main() {
     let mut writer = encoder.write_header().unwrap();
     let data = progress(iproduct!((0..HEIGHT).rev(), 0..WIDTH))
         .map(|(y, x)| {
-            let mut col = Color::default();
-            for _ in 0..SAMPLES {
-                let u = (x as f32 + random::<f32>()) / WIDTH as f32;
-                let v = (y as f32 + random::<f32>()) / HEIGHT as f32;
-                let r = cam.get_ray(u, v);
-                col += color(r, &world, 0)
-            }
-            let temp = col.scale(1.0 / SAMPLES as f32);
+            let col = (0..SAMPLES)
+                .map(|_| {
+                    let u = (x as f32 + random::<f32>()) / WIDTH as f32;
+                    let v = (y as f32 + random::<f32>()) / HEIGHT as f32;
+                    let r = cam.get_ray(u, v);
+                    color(r, &world, 0)
+                })
+                .fold(Color::default(), |a, b| a + b)
+                .scale(1.0 / SAMPLES as f32);
             vec![
                 // sqrt for gamma 2 correction
-                (temp.x.sqrt() * 255.99) as u8,
-                (temp.y.sqrt() * 255.99) as u8,
-                (temp.z.sqrt() * 255.99) as u8,
+                (col.x.sqrt() * 255.99) as u8,
+                (col.y.sqrt() * 255.99) as u8,
+                (col.z.sqrt() * 255.99) as u8,
             ]
         })
         .flatten()

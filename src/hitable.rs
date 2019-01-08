@@ -66,6 +66,12 @@ pub struct HitableGroup {
     pub items: Vec<Box<Hitable>>,
 }
 
+impl HitableGroup {
+    pub fn new(items: Vec<Box<Hitable>>) -> Self {
+        HitableGroup { items: items }
+    }
+}
+
 impl Hitable for HitableGroup {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         self.items

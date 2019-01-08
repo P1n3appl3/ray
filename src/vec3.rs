@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ops::*;
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -192,5 +192,38 @@ mod tests {
             assert!(Vec3::new(random(), random(), random()).normalize().len() <= 1.0);
         }
     }
-    //untested operations: dot, cross, scale
+
+    #[test]
+    fn test_scale() {
+        assert_eq!(
+            Vec3::new(3.0, 4.0, 5.0).scale(1.5),
+            Vec3::new(4.5, 6.0, 7.5)
+        );
+        assert_eq!(
+            Vec3::new(3.0, 4.0, 5.0).scale(0.5),
+            Vec3::new(1.5, 2.0, 2.5)
+        );
+    }
+
+    #[test]
+    fn test_dot() {
+        assert_eq!(
+            Vec3::new(1.0, 2.0, 3.0).dot(Vec3::new(4.0, -5.0, 6.0)),
+            12.0
+        );
+        let v = Vec3::new(0.0, 2.0, 4.0);
+        assert_eq!(v.dot(v), 20.0);
+    }
+
+    #[test]
+    fn test_cross() {
+        assert_eq!(
+            Vec3::new(3.0, -3.0, 1.0).cross(Vec3::new(4.0, 9.0, 2.0)),
+            Vec3::new(-15.0, -2.0, 39.0)
+        );
+        assert_eq!(
+            Vec3::new(3.0, -3.0, 1.0).cross(Vec3::new(-12.0, 12.0, -4.0)),
+            Vec3::new(0.0, 0.0, 0.0)
+        );
+    }
 }
