@@ -4,19 +4,20 @@ mod material;
 mod ray;
 mod vec3;
 use self::camera::Camera;
-use self::hitable::{HitableGroup, Sphere};
-use self::material::{scatter, Material::*};
+use self::hitable::HitableGroup;
+use self::material::scatter;
 use self::ray::Ray;
 use self::vec3::Vec3;
 use itertools::iproduct;
 use png::HasParameters;
 use progressive::progress;
 use rand::random;
+use rayon::prelude::*;
 use std::fs;
 use std::io::BufWriter;
 
-const WIDTH: usize = 200;
-const HEIGHT: usize = 100;
+const WIDTH: usize = 600;
+const HEIGHT: usize = 400;
 const SAMPLES: u16 = 100;
 const BOUNCES: u16 = 50;
 
@@ -37,40 +38,18 @@ fn color(r: Ray, world: &impl hitable::Hitable, depth: u16) -> Color {
 }
 
 fn main() {
+    let cam_pos = Vec3::new(0.0, 2.0, 6.0);
+    let subject_pos = Vec3::new(0.0, 0.0, 0.0);
     let cam = Camera::new(
-        Vec3::new(-2.0, 2.0, 1.0),
-        Vec3::new(0.0, 0.0, -1.0),
+        cam_pos,
+        subject_pos,
         Vec3::new(0.0, 1.0, 0.0),
-        40.0,
+        50.0,
         WIDTH as f32 / HEIGHT as f32,
+        0.05,
+        (cam_pos - subject_pos).len(),
     );
-    let world = HitableGroup::new(vec![
-        Box::new(Sphere::new(
-            Vec3::new(0.0, 0.0, -1.0),
-            0.5,
-            Diffuse(Vec3::new(0.2, 0.3, 0.7)),
-        )),
-        Box::new(Sphere::new(
-            Vec3::new(0.0, -100.5, -1.0),
-            100.0,
-            Diffuse(Vec3::new(0.8, 0.8, 0.0)),
-        )),
-        Box::new(Sphere::new(
-            Vec3::new(1.0, 0.0, -1.0),
-            0.5,
-            Metal(Vec3::new(0.8, 0.6, 0.2), 0.8),
-        )),
-        Box::new(Sphere::new(
-            Vec3::new(-1.0, 0.0, -1.0),
-            0.5,
-            Dielectric(1.5),
-        )),
-        Box::new(Sphere::new(
-            Vec3::new(-1.0, 0.0, -1.0),
-            -0.45,
-            Dielectric(1.5),
-        )),
-    ]);
+    let world = HitableGroup::random_scene();
 
     let file = fs::File::create("test.png").unwrap();
     let ref mut writer = BufWriter::new(file);
@@ -80,13 +59,14 @@ fn main() {
     let data = progress(iproduct!((0..HEIGHT).rev(), 0..WIDTH))
         .map(|(y, x)| {
             let col = (0..SAMPLES)
+                .into_par_iter()
                 .map(|_| {
                     let u = (x as f32 + random::<f32>()) / WIDTH as f32;
                     let v = (y as f32 + random::<f32>()) / HEIGHT as f32;
                     let r = cam.get_ray(u, v);
                     color(r, &world, 0)
                 })
-                .fold(Color::default(), |a, b| a + b)
+                .reduce(|| Color::default(), |a, b| a + b)
                 .scale(1.0 / SAMPLES as f32);
             vec![
                 // sqrt for gamma 2 correction

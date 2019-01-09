@@ -1,6 +1,7 @@
-use super::material::Material;
+use super::material::{Material, Material::*};
 use super::ray::Ray;
 use super::vec3::Vec3;
+use rand::random;
 
 /// The relevant information for a ray collision with an object
 pub struct HitRecord {
@@ -10,7 +11,7 @@ pub struct HitRecord {
     pub material: Material,
 }
 
-pub trait Hitable {
+pub trait Hitable: Send + Sync {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
     fn get_material(&self) -> Material;
 }
@@ -69,6 +70,59 @@ pub struct HitableGroup {
 impl HitableGroup {
     pub fn new(items: Vec<Box<Hitable>>) -> Self {
         HitableGroup { items: items }
+    }
+    pub fn random_scene() -> Self {
+        let mut world = HitableGroup::new(vec![
+            Box::new(Sphere::new(
+                Vec3::new(0.0, -1000.0, 0.0),
+                1000.0,
+                Diffuse(Vec3::new(0.5, 0.5, 0.5)),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(-4.0, 1.0, 0.0),
+                1.0,
+                Diffuse(Vec3::new(0.2, 0.3, 0.7)),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(4.0, 1.0, 0.0),
+                1.0,
+                Metal(Vec3::new(0.7, 0.6, 0.5), 0.0),
+            )),
+            Box::new(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, Dielectric(1.5))),
+        ]);
+
+        for a in -11..11 {
+            for b in -11..11 {
+                let pos = Vec3::new(
+                    a as f32 + 0.9 * random::<f32>(),
+                    0.2,
+                    b as f32 + 0.9 * random::<f32>(),
+                );
+                if (pos - Vec3::new(4.0, 0.2, 0.0)).len() < 0.9 {
+                    continue;
+                }
+                world.items.push(Box::new(Sphere::new(
+                    pos,
+                    0.2,
+                    match (random::<f32>() * 100.0) as u8 {
+                        0...5 => Dielectric(1.5),
+                        5...20 => Metal(
+                            (Vec3::new(1.0, 1.0, 1.0)
+                                + Vec3::new(random(), random(), random()))
+                            .scale(0.5),
+                            random::<f32>() / 2.0,
+                        ),
+                        _ => Diffuse(Vec3::new(
+                            random::<f32>() * random::<f32>(),
+                            random::<f32>() * random::<f32>(),
+                            random::<f32>() * random::<f32>(),
+                        )),
+                    },
+                )))
+            }
+        }
+
+        world
     }
 }
 
