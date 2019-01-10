@@ -10,7 +10,7 @@ fn rand_in_unit_disk() -> Vec3 {
             random::<f32>() * 2.0 - 1.0,
             0.0,
         );
-        p.dot(p) >= 1.0
+        p.dot(&p) >= 1.0
     } {}
     p
 }
@@ -35,14 +35,14 @@ impl Camera {
         vfov: f32,
         aspect: f32,
         aperture: f32,
-        focus_dist: f32,
     ) -> Self {
         let theta = vfov * std::f32::consts::PI / 180.0;
         let half_height = (theta / 2.0).tan();
         let half_width = aspect * half_height;
         let w = (look_from - look_at).normalize();
-        let u = vup.cross(w).normalize();
-        let v = w.cross(u);
+        let u = vup.cross(&w).normalize();
+        let v = w.cross(&u);
+        let focus_dist = (look_from - look_at).len();
         Camera {
             origin: look_from,
             lower_left: look_from

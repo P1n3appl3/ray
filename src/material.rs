@@ -10,12 +10,6 @@ pub enum Material {
     Dielectric(f32),
 }
 
-impl Material {
-    pub fn default() -> Self {
-        Material::Diffuse(Vec3::new(0.5, 0.5, 0.5))
-    }
-}
-
 fn rand_in_unit_sphere() -> Vec3 {
     let mut p;
     while {
@@ -40,7 +34,7 @@ pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
             let reflected = r.dir.normalize().reflect(&hit.normal);
             let scattered =
                 Ray::new(hit.point, reflected + rand_in_unit_sphere().scale(fuzz));
-            if scattered.dir.dot(hit.normal) > 0.0 {
+            if scattered.dir.dot(&hit.normal) > 0.0 {
                 Some((reflectance, scattered))
             } else {
                 None
@@ -52,14 +46,14 @@ pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
             let outward_normal;
             let index_ratio;
             let cosine;
-            if r.dir.dot(hit.normal) > 0.0 {
+            if r.dir.dot(&hit.normal) > 0.0 {
                 outward_normal = -hit.normal;
                 index_ratio = refractive_index;
-                cosine = refractive_index * r.dir.dot(hit.normal) / r.dir.len();
+                cosine = refractive_index * r.dir.dot(&hit.normal) / r.dir.len();
             } else {
                 outward_normal = hit.normal;
                 index_ratio = 1.0 / refractive_index;
-                cosine = -r.dir.dot(hit.normal) / r.dir.len();
+                cosine = -r.dir.dot(&hit.normal) / r.dir.len();
             };
             let (refracted, reflect_prob) =
                 match r.dir.refract(&outward_normal, index_ratio) {

@@ -1,9 +1,10 @@
-use super::material::{Material, Material::*};
+use super::aabb::AABB;
+use super::material::Material;
 use super::ray::Ray;
 use super::vec3::Vec3;
-use rand::random;
 
 /// The relevant information for a ray collision with an object
+#[derive(Copy, Clone)]
 pub struct HitRecord {
     pub t: f32,
     pub point: Vec3,
@@ -13,9 +14,12 @@ pub struct HitRecord {
 
 pub trait Hitable: Send + Sync {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
+    fn clone_box(&self) -> Box<Hitable>;
+    fn get_bounding_box(&self) -> Option<AABB>;
     fn get_material(&self) -> Material;
 }
 
+#[derive(Clone)]
 pub struct Sphere {
     center: Vec3,
     radius: f32,
@@ -35,9 +39,9 @@ impl Sphere {
 impl Hitable for Sphere {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let origin_center = r.origin - self.center;
-        let a = r.dir.dot(r.dir);
-        let b = 2.0 * origin_center.dot(r.dir);
-        let c = origin_center.dot(origin_center) - self.radius * self.radius;
+        let a = r.dir.dot(&r.dir);
+        let b = 2.0 * origin_center.dot(&r.dir);
+        let c = origin_center.dot(&origin_center) - self.radius * self.radius;
         let discriminant = b * b - 4.0 * a * c;
         if discriminant > 0.0 {
             let mut temp = (-b - discriminant.sqrt()) / (2.0 * a);
@@ -57,6 +61,15 @@ impl Hitable for Sphere {
         }
         None
     }
+    fn clone_box(&self) -> Box<Hitable> {
+        Box::new((*self).clone())
+    }
+    fn get_bounding_box(&self) -> Option<AABB> {
+        Some(AABB::new(
+            self.center - Vec3::from_scalar(self.radius),
+            self.center + Vec3::from_scalar(self.radius),
+        ))
+    }
     fn get_material(&self) -> Material {
         self.material
     }
@@ -69,60 +82,17 @@ pub struct HitableGroup {
 
 impl HitableGroup {
     pub fn new(items: Vec<Box<Hitable>>) -> Self {
-        HitableGroup { items: items }
-    }
-    pub fn random_scene() -> Self {
-        let mut world = HitableGroup::new(vec![
-            Box::new(Sphere::new(
-                Vec3::new(0.0, -1000.0, 0.0),
-                1000.0,
-                Diffuse(Vec3::new(0.5, 0.5, 0.5)),
-            )),
-            Box::new(Sphere::new(
-                Vec3::new(-4.0, 1.0, 0.0),
-                1.0,
-                Diffuse(Vec3::new(0.2, 0.3, 0.7)),
-            )),
-            Box::new(Sphere::new(
-                Vec3::new(4.0, 1.0, 0.0),
-                1.0,
-                Metal(Vec3::new(0.7, 0.6, 0.5), 0.0),
-            )),
-            Box::new(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, Dielectric(1.5))),
-        ]);
-
-        for a in -11..11 {
-            for b in -11..11 {
-                let pos = Vec3::new(
-                    a as f32 + 0.9 * random::<f32>(),
-                    0.2,
-                    b as f32 + 0.9 * random::<f32>(),
-                );
-                if (pos - Vec3::new(4.0, 0.2, 0.0)).len() < 0.9 {
-                    continue;
-                }
-                world.items.push(Box::new(Sphere::new(
-                    pos,
-                    0.2,
-                    match (random::<f32>() * 100.0) as u8 {
-                        0...5 => Dielectric(1.5),
-                        5...20 => Metal(
-                            (Vec3::new(1.0, 1.0, 1.0)
-                                + Vec3::new(random(), random(), random()))
-                            .scale(0.5),
-                            random::<f32>() / 2.0,
-                        ),
-                        _ => Diffuse(Vec3::new(
-                            random::<f32>() * random::<f32>(),
-                            random::<f32>() * random::<f32>(),
-                            random::<f32>() * random::<f32>(),
-                        )),
-                    },
-                )))
-            }
-        }
-
-        world
+        let mut temp = HitableGroup { items: items };
+        // make sure that group has no elements without bounding boxes
+        let mut items_with_bb: Vec<_> = temp
+            .items
+            .drain_filter(|n| n.get_bounding_box().is_some())
+            .collect();
+        println!("{}", items_with_bb.len());
+        temp.items
+            .insert(0, Box::new(BVHNode::from_items(&mut items_with_bb)));
+        println!("{}", temp.items.len());
+        temp
     }
 }
 
@@ -130,10 +100,117 @@ impl Hitable for HitableGroup {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         self.items
             .iter()
-            .filter_map(|n| n.hit(r, t_min, t_max)) // heheheheheheheh
+            .filter_map(|n| n.hit(r, t_min, t_max))
             .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap()) // because floating point
     }
+    fn get_bounding_box(&self) -> Option<AABB> {
+        unreachable!();
+        if self.items.is_empty() {
+            return None;
+        }
+        Some(
+            self.items
+                .iter()
+                .filter_map(|group| group.get_bounding_box())
+                .fold(AABB::default(), |acc, bb| acc.combine(&bb)),
+        )
+    }
+    fn clone_box(&self) -> Box<Hitable> {
+        unreachable!();
+    }
     fn get_material(&self) -> Material {
-        Material::default()
+        unreachable!();
+    }
+}
+
+pub struct BVHNode {
+    pub bb: AABB,
+    pub left: Option<Box<Hitable>>,
+    pub right: Option<Box<Hitable>>,
+}
+
+impl BVHNode {
+    pub fn new(
+        bb: AABB,
+        left: Option<Box<Hitable>>,
+        right: Option<Box<Hitable>>,
+    ) -> Self {
+        BVHNode {
+            bb: bb,
+            left: left,
+            right: right,
+        }
+    }
+    pub fn from_items(items: &mut [Box<Hitable>]) -> Self {
+        // TODO: do something smarter than always sorting along x axis
+        if items.len() == 1 {
+            return BVHNode::new(
+                items[0].get_bounding_box().unwrap(),
+                Some(items[0].clone_box()),
+                Some(items[0].clone_box()),
+            );
+        }
+        items.sort_unstable_by(|a, b| {
+            a.get_bounding_box()
+                .unwrap()
+                .min
+                .x
+                .partial_cmp(&b.get_bounding_box().unwrap().min.x)
+                .unwrap()
+        });
+        let half = items.len() / 2;
+        let left = Box::new(BVHNode::from_items(
+            &mut items[..half]
+                .iter()
+                .map(|x| x.clone_box())
+                .collect::<Vec<Box<Hitable>>>(),
+        ));
+        let right = Box::new(BVHNode::from_items(
+            &mut items[half..]
+                .iter()
+                .map(|x| x.clone_box())
+                .collect::<Vec<Box<Hitable>>>(),
+        ));
+        BVHNode::new(left.bb.combine(&right.bb), Some(left), Some(right))
+    }
+}
+
+impl Hitable for BVHNode {
+    fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        if !self.bb.hit(r, t_min, t_max) {
+            return None;
+        }
+
+        // TODO: figure out how to use map without angering the borrow checker
+        // let hit_left = self.left.map(|n| n.hit(r, t_min, t_max));
+        let hit_left = match &self.left {
+            Some(node) => node.hit(r, t_min, t_max),
+            None => None,
+        };
+        let hit_right = match &self.right {
+            Some(node) => node.hit(r, t_min, t_max),
+            None => None,
+        };
+
+        match (hit_left, hit_right) {
+            (None, None) => None,
+            (Some(hit), None) | (None, Some(hit)) => Some(hit),
+            (Some(lhit), Some(rhit)) => {
+                if lhit.t < rhit.t {
+                    Some(lhit)
+                } else {
+                    Some(rhit)
+                }
+            }
+        }
+    }
+    fn clone_box(&self) -> Box<Hitable> {
+        unreachable!();
+    }
+    fn get_bounding_box(&self) -> Option<AABB> {
+        unreachable!();
+    }
+    fn get_material(&self) -> Material {
+        unreachable!();
     }
 }

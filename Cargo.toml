@@ -10,3 +10,6 @@ png = "0.13.2"
 progressive = "0.1.0"
 itertools = "0.8.0"
 rayon = "1.0.3"
+
+[profile.release]
+debug = true

@@ -12,6 +12,9 @@ impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vec3 { x: x, y: y, z: z }
     }
+    pub fn from_scalar(n: f32) -> Self {
+        Vec3 { x: n, y: n, z: n }
+    }
     pub fn square_len(&self) -> f32 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
@@ -21,15 +24,39 @@ impl Vec3 {
     pub fn scale(&self, amt: f32) -> Self {
         *self * Self::from_scalar(amt)
     }
-    pub fn normalize(self) -> Self {
-        self / Self::from_scalar(self.len())
+    pub fn normalize(&self) -> Self {
+        *self / Self::from_scalar(self.len())
+    }
+    pub fn piecewise_max(&self, other: Self) -> Self {
+        Vec3::new(
+            self.x.max(other.x),
+            self.y.max(other.y),
+            self.z.max(other.z),
+        )
+    }
+    pub fn piecewise_min(&self, other: Self) -> Self {
+        Vec3::new(
+            self.x.min(other.x),
+            self.y.min(other.y),
+            self.z.min(other.z),
+        )
+    }
+    pub fn dot(&self, other: &Self) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+    pub fn cross(&self, other: &Self) -> Self {
+        Vec3 {
+            x: self.y * other.z - self.z * other.y,
+            y: -(self.x * other.z - self.z * other.x),
+            z: self.x * other.y - self.y * other.x,
+        }
     }
     pub fn reflect(&self, normal: &Self) -> Self {
-        *self - normal.scale(self.dot(*normal) * 2.0)
+        *self - normal.scale(self.dot(normal) * 2.0)
     }
     pub fn refract(&self, normal: &Self, index_ratio: f32) -> Option<Self> {
         let unit = self.normalize();
-        let dt = unit.dot(*normal);
+        let dt = unit.dot(normal);
         let discriminant = 1.0 - index_ratio * index_ratio * (1.0 - dt * dt);
         if discriminant > 0.0 {
             Some(
@@ -39,19 +66,6 @@ impl Vec3 {
         } else {
             None
         }
-    }
-    pub fn dot(&self, other: Self) -> f32 {
-        self.x * other.x + self.y * other.y + self.z * other.z
-    }
-    pub fn cross(&self, other: Self) -> Self {
-        Vec3 {
-            x: self.y * other.z - self.z * other.y,
-            y: -(self.x * other.z - self.z * other.x),
-            z: self.x * other.y - self.y * other.x,
-        }
-    }
-    pub fn from_scalar(n: f32) -> Self {
-        Vec3 { x: n, y: n, z: n }
     }
 }
 
@@ -208,21 +222,21 @@ mod tests {
     #[test]
     fn test_dot() {
         assert_eq!(
-            Vec3::new(1.0, 2.0, 3.0).dot(Vec3::new(4.0, -5.0, 6.0)),
+            Vec3::new(1.0, 2.0, 3.0).dot(&Vec3::new(4.0, -5.0, 6.0)),
             12.0
         );
         let v = Vec3::new(0.0, 2.0, 4.0);
-        assert_eq!(v.dot(v), 20.0);
+        assert_eq!(v.dot(&v), 20.0);
     }
 
     #[test]
     fn test_cross() {
         assert_eq!(
-            Vec3::new(3.0, -3.0, 1.0).cross(Vec3::new(4.0, 9.0, 2.0)),
+            Vec3::new(3.0, -3.0, 1.0).cross(&Vec3::new(4.0, 9.0, 2.0)),
             Vec3::new(-15.0, -2.0, 39.0)
         );
         assert_eq!(
-            Vec3::new(3.0, -3.0, 1.0).cross(Vec3::new(-12.0, 12.0, -4.0)),
+            Vec3::new(3.0, -3.0, 1.0).cross(&Vec3::new(-12.0, 12.0, -4.0)),
             Vec3::new(0.0, 0.0, 0.0)
         );
     }
