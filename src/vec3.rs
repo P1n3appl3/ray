@@ -71,7 +71,7 @@ impl Vec3 {
 
 impl fmt::Display for Vec3 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "({:.4}, {:.4}, {:.4})", self.x, self.y, self.z)
+        write!(f, "({:.3}, {:.3}, {:.3})", self.x, self.y, self.z)
     }
 }
 
@@ -203,7 +203,10 @@ mod tests {
             Vec3::new(2.0, 1.0, 2.0) / Vec3::from_scalar(3.0)
         );
         for _ in 0..10 {
-            assert!(Vec3::new(random(), random(), random()).normalize().len() <= 1.0);
+            assert!(
+                Vec3::new(random(), random(), random()).normalize().len()
+                    <= 1.0 + EPSILON
+            );
         }
     }
 

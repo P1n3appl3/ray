@@ -2,6 +2,7 @@ use super::aabb::AABB;
 use super::material::Material;
 use super::ray::Ray;
 use super::vec3::Vec3;
+use rand::random;
 
 /// The relevant information for a ray collision with an object
 #[derive(Copy, Clone)]
@@ -12,14 +13,14 @@ pub struct HitRecord {
     pub material: Material,
 }
 
-pub trait Hitable: Send + Sync {
+pub trait Hitable: Send + Sync + std::fmt::Debug {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
     fn clone_box(&self) -> Box<Hitable>;
     fn get_bounding_box(&self) -> Option<AABB>;
     fn get_material(&self) -> Material;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Sphere {
     center: Vec3,
     radius: f32,
@@ -38,6 +39,7 @@ impl Sphere {
 
 impl Hitable for Sphere {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        // println!("lmao");
         let origin_center = r.origin - self.center;
         let a = r.dir.dot(&r.dir);
         let b = 2.0 * origin_center.dot(&r.dir);
@@ -75,7 +77,7 @@ impl Hitable for Sphere {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct HitableGroup {
     pub items: Vec<Box<Hitable>>,
 }
@@ -88,7 +90,6 @@ impl HitableGroup {
             .items
             .drain_filter(|n| n.get_bounding_box().is_some())
             .collect();
-        println!("{}", items_with_bb.len());
         temp.items
             .insert(0, Box::new(BVHNode::from_items(&mut items_with_bb)));
         println!("{}", temp.items.len());
@@ -104,7 +105,6 @@ impl Hitable for HitableGroup {
             .min_by(|a, b| a.t.partial_cmp(&b.t).unwrap()) // because floating point
     }
     fn get_bounding_box(&self) -> Option<AABB> {
-        unreachable!();
         if self.items.is_empty() {
             return None;
         }
@@ -123,6 +123,7 @@ impl Hitable for HitableGroup {
     }
 }
 
+#[derive(Debug)]
 pub struct BVHNode {
     pub bb: AABB,
     pub left: Option<Box<Hitable>>,
@@ -142,15 +143,24 @@ impl BVHNode {
         }
     }
     pub fn from_items(items: &mut [Box<Hitable>]) -> Self {
-        // TODO: do something smarter than always sorting along x axis
         if items.len() == 1 {
             return BVHNode::new(
                 items[0].get_bounding_box().unwrap(),
                 Some(items[0].clone_box()),
                 Some(items[0].clone_box()),
             );
+        } else if items.len() == 2 {
+            return BVHNode::new(
+                items[0]
+                    .get_bounding_box()
+                    .unwrap()
+                    .combine(&items[1].get_bounding_box().unwrap()),
+                Some(items[0].clone_box()),
+                Some(items[1].clone_box()),
+            );
         }
         items.sort_unstable_by(|a, b| {
+            // TODO: do something smarter than always choosing x axis
             a.get_bounding_box()
                 .unwrap()
                 .min
@@ -180,17 +190,9 @@ impl Hitable for BVHNode {
         if !self.bb.hit(r, t_min, t_max) {
             return None;
         }
-
-        // TODO: figure out how to use map without angering the borrow checker
-        // let hit_left = self.left.map(|n| n.hit(r, t_min, t_max));
-        let hit_left = match &self.left {
-            Some(node) => node.hit(r, t_min, t_max),
-            None => None,
-        };
-        let hit_right = match &self.right {
-            Some(node) => node.hit(r, t_min, t_max),
-            None => None,
-        };
+        // both sides are always populated
+        let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
+        let hit_right = self.right.as_ref().unwrap().hit(r, t_min, t_max);
 
         match (hit_left, hit_right) {
             (None, None) => None,
@@ -208,7 +210,7 @@ impl Hitable for BVHNode {
         unreachable!();
     }
     fn get_bounding_box(&self) -> Option<AABB> {
-        unreachable!();
+        Some(self.bb)
     }
     fn get_material(&self) -> Material {
         unreachable!();

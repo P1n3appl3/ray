@@ -19,7 +19,7 @@ fn color(r: Ray, world: &impl Hitable, depth: u16, bounces: u16) -> Color {
         }
         Color::new(0.0, 0.0, 0.0)
     } else {
-        // if rays escape they hit this worldsphere gradient
+        // if rays escape they hit this gradient
         let t = (r.dir.normalize().y + 1.0) * 0.5;
         Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
     }
@@ -81,7 +81,7 @@ impl Scene {
         }
     }
     pub fn book_cover() -> Self {
-        let mut spheres = HitableGroup::new(vec![
+        let mut spheres: Vec<Box<Hitable>> = vec![
             Box::new(Sphere::new(
                 Vec3::new(0.0, -1000.0, 0.0),
                 1000.0,
@@ -98,7 +98,7 @@ impl Scene {
                 Metal(Vec3::new(0.7, 0.6, 0.5), 0.0),
             )),
             Box::new(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, Dielectric(1.5))),
-        ]);
+        ];
 
         for a in -11..11 {
             for b in -11..11 {
@@ -110,7 +110,7 @@ impl Scene {
                 if (pos - Vec3::new(4.0, 0.2, 0.0)).len() < 0.9 {
                     continue;
                 }
-                spheres.items.push(Box::new(Sphere::new(
+                spheres.push(Box::new(Sphere::new(
                     pos,
                     0.2,
                     match (random::<f32>() * 100.0) as u8 {
@@ -141,9 +141,8 @@ impl Scene {
             width as f32 / height as f32,
             0.05,
         );
-
         Scene {
-            objects: spheres,
+            objects: HitableGroup::new(spheres),
             camera: cam,
             width: width,
             height: height,

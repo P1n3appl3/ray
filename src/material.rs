@@ -3,7 +3,7 @@ use super::ray::Ray;
 use super::vec3::Vec3;
 use rand::random;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Material {
     Diffuse(Vec3),
     Metal(Vec3, f32),
