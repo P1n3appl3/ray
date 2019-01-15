@@ -1,11 +1,12 @@
 use super::hitable::HitRecord;
-use super::ray::Ray;
-use super::vec3::Vec3;
+use crate::model::texture::Texture;
+use crate::ray::Ray;
+use crate::vec3::Vec3;
 use rand::random;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub enum Material {
-    Diffuse(Vec3),
+    Diffuse(Texture),
     Metal(Vec3, f32),
     Dielectric(f32),
 }
@@ -26,9 +27,20 @@ fn schlick(cosine: f32, refractive_index: f32) -> f32 {
 
 pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
     match hit.material {
-        Material::Diffuse(color) => {
+        Material::Diffuse(texture) => {
             let target = hit.point + hit.normal + rand_in_unit_sphere();
-            Some((color, Ray::new(hit.point, target - hit.point)))
+            let new_ray = Ray::new(hit.point, target - hit.point);
+            match texture {
+                Texture::Solid(color) => Some((color, new_ray)),
+                Texture::Checker(a, b) => {
+                    let signs = (10.0 * hit.point.x).sin()
+                        * (10.0 * hit.point.y).sin()
+                        * (10.0 * hit.point.z).sin();
+                    let color = if signs < 0.0 { a } else { b };
+                    Some((color, new_ray))
+                }
+                _ => None,
+            }
         }
         Material::Metal(reflectance, fuzz) => {
             let reflected = r.dir.normalize().reflect(&hit.normal);

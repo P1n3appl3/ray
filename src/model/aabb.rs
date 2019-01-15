@@ -1,5 +1,5 @@
-use super::ray::Ray;
-use super::vec3::Vec3;
+use crate::ray::Ray;
+use crate::vec3::Vec3;
 
 #[derive(Copy, Clone, Debug)]
 pub struct AABB {
@@ -23,6 +23,7 @@ impl AABB {
     }
 
     // TODO: early escape is a potential optimization
+    /// True if ray intersects AABB between t_min and t_max
     pub fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> bool {
         let temp0 = (self.min - r.origin) / r.dir;
         let temp1 = (self.max - r.origin) / r.dir;
@@ -40,6 +41,7 @@ impl AABB {
             || t1.z <= t0.y)
     }
 
+    /// Generates an enclosing AABB which encloses two others
     pub fn combine(&self, other: &Self) -> Self {
         AABB {
             min: self.min.piecewise_min(other.min),
@@ -56,8 +58,12 @@ mod tests {
     fn test_hit() {
         let r = Ray::new(Vec3::new(0.0, 0.0, -10.0), Vec3::new(0.0, 0.0, 1.0));
         let on_origin = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
-        let off_origin = AABB::new(Vec3::new(2.0, 3.0, 4.0), Vec3::new(3.0, 4.0, 5.0));
         assert!(on_origin.hit(r, 0.0, MAX));
+    }
+
+    fn test_miss() {
+        let off_origin = AABB::new(Vec3::new(2.0, 3.0, 4.0), Vec3::new(3.0, 4.0, 5.0));
+        let r = Ray::new(Vec3::new(0.0, 0.0, -10.0), Vec3::new(0.0, 0.0, 1.0));
         assert!(!off_origin.hit(r, 0.0, MAX));
     }
 
@@ -66,5 +72,6 @@ mod tests {
         let r = Ray::new(Vec3::new(0.0, 0.0, -10.0), Vec3::new(0.0, 0.0, 1.0));
         let on_origin = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
         assert!(!on_origin.hit(r, 0.0, 5.0));
+        assert!(on_origin.hit(r, 0.0, 15.0));
     }
 }

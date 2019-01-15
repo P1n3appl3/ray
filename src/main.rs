@@ -1,10 +1,8 @@
 #![feature(drain_filter)]
-mod aabb;
 mod camera;
-mod hitable;
-mod material;
-mod ray;
+mod model;
 mod scene;
+mod ray;
 mod vec3;
 use self::scene::Scene;
 use png::HasParameters;

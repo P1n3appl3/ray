@@ -1,6 +1,9 @@
 use super::camera::Camera;
-use super::hitable::*;
-use super::material::{scatter, Material::*};
+use super::model::group::HitableGroup;
+use super::model::hitable::Hitable;
+use super::model::texture::Texture::*;
+use super::model::material::{scatter, Material::*};
+use super::model::sphere::Sphere;
 use super::ray::Ray;
 use super::vec3::Vec3;
 use itertools::iproduct;
@@ -63,34 +66,17 @@ impl Scene {
             .flatten()
             .collect::<Vec<u8>>()
     }
-    pub fn new(
-        objects: HitableGroup,
-        cam: Camera,
-        width: usize,
-        height: usize,
-        samples: u16,
-        bounces: u16,
-    ) -> Self {
-        Scene {
-            objects: objects,
-            camera: cam,
-            width: width,
-            height: height,
-            samples: samples,
-            bounces: bounces,
-        }
-    }
     pub fn book_cover() -> Self {
-        let mut spheres: Vec<Box<Hitable>> = vec![
+        let mut spheres: Vec<Box<dyn Hitable>> = vec![
             Box::new(Sphere::new(
                 Vec3::new(0.0, -1000.0, 0.0),
                 1000.0,
-                Diffuse(Vec3::new(0.5, 0.5, 0.5)),
+                Diffuse(Solid(Vec3::new(0.5, 0.5, 0.5))),
             )),
             Box::new(Sphere::new(
                 Vec3::new(-4.0, 1.0, 0.0),
                 1.0,
-                Diffuse(Vec3::new(0.2, 0.3, 0.7)),
+                Diffuse(Solid(Vec3::new(0.2, 0.3, 0.7))),
             )),
             Box::new(Sphere::new(
                 Vec3::new(4.0, 1.0, 0.0),
@@ -121,11 +107,11 @@ impl Scene {
                             .scale(0.5),
                             random::<f32>() / 2.0,
                         ),
-                        _ => Diffuse(Vec3::new(
+                        _ => Diffuse(Solid(Vec3::new(
                             random::<f32>() * random::<f32>(),
                             random::<f32>() * random::<f32>(),
                             random::<f32>() * random::<f32>(),
-                        )),
+                        ))),
                     },
                 )))
             }
