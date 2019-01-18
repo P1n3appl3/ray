@@ -66,6 +66,53 @@ impl Scene {
             .flatten()
             .collect::<Vec<u8>>()
     }
+    pub fn material_demo() -> Self {
+        let spheres: Vec<Box<dyn Hitable>> = vec![
+            Box::new(Sphere::new(
+                Vec3::new(0.0, -100.5, -1.0),
+                100.0,
+                Diffuse(Solid(Vec3::new(0.8, 0.8, 0.0))),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(0.0, 0.0, -1.0),
+                0.5,
+                Diffuse(Solid(Vec3::new(0.1, 0.2, 0.5))),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(1.0, 0.0, -1.0),
+                0.5,
+                Metal(Vec3::new(0.8, 0.6, 0.2), 0.1),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(-1.0, 0.0, -1.0),
+                0.5,
+                Dielectric(1.5),
+            )),
+            // Box::new(Sphere::new(
+            //     Vec3::new(-1.0, 0.0, -1.0),
+            //     -0.45,
+            //     Dielectric(1.5),
+            // )),
+        ];
+        let width = 200;
+        let height = 100;
+        let cam = Camera::new(
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(0.0, 0.0, -1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            90.0,
+            width as f32 / height as f32,
+            0.0,
+        );
+        Scene {
+            objects: HitableGroup::new(spheres),
+            camera: cam,
+            width: width,
+            height: height,
+            samples: 50,
+            bounces: 50,
+        }
+    }
     pub fn book_cover() -> Self {
         let mut spheres: Vec<Box<dyn Hitable>> = vec![
             Box::new(Sphere::new(

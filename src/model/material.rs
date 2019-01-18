@@ -14,12 +14,13 @@ pub enum Material {
 fn rand_in_unit_sphere() -> Vec3 {
     let mut p;
     while {
-        p = (Vec3::new(random(), random(), random()) - Vec3::from_scalar(1.0)).scale(2.0);
+        p = Vec3::new(random(), random(), random()).scale(2.0) - Vec3::from_scalar(1.0);
         p.square_len() > 1.0
     } {}
     p
 }
 
+/// Aproximates the way that glass reflectivity varies with viewing angle
 fn schlick(cosine: f32, refractive_index: f32) -> f32 {
     let r0 = (1.0 - refractive_index) / (1.0 + refractive_index).powi(2);
     r0 + (1.0 - r0) * (1.0 - cosine).powi(5)

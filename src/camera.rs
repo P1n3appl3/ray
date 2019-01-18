@@ -23,7 +23,6 @@ pub struct Camera {
     lens_radius: f32,
     u: Vec3,
     v: Vec3,
-    w: Vec3,
 }
 
 impl Camera {
@@ -52,7 +51,6 @@ impl Camera {
             lens_radius: aperture / 2.0,
             u: u,
             v: v,
-            w: w,
         }
     }
 
