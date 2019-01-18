@@ -4,19 +4,29 @@ use super::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Sphere {
     center: Vec3,
     radius: f32,
-    material: Material,
+    material: Box<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(c: Vec3, r: f32, mat: Material) -> Self {
+    pub fn new(c: Vec3, r: f32, mat: Box<dyn Material>) -> Self {
         Sphere {
             center: c,
             radius: r,
             material: mat,
+        }
+    }
+}
+
+impl Clone for Sphere {
+    fn clone(&self) -> Sphere {
+        Sphere {
+            center: self.center,
+            radius: self.radius,
+            material: self.material.clone_box(),
         }
     }
 }
@@ -37,7 +47,7 @@ impl Hitable for Sphere {
                         t: temp,
                         point: p,
                         normal: (p - self.center).scale(1.0 / self.radius),
-                        material: &self.material
+                        material: &self.material,
                     });
                 }
                 // retry with the other quadratic formula solution
@@ -52,7 +62,7 @@ impl Hitable for Sphere {
             self.center + Vec3::from_scalar(self.radius),
         ))
     }
-    fn get_mat(&self) -> Option<&Material> {
+    fn get_mat(&self) -> Option<&Box<dyn Material>> {
         Some(&self.material)
     }
     fn clone_box(&self) -> Box<dyn Hitable> {

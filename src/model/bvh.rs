@@ -89,7 +89,7 @@ impl Hitable for BVHNode {
     fn get_bb(&self) -> Option<AABB> {
         Some(self.bb)
     }
-    fn get_mat(&self) -> Option<&Material> {
+    fn get_mat(&self) -> Option<&Box<dyn Material>> {
         None
     }
     fn clone_box(&self) -> Box<dyn Hitable> {

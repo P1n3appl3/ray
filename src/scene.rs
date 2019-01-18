@@ -1,9 +1,9 @@
 use super::camera::Camera;
 use super::model::group::HitableGroup;
 use super::model::hitable::Hitable;
-use super::model::texture::Texture::*;
-use super::model::material::{scatter, Material::*};
+use super::model::material::*;
 use super::model::sphere::Sphere;
+use super::model::texture::*;
 use super::ray::Ray;
 use super::vec3::Vec3;
 use itertools::iproduct;
@@ -15,7 +15,9 @@ type Color = Vec3;
 
 fn color(r: Ray, world: &impl Hitable, depth: u16, bounces: u16) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
-        if let Some((attenuation, scattered)) = scatter(r, &hit) {
+        if let Some((attenuation, scattered)) =
+            hit.material.scatter(r, hit.normal, hit.point)
+        {
             if depth < bounces {
                 return attenuation * color(scattered, world, depth + 1, bounces);
             }
@@ -71,12 +73,32 @@ impl Scene {
             Box::new(Sphere::new(
                 Vec3::new(0.0, -100.5, -1.0),
                 100.0,
-                Diffuse(Checkered(Vec3::new(0.0, 0.8, 0.8), Vec3::new(0.8, 0.8, 0.0))),
+                Box::new(Diffuse {
+                    texture: Box::new(Checkered {
+                        a: Box::new(Solid {
+                            color: Vec3::new(0.0, 0.8, 0.8),
+                        }),
+                        b: Box::new(Solid {
+                            color: Vec3::new(0.8, 0.8, 0.0),
+                        }),
+                        size: 10.0,
+                    }),
+                }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(0.0, 0.0, -1.0),
                 0.5,
-                Diffuse(Checkered(Vec3::new(0.5, 0.2, 0.1), Vec3::new(0.1, 0.2, 0.5))),
+                Box::new(Diffuse {
+                    texture: Box::new(Checkered {
+                        a: Box::new(Solid {
+                            color: Vec3::new(0.5, 0.2, 0.1),
+                        }),
+                        b: Box::new(Solid {
+                            color: Vec3::new(0.1, 0.2, 0.5),
+                        }),
+                        size: 10.0,
+                    }),
+                }),
             )),
         ];
         let width = 200;
@@ -103,28 +125,41 @@ impl Scene {
             Box::new(Sphere::new(
                 Vec3::new(0.0, -100.5, -1.0),
                 100.0,
-                Diffuse(Solid(Vec3::new(0.8, 0.8, 0.0))),
+                Box::new(Diffuse {
+                    texture: Box::new(Solid {
+                        color: Vec3::new(0.8, 0.8, 0.0),
+                    }),
+                }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(0.0, 0.0, -1.0),
                 0.5,
-                Diffuse(Solid(Vec3::new(0.1, 0.2, 0.5))),
+                Box::new(Diffuse {
+                    texture: Box::new(Solid {
+                        color: Vec3::new(0.1, 0.2, 0.5),
+                    }),
+                }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(1.0, 0.0, -1.0),
                 0.5,
-                Metal(Vec3::new(0.8, 0.6, 0.2), 0.1),
+                Box::new(Metal {
+                    albedo: Vec3::new(0.8, 0.6, 0.2),
+                    fuzz: 0.1,
+                }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(-1.0, 0.0, -1.0),
                 0.5,
-                Dielectric(1.5),
+                Box::new(Dielectric {
+                    refractive_index: 1.5,
+                }),
             )),
-            // Box::new(Sphere::new(
-            //     Vec3::new(-1.0, 0.0, -1.0),
-            //     -0.45,
-            //     Dielectric(1.5),
-            // )),
+            /* Box::new(Sphere::new(
+             *     Vec3::new(-1.0, 0.0, -1.0),
+             *     -0.45,
+             *     Dielectric(1.5),
+             * )), */
         ];
         let width = 200;
         let height = 100;
@@ -150,19 +185,42 @@ impl Scene {
             Box::new(Sphere::new(
                 Vec3::new(0.0, -1000.0, 0.0),
                 1000.0,
-                Diffuse(Checkered(Vec3::new(0.9, 0.1, 0.1), Vec3::new(0.9, 0.9, 0.9))),
+                Box::new(Diffuse {
+                    texture: Box::new(Checkered {
+                        a: Box::new(Solid {
+                            color: Vec3::new(0.9, 0.1, 0.1),
+                        }),
+                        b: Box::new(Solid {
+                            color: Vec3::new(0.9, 0.9, 0.9),
+                        }),
+                        size: 30.0,
+                    }),
+                }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(-4.0, 1.0, 0.0),
                 1.0,
-                Diffuse(Solid(Vec3::new(0.2, 0.3, 0.7))),
+                Box::new(Diffuse {
+                    texture: Box::new(Solid {
+                        color: Vec3::new(0.2, 0.3, 0.7),
+                    }),
+                }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(4.0, 1.0, 0.0),
                 1.0,
-                Metal(Vec3::new(0.7, 0.6, 0.5), 0.0),
+                Box::new(Metal {
+                    albedo: Vec3::new(0.7, 0.6, 0.5),
+                    fuzz: 0.0,
+                }),
             )),
-            Box::new(Sphere::new(Vec3::new(0.0, 1.0, 0.0), 1.0, Dielectric(1.5))),
+            Box::new(Sphere::new(
+                Vec3::new(0.0, 1.0, 0.0),
+                1.0,
+                Box::new(Dielectric {
+                    refractive_index: 1.5,
+                }),
+            )),
         ];
 
         for a in -11..11 {
@@ -179,18 +237,24 @@ impl Scene {
                     pos,
                     0.2,
                     match (random::<f32>() * 100.0) as u8 {
-                        0...5 => Dielectric(1.5),
-                        5...20 => Metal(
-                            (Vec3::new(1.0, 1.0, 1.0)
+                        0...5 => Box::new(Dielectric {
+                            refractive_index: 1.5,
+                        }),
+                        5...20 => Box::new(Metal {
+                            albedo: (Vec3::new(1.0, 1.0, 1.0)
                                 + Vec3::new(random(), random(), random()))
                             .scale(0.5),
-                            random::<f32>() / 2.0,
-                        ),
-                        _ => Diffuse(Solid(Vec3::new(
-                            random::<f32>() * random::<f32>(),
-                            random::<f32>() * random::<f32>(),
-                            random::<f32>() * random::<f32>(),
-                        ))),
+                            fuzz: random::<f32>().powi(4),
+                        }),
+                        _ => Box::new(Diffuse {
+                            texture: Box::new(Solid {
+                                color: Vec3::new(
+                                    random::<f32>() * random::<f32>(),
+                                    random::<f32>() * random::<f32>(),
+                                    random::<f32>() * random::<f32>(),
+                                ),
+                            }),
+                        }),
                     },
                 )))
             }

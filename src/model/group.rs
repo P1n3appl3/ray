@@ -39,7 +39,7 @@ impl Hitable for HitableGroup {
                 .fold(AABB::default(), |acc, bb| acc.combine(&bb)),
         )
     }
-    fn get_mat(&self) -> Option<&Material> {
+    fn get_mat(&self) -> Option<&Box<dyn Material>> {
         None
     }
     fn clone_box(&self) -> Box<dyn Hitable> {

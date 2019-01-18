@@ -1,17 +1,14 @@
-use super::hitable::HitRecord;
 use crate::model::texture::Texture;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use rand::random;
 
-#[derive(Clone, Debug)]
-pub enum Material {
-    Diffuse(Texture),
-    Metal(Vec3, f32),
-    Dielectric(f32),
+pub trait Material: Send + Sync + std::fmt::Debug {
+    fn clone_box(&self) -> Box<dyn Material>;
+    fn scatter(&self, r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)>;
 }
 
-fn rand_in_unit_sphere() -> Vec3 {
+pub fn rand_in_unit_sphere() -> Vec3 {
     let mut p;
     while {
         p = Vec3::new(random(), random(), random()).scale(2.0) - Vec3::from_scalar(1.0);
@@ -26,60 +23,81 @@ fn schlick(cosine: f32, refractive_index: f32) -> f32 {
     r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
-pub fn scatter(r: Ray, hit: &HitRecord) -> Option<(Vec3, Ray)> {
-    match hit.material {
-        Material::Diffuse(texture) => {
-            let target = hit.point + hit.normal + rand_in_unit_sphere();
-            let new_ray = Ray::new(hit.point, target - hit.point);
-            match *texture {
-                Texture::Solid(color) => Some((color, new_ray)),
-                Texture::Checkered(a, b) => {
-                    let signs = (10.0 * hit.point.x).sin()
-                        * (10.0 * hit.point.y).sin()
-                        * (10.0 * hit.point.z).sin();
-                    let color = if signs < 0.0 { a } else { b };
-                    Some((color, new_ray))
-                }
-                _ => None,
-            }
+#[derive(Debug)]
+pub struct Diffuse {
+    pub texture: Box<dyn Texture>,
+}
+
+impl Material for Diffuse {
+    fn scatter(&self, _r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)> {
+        let target = point + normal + rand_in_unit_sphere();
+        let new_ray = Ray::new(point, target - point);
+        Some((self.texture.value(0.0, 0.0, point), new_ray))
+    }
+    fn clone_box(&self) -> Box<dyn Material> {
+        Box::new(Diffuse {
+            texture: self.texture.clone_box(),
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Metal {
+    pub albedo: Vec3,
+    pub fuzz: f32,
+}
+
+impl Material for Metal {
+    fn scatter(&self, r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)> {
+        let reflected = r.dir.normalize().reflect(&normal);
+        let scattered =
+            Ray::new(point, reflected + rand_in_unit_sphere().scale(self.fuzz));
+        if scattered.dir.dot(&normal) > 0.0 {
+            Some((self.albedo, scattered))
+        } else {
+            None
         }
-        Material::Metal(reflectance, fuzz) => {
-            let reflected = r.dir.normalize().reflect(&hit.normal);
-            let scattered =
-                Ray::new(hit.point, reflected + rand_in_unit_sphere().scale(*fuzz));
-            if scattered.dir.dot(&hit.normal) > 0.0 {
-                Some((*reflectance, scattered))
-            } else {
-                None
-            }
+    }
+    fn clone_box(&self) -> Box<dyn Material> {
+        Box::new(self.clone())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Dielectric {
+    pub refractive_index: f32,
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)> {
+        let attenuation = Vec3::from_scalar(1.0);
+        let reflected = r.dir.reflect(&normal);
+        let outward_normal;
+        let index_ratio;
+        let cosine;
+        if r.dir.dot(&normal) > 0.0 {
+            outward_normal = -normal;
+            index_ratio = self.refractive_index;
+            cosine = self.refractive_index * r.dir.dot(&normal) / r.dir.len();
+        } else {
+            outward_normal = normal;
+            index_ratio = 1.0 / self.refractive_index;
+            cosine = -r.dir.dot(&normal) / r.dir.len();
+        };
+        let (refracted, reflect_prob) = match r.dir.refract(&outward_normal, index_ratio)
+        {
+            Some(x) => (x, schlick(cosine, self.refractive_index)),
+            // If none, the refracted ray is never used
+            None => (Vec3::default(), 1.0),
+        };
+        if random::<f32>() < reflect_prob {
+            // TODO: figure out why i'm not seeing reflections in glass
+            Some((attenuation, Ray::new(point, reflected)))
+        } else {
+            Some((attenuation, Ray::new(point, refracted)))
         }
-        Material::Dielectric(refractive_index) => {
-            let attenuation = Vec3::from_scalar(1.0);
-            let reflected = r.dir.reflect(&hit.normal);
-            let outward_normal;
-            let index_ratio;
-            let cosine;
-            if r.dir.dot(&hit.normal) > 0.0 {
-                outward_normal = -hit.normal;
-                index_ratio = *refractive_index;
-                cosine = refractive_index * r.dir.dot(&hit.normal) / r.dir.len();
-            } else {
-                outward_normal = hit.normal;
-                index_ratio = 1.0 / refractive_index;
-                cosine = -r.dir.dot(&hit.normal) / r.dir.len();
-            };
-            let (refracted, reflect_prob) =
-                match r.dir.refract(&outward_normal, index_ratio) {
-                    Some(x) => (x, schlick(cosine, *refractive_index)),
-                    // If none, the refracted ray is never used
-                    None => (Vec3::default(), 1.0),
-                };
-            if random::<f32>() < reflect_prob {
-                // TODO: figure out why i'm not seeing reflections in glass
-                Some((attenuation, Ray::new(hit.point, reflected)))
-            } else {
-                Some((attenuation, Ray::new(hit.point, refracted)))
-            }
-        }
+    }
+    fn clone_box(&self) -> Box<dyn Material> {
+        Box::new(self.clone())
     }
 }
