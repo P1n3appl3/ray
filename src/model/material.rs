@@ -22,18 +22,18 @@ fn rand_in_unit_sphere() -> Vec3 {
 
 /// Aproximates the way that glass reflectivity varies with viewing angle
 fn schlick(cosine: f32, refractive_index: f32) -> f32 {
-    let r0 = (1.0 - refractive_index) / (1.0 + refractive_index).powi(2);
+    let r0 = ((1.0 - refractive_index) / (1.0 + refractive_index)).powi(2);
     r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
-pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
+pub fn scatter(r: Ray, hit: &HitRecord) -> Option<(Vec3, Ray)> {
     match hit.material {
         Material::Diffuse(texture) => {
             let target = hit.point + hit.normal + rand_in_unit_sphere();
             let new_ray = Ray::new(hit.point, target - hit.point);
-            match texture {
+            match *texture {
                 Texture::Solid(color) => Some((color, new_ray)),
-                Texture::Checker(a, b) => {
+                Texture::Checkered(a, b) => {
                     let signs = (10.0 * hit.point.x).sin()
                         * (10.0 * hit.point.y).sin()
                         * (10.0 * hit.point.z).sin();
@@ -46,9 +46,9 @@ pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
         Material::Metal(reflectance, fuzz) => {
             let reflected = r.dir.normalize().reflect(&hit.normal);
             let scattered =
-                Ray::new(hit.point, reflected + rand_in_unit_sphere().scale(fuzz));
+                Ray::new(hit.point, reflected + rand_in_unit_sphere().scale(*fuzz));
             if scattered.dir.dot(&hit.normal) > 0.0 {
-                Some((reflectance, scattered))
+                Some((*reflectance, scattered))
             } else {
                 None
             }
@@ -61,7 +61,7 @@ pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
             let cosine;
             if r.dir.dot(&hit.normal) > 0.0 {
                 outward_normal = -hit.normal;
-                index_ratio = refractive_index;
+                index_ratio = *refractive_index;
                 cosine = refractive_index * r.dir.dot(&hit.normal) / r.dir.len();
             } else {
                 outward_normal = hit.normal;
@@ -70,11 +70,12 @@ pub fn scatter(r: Ray, hit: HitRecord) -> Option<(Vec3, Ray)> {
             };
             let (refracted, reflect_prob) =
                 match r.dir.refract(&outward_normal, index_ratio) {
-                    Some(x) => (x, schlick(cosine, refractive_index)),
+                    Some(x) => (x, schlick(cosine, *refractive_index)),
                     // If none, the refracted ray is never used
                     None => (Vec3::default(), 1.0),
                 };
             if random::<f32>() < reflect_prob {
+                // TODO: figure out why i'm not seeing reflections in glass
                 Some((attenuation, Ray::new(hit.point, reflected)))
             } else {
                 Some((attenuation, Ray::new(hit.point, refracted)))

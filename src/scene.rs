@@ -15,7 +15,7 @@ type Color = Vec3;
 
 fn color(r: Ray, world: &impl Hitable, depth: u16, bounces: u16) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
-        if let Some((attenuation, scattered)) = scatter(r, hit) {
+        if let Some((attenuation, scattered)) = scatter(r, &hit) {
             if depth < bounces {
                 return attenuation * color(scattered, world, depth + 1, bounces);
             }
@@ -65,6 +65,38 @@ impl Scene {
             })
             .flatten()
             .collect::<Vec<u8>>()
+    }
+    pub fn lone_sphere() -> Self {
+        let spheres: Vec<Box<dyn Hitable>> = vec![
+            Box::new(Sphere::new(
+                Vec3::new(0.0, -100.5, -1.0),
+                100.0,
+                Diffuse(Checkered(Vec3::new(0.0, 0.8, 0.8), Vec3::new(0.8, 0.8, 0.0))),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(0.0, 0.0, -1.0),
+                0.5,
+                Diffuse(Checkered(Vec3::new(0.5, 0.2, 0.1), Vec3::new(0.1, 0.2, 0.5))),
+            )),
+        ];
+        let width = 200;
+        let height = 100;
+        let cam = Camera::new(
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(0.0, 0.0, -1.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            90.0,
+            width as f32 / height as f32,
+            0.0,
+        );
+        Scene {
+            objects: HitableGroup::new(spheres),
+            camera: cam,
+            width: width,
+            height: height,
+            samples: 50,
+            bounces: 50,
+        }
     }
     pub fn material_demo() -> Self {
         let spheres: Vec<Box<dyn Hitable>> = vec![
@@ -118,7 +150,7 @@ impl Scene {
             Box::new(Sphere::new(
                 Vec3::new(0.0, -1000.0, 0.0),
                 1000.0,
-                Diffuse(Solid(Vec3::new(0.5, 0.5, 0.5))),
+                Diffuse(Checkered(Vec3::new(0.9, 0.1, 0.1), Vec3::new(0.9, 0.9, 0.9))),
             )),
             Box::new(Sphere::new(
                 Vec3::new(-4.0, 1.0, 0.0),
@@ -172,7 +204,7 @@ impl Scene {
             Vec3::new(0.0, 1.0, 0.0),
             20.0,
             width as f32 / height as f32,
-            0.05,
+            0.0,
         );
         Scene {
             objects: HitableGroup::new(spheres),
@@ -180,7 +212,7 @@ impl Scene {
             width: width,
             height: height,
             samples: 50,
-            bounces: 5,
+            bounces: 50,
         }
     }
 }

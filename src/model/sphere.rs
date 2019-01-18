@@ -37,7 +37,7 @@ impl Hitable for Sphere {
                         t: temp,
                         point: p,
                         normal: (p - self.center).scale(1.0 / self.radius),
-                        material: self.material.clone(),
+                        material: &self.material
                     });
                 }
                 // retry with the other quadratic formula solution

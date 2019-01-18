@@ -7,7 +7,7 @@ use crate::vec3::Vec3;
 #[derive(Clone)]
 pub enum Texture {
     Solid(Vec3),
-    Checker(Vec3, Vec3),
+    Checkered(Vec3, Vec3),
     // Noise {
     //     rand_float: [f32; 256],
     //     perm_x: [u8; 256],
