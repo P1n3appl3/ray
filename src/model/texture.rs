@@ -31,10 +31,8 @@ pub struct Checkered {
 
 impl Texture for Checkered {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
-        // TODO: use u and v instead to make 2d instead of 3d checkers
-        if (self.size * p.x).sin() * (self.size * p.y).sin() * (self.size * p.z).sin()
-            < 0.0
-        {
+        // TODO: tiles look rectangular instead of square, prob issue with sphere
+        if (self.size * u).sin() * (self.size * v).sin() < 0.0 {
             self.a.value(u, v, p)
         } else {
             self.b.value(u, v, p)
@@ -52,7 +50,7 @@ impl Texture for Checkered {
 #[derive(Clone)]
 pub struct Perlin {
     scale: f32,
-    // TODO: make these static
+    // TODO: make these static using const fn or a macro
     rand_vec: [Vec3; 256],
     perm_x: [u8; 256],
     perm_y: [u8; 256],
@@ -67,10 +65,13 @@ impl std::fmt::Debug for Perlin {
 
 impl Texture for Perlin {
     fn value(&self, _u: f32, _v: f32, p: Vec3) -> Vec3 {
+        // TODO: make a type enum or separate into their own structs
+        // noise
         // Vec3::from_scalar(0.5 * (1.0 + self.noise(p.scale(self.scale))))
-        Vec3::from_scalar(self.turb(p.scale(self.scale)))
-        // TODO: figure out why this doesn't look like marble
-        // Vec3::from_scalar(0.5 * (1.0 + (p.z * self.scale + 10.0 * self.turb(p)).sin()))
+        // rock
+        // Vec3::from_scalar(self.turb(p.scale(self.scale)))
+        // marble
+        Vec3::from_scalar(0.5 * (1.0 + (p.z * self.scale + 10.0 * self.turb(p)).sin()))
     }
     fn clone_box(&self) -> Box<dyn Texture> {
         Box::new(self.clone())
@@ -123,16 +124,15 @@ impl Perlin {
     }
     pub fn turb(&self, p: Vec3) -> f32 {
         let depth = 7;
-        let mut weight = 2.0;
-        p.scale(0.5);
-        (0..depth)
-            .map(|_| {
-                p.scale(2.0);
-                weight /= 2.0;
-                weight * self.noise(p)
-            })
-            .sum::<f32>()
-            .abs()
+        let mut weight = 1.0;
+        let mut accum = 0.0;
+        let mut temp_p = p;
+        for _ in 0..depth {
+            accum += weight * self.noise(temp_p);
+            temp_p = temp_p.scale(2.0);
+            weight /= 2.0;
+        }
+        accum.abs()
     }
 }
 
@@ -158,7 +158,7 @@ impl Image {
 }
 
 impl Texture for Image {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
+    fn value(&self, u: f32, v: f32, _p: Vec3) -> Vec3 {
         let i = (u * self.width as f32)
             .max(0.0)
             .min((self.width - 1) as f32) as usize;

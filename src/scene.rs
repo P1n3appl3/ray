@@ -81,7 +81,17 @@ impl Scene {
                 Vec3::new(0.0, 2.0, 0.0),
                 2.0,
                 Box::new(Diffuse {
-                    texture: Box::new(Image::new("earth.png")),
+                    texture: Box::new(Checkered {
+                        a: Box::new(Solid {
+                            color: Vec3::new(0.6, 0.1, 0.1),
+                        }),
+                        b: Box::new(Solid {
+                            color: Vec3::new(0.4, 0.9, 0.9),
+                        }),
+                        size: 50.0,
+                    }),
+                    // texture: Box::new(Perlin::new(5.0)),
+                    // texture: Box::new(Image::new("earth.png")),
                 }),
             )),
         ];
