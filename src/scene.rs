@@ -74,37 +74,21 @@ impl Scene {
                 Vec3::new(0.0, -1000.0, 0.0),
                 1000.0,
                 Box::new(Diffuse {
-                    // texture: Box::new(Checkered {
-                    //     a: Box::new(Solid {
-                    //         color: Vec3::new(0.0, 0.8, 0.8),
-                    //     }),
-                    //     b: Box::new(Solid {
-                    //         color: Vec3::new(0.8, 0.8, 0.0),
-                    //     }),
-                    //     size: 10.0,
-                    // }),
-                    texture: Box::new(Perlin::new(2.0)),
+                    texture: Box::new(Perlin::new(3.0)),
                 }),
             )),
             Box::new(Sphere::new(
                 Vec3::new(0.0, 2.0, 0.0),
                 2.0,
                 Box::new(Diffuse {
-                    texture: Box::new(Perlin::new(5.0)),
-                    // texture: Box::new(Checkered {
-                    //     a: Box::new(Solid {
-                    //         color: Vec3::new(0.5, 0.2, 0.1),
-                    //     }),
-                    //     b: Box::new(Solid {
-                    //         color: Vec3::new(0.1, 0.2, 0.5),
-                    //     }),
-                    //     size: 30.0,
-                    // }),
+                    texture: Box::new(Perlin::new(6.0)),
                 }),
             )),
         ];
         let width = 200;
         let height = 100;
+        // let width = 400;
+        // let height = 250;
         let cam = Camera::new(
             Vec3::new(13.0, 2.0, 3.0),
             Vec3::new(0.0, 0.0, 0.0),
