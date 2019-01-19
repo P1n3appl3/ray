@@ -7,6 +7,8 @@ use crate::vec3::Vec3;
 #[derive(Clone)]
 pub struct HitRecord<'a> {
     pub t: f32,
+    pub u: f32,
+    pub v: f32,
     pub point: Vec3,
     pub normal: Vec3,
     pub material: &'a Box<dyn Material>,

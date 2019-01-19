@@ -16,7 +16,7 @@ type Color = Vec3;
 fn color(r: Ray, world: &impl Hitable, depth: u16, bounces: u16) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
         if let Some((attenuation, scattered)) =
-            hit.material.scatter(r, hit.normal, hit.point)
+            hit.material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
         {
             if depth < bounces {
                 return attenuation * color(scattered, world, depth + 1, bounces);
@@ -81,7 +81,7 @@ impl Scene {
                 Vec3::new(0.0, 2.0, 0.0),
                 2.0,
                 Box::new(Diffuse {
-                    texture: Box::new(Perlin::new(6.0)),
+                    texture: Box::new(Image::new("earth.png")),
                 }),
             )),
         ];
@@ -91,7 +91,7 @@ impl Scene {
         // let height = 250;
         let cam = Camera::new(
             Vec3::new(13.0, 2.0, 3.0),
-            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(0.0, 1.0, 0.0),
             Vec3::new(0.0, 1.0, 0.0),
             20.0,
             width as f32 / height as f32,

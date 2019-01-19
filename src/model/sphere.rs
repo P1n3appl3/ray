@@ -3,6 +3,7 @@ use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+use std::f32::consts::PI;
 
 #[derive(Debug)]
 pub struct Sphere {
@@ -18,6 +19,11 @@ impl Sphere {
             radius: r,
             material: mat,
         }
+    }
+    pub fn get_uv(&self, p: Vec3) -> (f32, f32) {
+        let phi = p.z.atan2(p.x);
+        let theta = p.y.asin();
+        (1.0 - (phi + PI) / (2.0 * PI), (theta + PI / 2.0) / PI)
     }
 }
 
@@ -43,10 +49,14 @@ impl Hitable for Sphere {
             for _ in 0..2 {
                 if temp < t_max && temp > t_min {
                     let p = r.point_at_param(temp);
+                    let normal = (p - self.center).scale(1.0 / self.radius);
+                    let (u, v) = self.get_uv(normal);
                     return Some(HitRecord {
                         t: temp,
+                        u: u,
+                        v: v,
                         point: p,
-                        normal: (p - self.center).scale(1.0 / self.radius),
+                        normal: normal,
                         material: &self.material,
                     });
                 }

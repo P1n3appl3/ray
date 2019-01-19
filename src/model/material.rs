@@ -5,7 +5,14 @@ use rand::random;
 
 pub trait Material: Send + Sync + std::fmt::Debug {
     fn clone_box(&self) -> Box<dyn Material>;
-    fn scatter(&self, r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)>;
+    fn scatter(
+        &self,
+        r: Ray,
+        normal: Vec3,
+        point: Vec3,
+        u: f32,
+        v: f32,
+    ) -> Option<(Vec3, Ray)>;
 }
 
 pub fn rand_in_unit_sphere() -> Vec3 {
@@ -29,10 +36,17 @@ pub struct Diffuse {
 }
 
 impl Material for Diffuse {
-    fn scatter(&self, _r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)> {
+    fn scatter(
+        &self,
+        _r: Ray,
+        normal: Vec3,
+        point: Vec3,
+        u: f32,
+        v: f32,
+    ) -> Option<(Vec3, Ray)> {
         let target = point + normal + rand_in_unit_sphere();
         let new_ray = Ray::new(point, target - point);
-        Some((self.texture.value(0.0, 0.0, point), new_ray))
+        Some((self.texture.value(u, v, point), new_ray))
     }
     fn clone_box(&self) -> Box<dyn Material> {
         Box::new(Diffuse {
@@ -48,7 +62,14 @@ pub struct Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)> {
+    fn scatter(
+        &self,
+        r: Ray,
+        normal: Vec3,
+        point: Vec3,
+        _u: f32,
+        _v: f32,
+    ) -> Option<(Vec3, Ray)> {
         let reflected = r.dir.normalize().reflect(&normal);
         let scattered =
             Ray::new(point, reflected + rand_in_unit_sphere().scale(self.fuzz));
@@ -69,7 +90,14 @@ pub struct Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r: Ray, normal: Vec3, point: Vec3) -> Option<(Vec3, Ray)> {
+    fn scatter(
+        &self,
+        r: Ray,
+        normal: Vec3,
+        point: Vec3,
+        _u: f32,
+        _v: f32,
+    ) -> Option<(Vec3, Ray)> {
         let attenuation = Vec3::from_scalar(1.0);
         let reflected = r.dir.reflect(&normal);
         let outward_normal;
