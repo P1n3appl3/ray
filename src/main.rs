@@ -10,7 +10,7 @@ use std::fs;
 use std::io::BufWriter;
 
 fn main() {
-    let world = Scene::book_cover();
+    let world = Scene::lone_sphere();
     let file = fs::File::create("output.png").unwrap();
     let ref mut writer = BufWriter::new(file);
     let mut encoder = png::Encoder::new(writer, world.width as u32, world.height as u32);

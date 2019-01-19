@@ -1,3 +1,4 @@
+use rand::random;
 use std::fmt;
 use std::ops::*;
 
@@ -14,6 +15,13 @@ impl Vec3 {
     }
     pub fn from_scalar(n: f32) -> Self {
         Vec3 { x: n, y: n, z: n }
+    }
+    pub fn rand() -> Self {
+        Vec3 {
+            x: random(),
+            y: random(),
+            z: random(),
+        }
     }
     pub fn square_len(&self) -> f32 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
@@ -204,7 +212,7 @@ mod tests {
         );
         for _ in 0..10 {
             assert!(
-                Vec3::new(random(), random(), random()).normalize().len()
+                Vec3::rand().scale(random::<f32>() * 2.0).normalize().len()
                     <= 1.0 + EPSILON
             );
         }

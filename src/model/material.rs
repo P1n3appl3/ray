@@ -11,7 +11,7 @@ pub trait Material: Send + Sync + std::fmt::Debug {
 pub fn rand_in_unit_sphere() -> Vec3 {
     let mut p;
     while {
-        p = Vec3::new(random(), random(), random()).scale(2.0) - Vec3::from_scalar(1.0);
+        p = Vec3::rand().scale(2.0) - Vec3::from_scalar(1.0);
         p.square_len() > 1.0
     } {}
     p

@@ -59,10 +59,10 @@ impl Scene {
                     .reduce(|| Color::default(), |a, b| a + b)
                     .scale(1.0 / self.samples as f32);
                 vec![
-                    // sqrt for gamma 2 correction
-                    (col.x.sqrt() * 255.99) as u8,
-                    (col.y.sqrt() * 255.99) as u8,
-                    (col.z.sqrt() * 255.99) as u8,
+                    // sqrt for gamma 2 correction to brighten image
+                    (col.x.sqrt() * 255.999) as u8,
+                    (col.y.sqrt() * 255.999) as u8,
+                    (col.z.sqrt() * 255.999) as u8,
                 ]
             })
             .flatten()
@@ -71,43 +71,45 @@ impl Scene {
     pub fn lone_sphere() -> Self {
         let spheres: Vec<Box<dyn Hitable>> = vec![
             Box::new(Sphere::new(
-                Vec3::new(0.0, -100.5, -1.0),
-                100.0,
+                Vec3::new(0.0, -1000.0, 0.0),
+                1000.0,
                 Box::new(Diffuse {
-                    texture: Box::new(Checkered {
-                        a: Box::new(Solid {
-                            color: Vec3::new(0.0, 0.8, 0.8),
-                        }),
-                        b: Box::new(Solid {
-                            color: Vec3::new(0.8, 0.8, 0.0),
-                        }),
-                        size: 10.0,
-                    }),
+                    // texture: Box::new(Checkered {
+                    //     a: Box::new(Solid {
+                    //         color: Vec3::new(0.0, 0.8, 0.8),
+                    //     }),
+                    //     b: Box::new(Solid {
+                    //         color: Vec3::new(0.8, 0.8, 0.0),
+                    //     }),
+                    //     size: 10.0,
+                    // }),
+                    texture: Box::new(Perlin::new(2.0)),
                 }),
             )),
             Box::new(Sphere::new(
-                Vec3::new(0.0, 0.0, -1.0),
-                0.5,
+                Vec3::new(0.0, 2.0, 0.0),
+                2.0,
                 Box::new(Diffuse {
-                    texture: Box::new(Checkered {
-                        a: Box::new(Solid {
-                            color: Vec3::new(0.5, 0.2, 0.1),
-                        }),
-                        b: Box::new(Solid {
-                            color: Vec3::new(0.1, 0.2, 0.5),
-                        }),
-                        size: 10.0,
-                    }),
+                    texture: Box::new(Perlin::new(5.0)),
+                    // texture: Box::new(Checkered {
+                    //     a: Box::new(Solid {
+                    //         color: Vec3::new(0.5, 0.2, 0.1),
+                    //     }),
+                    //     b: Box::new(Solid {
+                    //         color: Vec3::new(0.1, 0.2, 0.5),
+                    //     }),
+                    //     size: 30.0,
+                    // }),
                 }),
             )),
         ];
         let width = 200;
         let height = 100;
         let cam = Camera::new(
+            Vec3::new(13.0, 2.0, 3.0),
             Vec3::new(0.0, 0.0, 0.0),
-            Vec3::new(0.0, 0.0, -1.0),
             Vec3::new(0.0, 1.0, 0.0),
-            90.0,
+            20.0,
             width as f32 / height as f32,
             0.0,
         );
@@ -116,7 +118,7 @@ impl Scene {
             camera: cam,
             width: width,
             height: height,
-            samples: 50,
+            samples: 200,
             bounces: 50,
         }
     }
@@ -188,12 +190,12 @@ impl Scene {
                 Box::new(Diffuse {
                     texture: Box::new(Checkered {
                         a: Box::new(Solid {
-                            color: Vec3::new(0.9, 0.1, 0.1),
+                            color: Vec3::new(0.6, 0.1, 0.1),
                         }),
                         b: Box::new(Solid {
                             color: Vec3::new(0.9, 0.9, 0.9),
                         }),
-                        size: 30.0,
+                        size: 3.0,
                     }),
                 }),
             )),
