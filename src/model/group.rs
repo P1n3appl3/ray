@@ -43,6 +43,8 @@ impl Hitable for HitableGroup {
         None
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
-        unreachable!();
+        Box::new(HitableGroup::new(
+            self.items.iter().map(|x| x.clone_box()).collect(),
+        ))
     }
 }

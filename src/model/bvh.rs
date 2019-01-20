@@ -6,6 +6,7 @@ use crate::ray::Ray;
 #[derive(Debug)]
 pub struct BVHNode {
     pub bb: AABB,
+    // TODO: consider if option is needed here if we're guarenteeing it's full
     pub left: Option<Box<dyn Hitable>>,
     pub right: Option<Box<dyn Hitable>>,
 }
@@ -93,6 +94,10 @@ impl Hitable for BVHNode {
         None
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
-        unreachable!();
+        Box::new(BVHNode {
+            bb: self.bb,
+            left: self.left.as_ref().map(|x| x.clone_box()),
+            right: self.right.as_ref().map(|x| x.clone_box()),
+        })
     }
 }

@@ -13,6 +13,7 @@ pub trait Material: Send + Sync + std::fmt::Debug {
         u: f32,
         v: f32,
     ) -> Option<(Vec3, Ray)>;
+    fn emit(&self, u: f32, v: f32, p: Vec3) -> Vec3;
 }
 
 pub fn rand_in_unit_sphere() -> Vec3 {
@@ -53,6 +54,9 @@ impl Material for Diffuse {
             texture: self.texture.clone_box(),
         })
     }
+    fn emit(&self, _u: f32, _v: f32, _p: Vec3) -> Vec3 {
+        Vec3::default()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -81,6 +85,9 @@ impl Material for Metal {
     }
     fn clone_box(&self) -> Box<dyn Material> {
         Box::new(self.clone())
+    }
+    fn emit(&self, _u: f32, _v: f32, _p: Vec3) -> Vec3 {
+        Vec3::default()
     }
 }
 
@@ -127,5 +134,36 @@ impl Material for Dielectric {
     }
     fn clone_box(&self) -> Box<dyn Material> {
         Box::new(self.clone())
+    }
+    fn emit(&self, _u: f32, _v: f32, _p: Vec3) -> Vec3 {
+        Vec3::default()
+    }
+}
+
+#[derive(Debug)]
+pub struct Light {
+    pub texture: Box<dyn Texture>,
+}
+
+impl Material for Light {
+    fn scatter(
+        &self,
+        _r: Ray,
+        normal: Vec3,
+        point: Vec3,
+        u: f32,
+        v: f32,
+    ) -> Option<(Vec3, Ray)> {
+        let target = point + normal + rand_in_unit_sphere();
+        let new_ray = Ray::new(point, target - point);
+        Some((self.texture.value(u, v, point), new_ray))
+    }
+    fn clone_box(&self) -> Box<dyn Material> {
+        Box::new(Light {
+            texture: self.texture.clone_box(),
+        })
+    }
+    fn emit(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
+        self.texture.value(u, v, p)
     }
 }

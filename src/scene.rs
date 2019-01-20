@@ -1,11 +1,13 @@
-use super::camera::Camera;
-use super::model::group::HitableGroup;
-use super::model::hitable::Hitable;
-use super::model::material::*;
-use super::model::sphere::Sphere;
-use super::model::texture::*;
-use super::ray::Ray;
-use super::vec3::Vec3;
+use crate::camera::Camera;
+use crate::model::group::HitableGroup;
+use crate::model::hitable::Hitable;
+use crate::model::material::*;
+use crate::model::rect::*;
+use crate::model::sphere::Sphere;
+use crate::model::texture::*;
+use crate::model::transform::FlipNormal;
+use crate::ray::Ray;
+use crate::vec3::Vec3;
 use itertools::iproduct;
 use progressive::progress;
 use rand::random;
@@ -15,18 +17,22 @@ type Color = Vec3;
 
 fn color(r: Ray, world: &impl Hitable, depth: u16, bounces: u16) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
+        let emited = hit.material.emit(hit.u, hit.v, hit.point);
         if let Some((attenuation, scattered)) =
             hit.material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
         {
             if depth < bounces {
-                return attenuation * color(scattered, world, depth + 1, bounces);
+                return emited + attenuation * color(scattered, world, depth + 1, bounces);
             }
         }
-        Color::new(0.0, 0.0, 0.0)
+        emited
     } else {
-        // if rays escape they hit this gradient
-        let t = (r.dir.normalize().y + 1.0) * 0.5;
-        Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
+        // TODO: add environment map (cube or sphere)
+        // blue gradient background
+        // let t = (r.dir.normalize().y + 1.0) * 0.5;
+        // Color::from_scalar(1.0 - t) + Color::new(0.5, 0.7, 1.0).scale(t)
+        // black background
+        Color::default()
     }
 }
 
@@ -57,7 +63,8 @@ impl Scene {
                         )
                     })
                     .reduce(|| Color::default(), |a, b| a + b)
-                    .scale(1.0 / self.samples as f32);
+                    .scale(1.0 / self.samples as f32)
+                    .piecewise_min(Vec3::from_scalar(1.0));
                 vec![
                     // sqrt for gamma 2 correction to brighten image
                     (col.x.sqrt() * 255.999) as u8,
@@ -68,13 +75,99 @@ impl Scene {
             .flatten()
             .collect::<Vec<u8>>()
     }
+    pub fn cornell_box() -> Self {
+        let red = Box::new(Diffuse {
+            texture: Box::new(Solid {
+                color: Vec3::new(0.65, 0.05, 0.05),
+            }),
+        });
+        let white = Box::new(Diffuse {
+            texture: Box::new(Solid {
+                color: Vec3::new(0.73, 0.73, 0.73),
+            }),
+        });
+        let green = Box::new(Diffuse {
+            texture: Box::new(Solid {
+                color: Vec3::new(0.12, 0.45, 0.15),
+            }),
+        });
+        let light = Box::new(Light {
+            texture: Box::new(Solid {
+                color: Vec3::new(1.2, 1.2, 1.2),
+            }),
+        });
+        let objects: Vec<Box<dyn Hitable>> = vec![
+            // left
+            Box::new(FlipNormal {
+                obj: Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 555.0, green)),
+            }),
+            // right
+            Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
+            // light
+            Box::new(XZRect::new(200.0, 200.0, 355.0, 355.0, 554.0, light)),
+            // ceiling
+            Box::new(FlipNormal {
+                obj: Box::new(XZRect::new(
+                    0.0,
+                    0.0,
+                    555.0,
+                    555.0,
+                    555.0,
+                    white.clone_box(),
+                )),
+            }),
+            // floor
+            Box::new(XZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, white.clone_box())),
+            // back
+            Box::new(FlipNormal {
+                obj: Box::new(XYRect::new(
+                    0.0,
+                    0.0,
+                    555.0,
+                    555.0,
+                    555.0,
+                    white.clone_box(),
+                )),
+            }),
+            // left box
+            Box::new(Prism::new(
+                Vec3::new(130.0, 0.0, 65.0),
+                Vec3::new(295.0, 165.0, 230.0),
+                white.clone_box(),
+            )),
+            // right box
+            Box::new(Prism::new(
+                Vec3::new(265.0, 0.0, 295.0),
+                Vec3::new(430.0, 330.0, 460.0),
+                white.clone_box(),
+            )),
+        ];
+        let width = 200;
+        let height = 200;
+        let cam = Camera::new(
+            Vec3::new(278.0, 278.0, -760.0),
+            Vec3::new(278.0, 278.0, 0.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            40.0,
+            width as f32 / height as f32,
+            0.0,
+        );
+        Scene {
+            objects: HitableGroup::new(objects),
+            camera: cam,
+            width: width,
+            height: height,
+            samples: 200,
+            bounces: 50,
+        }
+    }
     pub fn lone_sphere() -> Self {
         let spheres: Vec<Box<dyn Hitable>> = vec![
             Box::new(Sphere::new(
                 Vec3::new(0.0, -1000.0, 0.0),
                 1000.0,
                 Box::new(Diffuse {
-                    texture: Box::new(Perlin::new(3.0)),
+                    texture: Box::new(Perlin::new(5.0)),
                 }),
             )),
             Box::new(Sphere::new(
@@ -90,20 +183,41 @@ impl Scene {
                         }),
                         size: 50.0,
                     }),
-                    // texture: Box::new(Perlin::new(5.0)),
-                    // texture: Box::new(Image::new("earth.png")),
+                    /* texture: Box::new(Perlin::new(5.0)),
+                     * texture: Box::new(Image::new("earth.png")), */
+                }),
+            )),
+            Box::new(Sphere::new(
+                Vec3::new(0.0, 7.0, 0.0),
+                2.0,
+                Box::new(Light {
+                    texture: Box::new(Solid {
+                        color: Vec3::from_scalar(4.0),
+                    }),
+                }),
+            )),
+            Box::new(XYRect::new(
+                3.0,
+                1.0,
+                5.0,
+                3.0,
+                -2.0,
+                Box::new(Light {
+                    texture: Box::new(Solid {
+                        color: Vec3::from_scalar(4.0),
+                    }),
                 }),
             )),
         ];
-        let width = 200;
+        let width = 150;
         let height = 100;
-        // let width = 400;
-        // let height = 250;
+        // let width = 300;
+        // let height = 200;
         let cam = Camera::new(
-            Vec3::new(13.0, 2.0, 3.0),
+            Vec3::new(13.0, 5.0, 3.0),
+            Vec3::new(0.0, 2.0, 0.0),
             Vec3::new(0.0, 1.0, 0.0),
-            Vec3::new(0.0, 1.0, 0.0),
-            20.0,
+            35.0,
             width as f32 / height as f32,
             0.0,
         );
@@ -112,7 +226,7 @@ impl Scene {
             camera: cam,
             width: width,
             height: height,
-            samples: 200,
+            samples: 500,
             bounces: 50,
         }
     }
