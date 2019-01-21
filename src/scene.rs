@@ -5,7 +5,7 @@ use crate::model::material::*;
 use crate::model::rect::*;
 use crate::model::sphere::Sphere;
 use crate::model::texture::*;
-use crate::model::transform::FlipNormal;
+use crate::model::transform::*;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use itertools::iproduct;
@@ -93,7 +93,8 @@ impl Scene {
         });
         let light = Box::new(Light {
             texture: Box::new(Solid {
-                color: Vec3::new(1.2, 1.2, 1.2),
+                // color: Vec3::new(1.2, 1.2, 1.2),
+                color: Vec3::from_scalar(1.0),
             }),
         });
         let objects: Vec<Box<dyn Hitable>> = vec![
@@ -104,7 +105,7 @@ impl Scene {
             // right
             Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
             // light
-            Box::new(XZRect::new(200.0, 200.0, 355.0, 355.0, 554.0, light)),
+            Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
             // ceiling
             Box::new(FlipNormal {
                 obj: Box::new(XZRect::new(
@@ -129,18 +130,30 @@ impl Scene {
                     white.clone_box(),
                 )),
             }),
-            // left box
-            Box::new(Prism::new(
-                Vec3::new(130.0, 0.0, 65.0),
-                Vec3::new(295.0, 165.0, 230.0),
-                white.clone_box(),
-            )),
             // right box
-            Box::new(Prism::new(
-                Vec3::new(265.0, 0.0, 295.0),
-                Vec3::new(430.0, 330.0, 460.0),
-                white.clone_box(),
-            )),
+            Box::new(Translate {
+                obj: Box::new(RotateY::new(
+                    Box::new(Prism::new(
+                        Vec3::default(),
+                        Vec3::new(165.0, 165.0, 165.0),
+                        white.clone_box(),
+                    )),
+                    -18.0,
+                )),
+                offset: Vec3::new(130.0, 0.0, 65.0),
+            }),
+            // left box
+            Box::new(Translate {
+                obj: Box::new(RotateY::new(
+                    Box::new(Prism::new(
+                        Vec3::default(),
+                        Vec3::new(165.0, 330.0, 165.0),
+                        white.clone_box(),
+                    )),
+                    15.0,
+                )),
+                offset: Vec3::new(265.0, 0.0, 295.0),
+            }),
         ];
         let width = 200;
         let height = 200;
@@ -157,7 +170,7 @@ impl Scene {
             camera: cam,
             width: width,
             height: height,
-            samples: 200,
+            samples: 20,
             bounces: 50,
         }
     }
@@ -211,8 +224,6 @@ impl Scene {
         ];
         let width = 150;
         let height = 100;
-        // let width = 300;
-        // let height = 200;
         let cam = Camera::new(
             Vec3::new(13.0, 5.0, 3.0),
             Vec3::new(0.0, 2.0, 0.0),

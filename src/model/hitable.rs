@@ -17,6 +17,7 @@ pub struct HitRecord<'a> {
 pub trait Hitable: std::fmt::Debug + Send + Sync {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
     fn get_mat(&self) -> Option<&Box<dyn Material>>;
+    // TODO: just use an actuall aabb here since there's no infinite surfaces
     fn get_bb(&self) -> Option<AABB>;
     fn clone_box(&self) -> Box<Hitable>;
 }
