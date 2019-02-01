@@ -44,22 +44,21 @@ impl Camera {
         let focus_dist = (look_from - look_at).len();
         Camera {
             origin: look_from,
-            lower_left: look_from
-                - (u.scale(half_width) + v.scale(half_height) + w).scale(focus_dist),
-            horizontal: u.scale(2.0 * half_width * focus_dist),
-            vertical: v.scale(2.0 * half_height * focus_dist),
+            lower_left: look_from - (u * half_width + v * half_height + w) * focus_dist,
+            horizontal: u * (2.0 * half_width * focus_dist),
+            vertical: v * (2.0 * half_height * focus_dist),
             lens_radius: aperture / 2.0,
-            u: u,
-            v: v,
+            u,
+            v,
         }
     }
 
     pub fn get_ray(&self, h: f32, v: f32) -> Ray {
-        let rand = rand_in_unit_disk().scale(self.lens_radius);
-        let offset = self.u.scale(rand.x) + self.v.scale(rand.y);
+        let rand = rand_in_unit_disk() * self.lens_radius;
+        let offset = self.u * rand.x + self.v * rand.y;
         Ray::new(
             self.origin + offset,
-            self.lower_left + self.horizontal.scale(h) + self.vertical.scale(v)
+            self.lower_left + self.horizontal * h + self.vertical * v
                 - self.origin
                 - offset,
         )

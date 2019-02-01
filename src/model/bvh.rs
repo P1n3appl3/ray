@@ -1,6 +1,5 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use crate::ray::Ray;
 
 #[derive(Debug)]
@@ -17,11 +16,7 @@ impl BVHNode {
         left: Option<Box<dyn Hitable>>,
         right: Option<Box<dyn Hitable>>,
     ) -> Self {
-        BVHNode {
-            bb: bb,
-            left: left,
-            right: right,
-        }
+        BVHNode { bb, left, right }
     }
     pub fn from_items(items: &mut [Box<dyn Hitable>]) -> Self {
         if items.len() == 1 {
@@ -87,17 +82,14 @@ impl Hitable for BVHNode {
             }
         }
     }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(self.bb)
-    }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
-        None
-    }
     fn clone_box(&self) -> Box<dyn Hitable> {
         Box::new(BVHNode {
             bb: self.bb,
             left: self.left.as_ref().map(|x| x.clone_box()),
             right: self.right.as_ref().map(|x| x.clone_box()),
         })
+    }
+    fn get_bb(&self) -> Option<AABB> {
+        Some(self.bb)
     }
 }

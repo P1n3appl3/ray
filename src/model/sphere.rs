@@ -45,23 +45,23 @@ impl Hitable for Sphere {
         let c = origin_center.dot(&origin_center) - self.radius * self.radius;
         let discriminant = b * b - 4.0 * a * c;
         if discriminant > 0.0 {
-            let mut temp = (-b - discriminant.sqrt()) / (2.0 * a);
+            let mut t = (-b - discriminant.sqrt()) / (2.0 * a);
             for _ in 0..2 {
-                if temp < t_max && temp > t_min {
-                    let p = r.point_at_param(temp);
-                    let normal = (p - self.center).scale(1.0 / self.radius);
+                if t < t_max && t > t_min {
+                    let point = r.point_at_param(t);
+                    let normal = (point - self.center) / self.radius;
                     let (u, v) = self.get_uv(normal);
                     return Some(HitRecord {
-                        t: temp,
-                        u: u,
-                        v: v,
-                        point: p,
-                        normal: normal,
-                        material: &self.material,
+                        t,
+                        u,
+                        v,
+                        point,
+                        normal,
+                        material: &*self.material,
                     });
                 }
                 // retry with the other quadratic formula solution
-                temp = (-b + discriminant.sqrt()) / (2.0 * a);
+                t = (-b + discriminant.sqrt()) / (2.0 * a);
             }
         }
         None
@@ -72,8 +72,8 @@ impl Hitable for Sphere {
             self.center + Vec3::from_scalar(self.radius),
         ))
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
-        Some(&self.material)
+    fn get_mat(&self) -> Option<&dyn Material> {
+        Some(&*self.material)
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
         Box::new(self.clone())

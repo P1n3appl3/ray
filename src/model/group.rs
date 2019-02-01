@@ -1,7 +1,6 @@
 use super::aabb::AABB;
 use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use crate::ray::Ray;
 
 #[derive(Debug, Default)]
@@ -11,7 +10,7 @@ pub struct HitableGroup {
 
 impl HitableGroup {
     pub fn new(items: Vec<Box<dyn Hitable>>) -> Self {
-        let mut temp = HitableGroup { items: items };
+        let mut temp = HitableGroup { items };
         // make sure that group has no elements without bounding boxes
         let mut items_with_bb: Vec<_> =
             temp.items.drain_filter(|n| n.get_bb().is_some()).collect();
@@ -38,9 +37,6 @@ impl Hitable for HitableGroup {
                 .filter_map(|group| group.get_bb())
                 .fold(AABB::default(), |acc, bb| acc.combine(&bb)),
         )
-    }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
-        None
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
         Box::new(HitableGroup::new(

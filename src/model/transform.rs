@@ -30,7 +30,7 @@ impl Hitable for FlipNormal {
     fn get_bb(&self) -> Option<AABB> {
         self.obj.get_bb()
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
+    fn get_mat(&self) -> Option<&dyn Material> {
         self.obj.get_mat()
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
@@ -68,7 +68,7 @@ impl Hitable for Translate {
         let temp = self.obj.get_bb().unwrap();
         Some(AABB::new(temp.min + self.offset, temp.max + self.offset))
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
+    fn get_mat(&self) -> Option<&dyn Material> {
         self.obj.get_mat()
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
@@ -101,8 +101,7 @@ impl RotateY {
             let newx = temp.cos_theta * x + temp.sin_theta * z;
             let newz = -temp.sin_theta * x + temp.cos_theta * z;
             let v = Vec3::new(newx, y, newz);
-            temp.bb.min = temp.bb.min.piecewise_min(v);
-            temp.bb.max = temp.bb.max.piecewise_max(v);
+            temp.bb = temp.bb.combine(&AABB::new(v, v));
         });
         temp
     }
@@ -152,7 +151,7 @@ impl Hitable for RotateY {
     fn get_bb(&self) -> Option<AABB> {
         Some(self.bb)
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
+    fn get_mat(&self) -> Option<&dyn Material> {
         self.obj.get_mat()
     }
     fn clone_box(&self) -> Box<dyn Hitable> {

@@ -19,7 +19,7 @@ pub trait Material: Send + Sync + std::fmt::Debug {
 pub fn rand_in_unit_sphere() -> Vec3 {
     let mut p;
     while {
-        p = Vec3::rand().scale(2.0) - Vec3::from_scalar(1.0);
+        p = Vec3::rand() * 2.0 - Vec3::from_scalar(1.0);
         p.square_len() > 1.0
     } {}
     p
@@ -60,12 +60,12 @@ impl Material for Diffuse {
 }
 
 #[derive(Debug, Clone)]
-pub struct Metal {
+pub struct Specular {
     pub albedo: Vec3,
     pub fuzz: f32,
 }
 
-impl Material for Metal {
+impl Material for Specular {
     fn scatter(
         &self,
         r: Ray,
@@ -75,8 +75,7 @@ impl Material for Metal {
         _v: f32,
     ) -> Option<(Vec3, Ray)> {
         let reflected = r.dir.normalize().reflect(&normal);
-        let scattered =
-            Ray::new(point, reflected + rand_in_unit_sphere().scale(self.fuzz));
+        let scattered = Ray::new(point, reflected + rand_in_unit_sphere() * self.fuzz);
         if scattered.dir.dot(&normal) > 0.0 {
             Some((self.albedo, scattered))
         } else {

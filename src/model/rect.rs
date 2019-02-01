@@ -26,11 +26,11 @@ impl XYRect {
         mat: Box<dyn Material>,
     ) -> Self {
         XYRect {
-            x0: x0,
-            x1: x1,
-            y0: y0,
-            y1: y1,
-            k: k,
+            x0,
+            x1,
+            y0,
+            y1,
+            k,
             material: mat,
         }
     }
@@ -61,12 +61,12 @@ impl Hitable for XYRect {
             return None;
         }
         Some(HitRecord {
-            t: t,
+            t,
             u: (x - self.x0) / (self.x1 - self.x0),
             v: (y - self.y0) / (self.y1 - self.y0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 0.0, 1.0),
-            material: &self.material,
+            material: &*self.material,
         })
     }
     fn get_bb(&self) -> Option<AABB> {
@@ -75,8 +75,8 @@ impl Hitable for XYRect {
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
         ))
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
-        Some(&self.material)
+    fn get_mat(&self) -> Option<&dyn Material> {
+        Some(&*self.material)
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
         Box::new(self.clone())
@@ -103,11 +103,11 @@ impl XZRect {
         mat: Box<dyn Material>,
     ) -> Self {
         XZRect {
-            x0: x0,
-            x1: x1,
-            z0: z0,
-            z1: z1,
-            k: k,
+            x0,
+            x1,
+            z0,
+            z1,
+            k,
             material: mat,
         }
     }
@@ -138,12 +138,12 @@ impl Hitable for XZRect {
             return None;
         }
         Some(HitRecord {
-            t: t,
+            t,
             u: (x - self.x0) / (self.x1 - self.x0),
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 1.0, 0.0),
-            material: &self.material,
+            material: &*self.material,
         })
     }
     fn get_bb(&self) -> Option<AABB> {
@@ -152,8 +152,8 @@ impl Hitable for XZRect {
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
         ))
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
-        Some(&self.material)
+    fn get_mat(&self) -> Option<&dyn Material> {
+        Some(&*self.material)
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
         Box::new(self.clone())
@@ -180,11 +180,11 @@ impl YZRect {
         mat: Box<dyn Material>,
     ) -> Self {
         YZRect {
-            y0: y0,
-            y1: y1,
-            z0: z0,
-            z1: z1,
-            k: k,
+            y0,
+            y1,
+            z0,
+            z1,
+            k,
             material: mat,
         }
     }
@@ -215,12 +215,12 @@ impl Hitable for YZRect {
             return None;
         }
         Some(HitRecord {
-            t: t,
+            t,
             u: (y - self.y0) / (self.y1 - self.y0),
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(1.0, 0.0, 0.0),
-            material: &self.material,
+            material: &*self.material,
         })
     }
     fn get_bb(&self) -> Option<AABB> {
@@ -229,8 +229,8 @@ impl Hitable for YZRect {
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
         ))
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
-        Some(&self.material)
+    fn get_mat(&self) -> Option<&dyn Material> {
+        Some(&*self.material)
     }
     fn clone_box(&self) -> Box<dyn Hitable> {
         Box::new(self.clone())
@@ -292,7 +292,7 @@ impl Hitable for Prism {
     fn get_bb(&self) -> Option<AABB> {
         self.faces.get_bb()
     }
-    fn get_mat(&self) -> Option<&Box<dyn Material>> {
+    fn get_mat(&self) -> Option<&dyn Material> {
         None
     }
     fn clone_box(&self) -> Box<dyn Hitable> {

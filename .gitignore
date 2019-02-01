@@ -2,4 +2,4 @@
 **/*.rs.bk
 *.ppm
 *.png
-!examples/*.png
+!example_outputs/*.png

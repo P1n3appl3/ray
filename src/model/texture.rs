@@ -1,6 +1,6 @@
 use crate::vec3::Vec3;
 use itertools::iproduct;
-use rand::{random, seq::SliceRandom, thread_rng};
+use rand::{seq::SliceRandom, thread_rng};
 use std::fs::File;
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
@@ -31,7 +31,7 @@ pub struct Checkered {
 
 impl Texture for Checkered {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
-        // TODO: tiles look rectangular instead of square, prob issue with sphere
+        // TODO: tiles look rectangular instead of square, prob issue with sphere coords
         if (self.size * u).sin() * (self.size * v).sin() < 0.0 {
             self.a.value(u, v, p)
         } else {
@@ -48,8 +48,17 @@ impl Texture for Checkered {
 }
 
 #[derive(Clone)]
+pub enum PerlinVariant {
+    Noise,
+    Rock,
+    Marble,
+}
+
+#[derive(Clone)]
 pub struct Perlin {
     scale: f32,
+    color: Vec3,
+    kind: PerlinVariant,
     // TODO: make these static using const fn or a macro
     rand_vec: [Vec3; 256],
     perm_x: [u8; 256],
@@ -65,13 +74,15 @@ impl std::fmt::Debug for Perlin {
 
 impl Texture for Perlin {
     fn value(&self, _u: f32, _v: f32, p: Vec3) -> Vec3 {
-        // TODO: make a type enum or separate into their own structs
-        // noise
-        // Vec3::from_scalar(0.5 * (1.0 + self.noise(p.scale(self.scale))))
-        // rock
-        // Vec3::from_scalar(self.turb(p.scale(self.scale)))
-        // marble
-        Vec3::from_scalar(0.5 * (1.0 + (p.z * self.scale + 10.0 * self.turb(p)).sin()))
+        use PerlinVariant::*;
+        match self.kind {
+            Noise => self.color * (0.5 * (1.0 + self.noise(p * self.scale))),
+            Marble => {
+                self.color
+                    * (0.5 * (1.0 + (p.z * self.scale + 10.0 * self.turb(p)).sin()))
+            }
+            Rock => self.color * (self.turb(p * self.scale)),
+        }
     }
     fn clone_box(&self) -> Box<dyn Texture> {
         Box::new(self.clone())
@@ -79,9 +90,11 @@ impl Texture for Perlin {
 }
 
 impl Perlin {
-    pub fn new(scale: f32) -> Self {
+    pub fn new(scale: f32, color: Vec3, kind: PerlinVariant) -> Self {
         let mut temp = Perlin {
-            scale: scale,
+            scale,
+            color,
+            kind,
             rand_vec: [Vec3::default(); 256],
             perm_x: [0; 256],
             perm_y: [0; 256],
@@ -89,10 +102,10 @@ impl Perlin {
         };
         temp.rand_vec.copy_from_slice(
             &(0..256)
-                .map(|_| (Vec3::rand().scale(2.0) - Vec3::from_scalar(1.0)).normalize())
+                .map(|_| (Vec3::rand() * 2.0 - Vec3::from_scalar(1.0)).normalize())
                 .collect::<Vec<_>>(),
         );
-        let mut perm: Vec<u8> = (0..256).map(|_| random::<u8>()).collect();
+        let mut perm: Vec<u8> = (0..=255).collect();
         let mut rng = thread_rng();
         perm.shuffle(&mut rng);
         temp.perm_x.copy_from_slice(&perm);
@@ -129,7 +142,7 @@ impl Perlin {
         let mut temp_p = p;
         for _ in 0..depth {
             accum += weight * self.noise(temp_p);
-            temp_p = temp_p.scale(2.0);
+            temp_p *= 2.0;
             weight /= 2.0;
         }
         accum.abs()
