@@ -1,7 +1,5 @@
 use crate::ray::Ray;
-use crate::vec3::Vec3;
-
-type Color = Vec3;
+use crate::scene::Color;
 
 pub trait Background: Send + Sync {
     fn get_color(&self, r: Ray) -> Color;

@@ -48,6 +48,7 @@ pub struct Scene {
 }
 
 impl Scene {
+    // TODO: add progressive rendering
     pub fn render(&self) -> Vec<u8> {
         progress(iproduct!((0..self.height).rev(), 0..self.width))
             .map(|(y, x)| {
@@ -56,6 +57,7 @@ impl Scene {
                     .map(|_| {
                         color(
                             self.camera.get_ray(
+                                // TODO: add jitter sampling
                                 (x as f32 + random::<f32>()) / self.width as f32,
                                 (y as f32 + random::<f32>()) / self.height as f32,
                             ),

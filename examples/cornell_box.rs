@@ -7,6 +7,7 @@ use ray::model::material::*;
 use ray::model::rect::*;
 use ray::model::texture::*;
 use ray::model::transform::*;
+use ray::model::volume::Volume;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
@@ -29,7 +30,7 @@ pub fn cornell_box() -> Scene {
     let light = Box::new(Light {
         texture: Box::new(Solid {
             // TODO: figure out why mine is so much brighter
-            color: Vec3::from_scalar(1.3),
+            color: Vec3::from_scalar(1.1),
         }),
     });
     let objects: Vec<Box<dyn Hitable>> = vec![
@@ -40,9 +41,9 @@ pub fn cornell_box() -> Scene {
         // right
         Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
         // big light
-        // Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
+        Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // light
-        Box::new(XZRect::new(213.0, 227.0, 343.0, 332.0, 554.0, light)),
+        // Box::new(XZRect::new(213.0, 227.0, 343.0, 332.0, 554.0, light)),
         // ceiling
         Box::new(FlipNormal {
             obj: Box::new(XZRect::new(
@@ -68,32 +69,48 @@ pub fn cornell_box() -> Scene {
             )),
         }),
         // right box
-        Box::new(Translate {
-            //     obj: Box::new(RotateY::new(
-            obj: Box::new(Prism::new(
-                Vec3::default(),
-                Vec3::new(165, 165, 165),
-                white.clone_box(),
-            )),
-            //         -18.0,
-            //     )),
-            offset: Vec3::new(130, 0, 65),
+        Box::new(Volume {
+            density: 0.01,
+            boundary: Box::new(Translate {
+                obj: Box::new(RotateY::new(
+                    Box::new(Prism::new(
+                        Vec3::default(),
+                        Vec3::new(165, 165, 165),
+                        white.clone_box(),
+                    )),
+                    -18.0,
+                )),
+                offset: Vec3::new(130, 0, 65),
+            }),
+            phase_function: Box::new(Diffuse {
+                texture: Box::new(Solid {
+                    color: Vec3::from_scalar(1),
+                }),
+            }),
         }),
         // left box
-        Box::new(Translate {
-            // obj: Box::new(RotateY::new(
-            obj: Box::new(Prism::new(
-                Vec3::default(),
-                Vec3::new(165, 330, 165),
-                white.clone_box(),
-            )),
-            // 15.0,
-            // )),
-            offset: Vec3::new(265, 0, 295),
+        Box::new(Volume {
+            density: 0.01,
+            boundary: Box::new(Translate {
+                obj: Box::new(RotateY::new(
+                    Box::new(Prism::new(
+                        Vec3::default(),
+                        Vec3::new(165, 330, 165),
+                        white.clone_box(),
+                    )),
+                    15.0,
+                )),
+                offset: Vec3::new(265, 0, 295),
+            }),
+            phase_function: Box::new(Diffuse {
+                texture: Box::new(Solid {
+                    color: Vec3::from_scalar(0),
+                }),
+            }),
         }),
     ];
-    let width = 150;
-    let height = 150;
+    let width = 500;
+    let height = 500;
     let cam = Camera::new(
         Vec3::new(278, 278, -760),
         Vec3::new(278, 278, 0),
@@ -107,7 +124,7 @@ pub fn cornell_box() -> Scene {
         camera: cam,
         width: width,
         height: height,
-        samples: 500,
+        samples: 100,
         bounces: 50,
         background: Box::new(background::Solid {
             color: Color::default(),

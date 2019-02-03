@@ -7,3 +7,4 @@ pub mod rect;
 pub mod sphere;
 pub mod texture;
 pub mod transform;
+pub mod volume;

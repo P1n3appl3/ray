@@ -58,7 +58,7 @@ impl Hitable for Translate {
         let mut moved_r = r;
         moved_r.origin -= self.offset;
         if let Some(mut temp) = self.obj.hit(moved_r, t_min, t_max) {
-            temp.normal = -temp.normal;
+            temp.point += self.offset;
             Some(temp)
         } else {
             None
