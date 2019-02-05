@@ -1,6 +1,6 @@
 use crate::background::Background;
 use crate::camera::Camera;
-use crate::model::group::HitableGroup;
+use crate::model::bvh::BVHNode;
 use crate::model::hitable::Hitable;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
@@ -40,7 +40,7 @@ fn color(
 pub struct Scene {
     pub width: usize,
     pub height: usize,
-    pub objects: HitableGroup,
+    pub objects: BVHNode,
     pub camera: Camera,
     pub samples: u16,
     pub bounces: u16,

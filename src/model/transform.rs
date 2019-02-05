@@ -7,14 +7,18 @@ use itertools::iproduct;
 
 #[derive(Debug)]
 pub struct FlipNormal {
-    pub obj: Box<dyn Hitable>,
+    obj: Box<dyn Hitable>,
+}
+
+impl FlipNormal {
+    pub fn new(obj: Box<dyn Hitable>) -> Self {
+        FlipNormal { obj }
+    }
 }
 
 impl Clone for FlipNormal {
     fn clone(&self) -> FlipNormal {
-        FlipNormal {
-            obj: self.obj.clone_box(),
-        }
+        FlipNormal::new(self.obj.clone_box())
     }
 }
 
@@ -40,8 +44,14 @@ impl Hitable for FlipNormal {
 
 #[derive(Debug)]
 pub struct Translate {
-    pub obj: Box<dyn Hitable>,
-    pub offset: Vec3,
+    obj: Box<dyn Hitable>,
+    offset: Vec3,
+}
+
+impl Translate {
+    pub fn new(obj: Box<dyn Hitable>, offset: Vec3) -> Self {
+        Translate { obj, offset }
+    }
 }
 
 impl Clone for Translate {
@@ -78,10 +88,10 @@ impl Hitable for Translate {
 
 #[derive(Debug)]
 pub struct RotateY {
-    pub obj: Box<dyn Hitable>,
-    pub sin_theta: f32,
-    pub cos_theta: f32,
-    pub bb: AABB,
+    obj: Box<dyn Hitable>,
+    sin_theta: f32,
+    cos_theta: f32,
+    bb: AABB,
 }
 
 impl RotateY {

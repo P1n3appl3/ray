@@ -48,6 +48,13 @@ impl AABB {
             max: self.max.piecewise_max(other.max),
         }
     }
+
+    pub fn surface_area(&self) -> f32 {
+        let len = self.max.z - self.min.z;
+        let width = self.max.x - self.min.x;
+        let height = self.max.y - self.min.y;
+        2.0 * len * width + 2.0 * len * height + 2.0 * width * height
+    }
 }
 
 #[cfg(test)]
@@ -73,5 +80,13 @@ mod tests {
         let on_origin = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
         assert!(!on_origin.hit(r, 0.0, 5.0));
         assert!(on_origin.hit(r, 0.0, 15.0));
+    }
+
+    #[test]
+    fn test_surface_area() {
+        let unit = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
+        assert_eq!(unit.surface_area(), 24.0);
+        let oblong = AABB::new(Vec3::new(-1.0, -2.0, -3.0), Vec3::new(1.0, 2.0, 3.0));
+        assert_eq!(oblong.surface_area(), 88.0);
     }
 }

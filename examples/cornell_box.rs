@@ -1,7 +1,7 @@
 extern crate ray;
 use ray::background;
 use ray::camera::Camera;
-use ray::model::group::HitableGroup;
+use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
 use ray::model::rect::*;
@@ -12,105 +12,83 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn cornell_box() -> Scene {
-    let red = Box::new(Diffuse {
-        texture: Box::new(Solid {
-            color: Vec3::new(0.65, 0.05, 0.05),
-        }),
-    });
-    let white = Box::new(Diffuse {
-        texture: Box::new(Solid {
-            color: Vec3::new(0.73, 0.73, 0.73),
-        }),
-    });
-    let green = Box::new(Diffuse {
-        texture: Box::new(Solid {
-            color: Vec3::new(0.12, 0.45, 0.15),
-        }),
-    });
-    let light = Box::new(Light {
-        texture: Box::new(Solid {
-            // TODO: figure out why mine is so much brighter
-            color: Vec3::from_scalar(1.1),
-        }),
-    });
-    let objects: Vec<Box<dyn Hitable>> = vec![
-        // left
-        Box::new(FlipNormal {
-            obj: Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 555.0, green)),
-        }),
-        // right
+    let red = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let green = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+        0.12, 0.45, 0.15,
+    )))));
+    let white = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from_scalar(0.73)))));
+    // TODO: figure out why mine is so much brighter
+    let light = Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(1.15)))));
+    let left_box = Box::new(Translate::new(
+        Box::new(RotateY::new(
+            Box::new(Prism::new(
+                Vec3::default(),
+                Vec3::new(165, 330, 165),
+                white.clone_box(),
+            )),
+            15.0,
+        )),
+        Vec3::new(265, 0, 295),
+    ));
+    let right_box = Box::new(Translate::new(
+        Box::new(RotateY::new(
+            Box::new(Prism::new(
+                Vec3::default(),
+                Vec3::new(165, 165, 165),
+                white.clone_box(),
+            )),
+            -18.0,
+        )),
+        Vec3::new(130, 0, 65),
+    ));
+    let objects = BVHNode::from_items(&mut vec![
+        // left wall
+        Box::new(FlipNormal::new(Box::new(YZRect::new(
+            0.0, 0.0, 555.0, 555.0, 555.0, green,
+        )))) as Box<Hitable>,
+        // right wall
         Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
         // big light
         Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // light
         // Box::new(XZRect::new(213.0, 227.0, 343.0, 332.0, 554.0, light)),
         // ceiling
-        Box::new(FlipNormal {
-            obj: Box::new(XZRect::new(
-                0.0,
-                0.0,
-                555.0,
-                555.0,
-                555.0,
-                white.clone_box(),
-            )),
-        }),
+        Box::new(FlipNormal::new(Box::new(XZRect::new(
+            0.0,
+            0.0,
+            555.0,
+            555.0,
+            555.0,
+            white.clone_box(),
+        )))),
         // floor
         Box::new(XZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, white.clone_box())),
-        // back
-        Box::new(FlipNormal {
-            obj: Box::new(XYRect::new(
-                0.0,
-                0.0,
-                555.0,
-                555.0,
-                555.0,
-                white.clone_box(),
-            )),
-        }),
+        // back wall
+        Box::new(FlipNormal::new(Box::new(XYRect::new(
+            0.0,
+            0.0,
+            555.0,
+            555.0,
+            555.0,
+            white.clone_box(),
+        )))),
         // right box
-        Box::new(Volume {
-            density: 0.01,
-            boundary: Box::new(Translate {
-                obj: Box::new(RotateY::new(
-                    Box::new(Prism::new(
-                        Vec3::default(),
-                        Vec3::new(165, 165, 165),
-                        white.clone_box(),
-                    )),
-                    -18.0,
-                )),
-                offset: Vec3::new(130, 0, 65),
-            }),
-            phase_function: Box::new(Diffuse {
-                texture: Box::new(Solid {
-                    color: Vec3::from_scalar(1),
-                }),
-            }),
-        }),
+        Box::new(Volume::new(
+            0.005,
+            right_box,
+            Box::new(Solid::new(Vec3::from_scalar(1))),
+        )),
         // left box
-        Box::new(Volume {
-            density: 0.01,
-            boundary: Box::new(Translate {
-                obj: Box::new(RotateY::new(
-                    Box::new(Prism::new(
-                        Vec3::default(),
-                        Vec3::new(165, 330, 165),
-                        white.clone_box(),
-                    )),
-                    15.0,
-                )),
-                offset: Vec3::new(265, 0, 295),
-            }),
-            phase_function: Box::new(Diffuse {
-                texture: Box::new(Solid {
-                    color: Vec3::from_scalar(0),
-                }),
-            }),
-        }),
-    ];
-    let width = 500;
-    let height = 500;
+        Box::new(Volume::new(
+            0.005,
+            left_box,
+            Box::new(Solid::new(Vec3::from_scalar(0))),
+        )),
+    ]);
+    let width = 400;
+    let height = 400;
     let cam = Camera::new(
         Vec3::new(278, 278, -760),
         Vec3::new(278, 278, 0),
@@ -120,11 +98,11 @@ pub fn cornell_box() -> Scene {
         0.0,
     );
     Scene {
-        objects: HitableGroup::new(objects),
+        objects,
         camera: cam,
         width: width,
         height: height,
-        samples: 100,
+        samples: 250,
         bounces: 50,
         background: Box::new(background::Solid {
             color: Color::default(),

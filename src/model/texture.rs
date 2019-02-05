@@ -10,7 +10,13 @@ pub trait Texture: Send + Sync + std::fmt::Debug {
 
 #[derive(Debug, Clone)]
 pub struct Solid {
-    pub color: Vec3,
+    color: Vec3,
+}
+
+impl Solid {
+    pub fn new(color: Vec3) -> Self {
+        Solid { color }
+    }
 }
 
 impl Texture for Solid {
@@ -24,14 +30,19 @@ impl Texture for Solid {
 
 #[derive(Debug)]
 pub struct Checkered {
-    pub a: Box<dyn Texture>,
-    pub b: Box<dyn Texture>,
-    pub size: f32,
+    a: Box<dyn Texture>,
+    b: Box<dyn Texture>,
+    size: f32,
+}
+
+impl Checkered {
+    pub fn new(a: Box<dyn Texture>, b: Box<dyn Texture>, size: f32) -> Self {
+        Checkered { a, b, size }
+    }
 }
 
 impl Texture for Checkered {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
-        // TODO: tiles look rectangular instead of square, prob issue with sphere coords
         if (self.size * u).sin() * (self.size * v).sin() < 0.0 {
             self.a.value(u, v, p)
         } else {
@@ -46,6 +57,39 @@ impl Texture for Checkered {
         })
     }
 }
+#[derive(Debug)]
+
+pub struct Checkered3D {
+    a: Box<dyn Texture>,
+    b: Box<dyn Texture>,
+    size: f32,
+}
+
+impl Checkered3D {
+    pub fn new(a: Box<dyn Texture>, b: Box<dyn Texture>, size: f32) -> Self {
+        Checkered3D { a, b, size }
+    }
+}
+
+impl Texture for Checkered3D {
+    fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
+        // TODO: tiles look rectangular instead of square, prob issue with sphere coords
+        if (self.size * p.x).sin() * (self.size * p.y).sin() * (self.size * p.z).sin()
+            < 0.0
+        {
+            self.a.value(u, v, p)
+        } else {
+            self.b.value(u, v, p)
+        }
+    }
+    fn clone_box(&self) -> Box<dyn Texture> {
+        Box::new(Checkered3D {
+            a: self.a.clone_box(),
+            b: self.b.clone_box(),
+            size: self.size,
+        })
+    }
+}
 
 #[derive(Clone)]
 pub enum PerlinVariant {
@@ -54,6 +98,7 @@ pub enum PerlinVariant {
     Marble,
 }
 
+/// scale is inverted, smaller numbers make the pattern larger
 #[derive(Clone)]
 pub struct Perlin {
     scale: f32,

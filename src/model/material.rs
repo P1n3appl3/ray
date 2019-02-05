@@ -35,7 +35,13 @@ fn schlick(cosine: f32, refractive_index: f32) -> f32 {
 
 #[derive(Debug)]
 pub struct Diffuse {
-    pub texture: Box<dyn Texture>,
+    texture: Box<dyn Texture>,
+}
+
+impl Diffuse {
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        Diffuse { texture }
+    }
 }
 
 impl Material for Diffuse {
@@ -60,8 +66,14 @@ impl Material for Diffuse {
 
 #[derive(Debug, Clone)]
 pub struct Specular {
-    pub albedo: Vec3,
-    pub fuzz: f32,
+    albedo: Vec3,
+    fuzz: f32,
+}
+
+impl Specular {
+    pub fn new(albedo: Vec3, fuzz: f32) -> Self {
+        Specular { albedo, fuzz }
+    }
 }
 
 impl Material for Specular {
@@ -88,7 +100,13 @@ impl Material for Specular {
 
 #[derive(Debug, Clone)]
 pub struct Dielectric {
-    pub refractive_index: f32,
+    refractive_index: f32,
+}
+
+impl Dielectric {
+    pub fn new(refractive_index: f32) -> Self {
+        Dielectric { refractive_index }
+    }
 }
 
 impl Material for Dielectric {
@@ -134,7 +152,13 @@ impl Material for Dielectric {
 
 #[derive(Debug)]
 pub struct Light {
-    pub texture: Box<dyn Texture>,
+    texture: Box<dyn Texture>,
+}
+
+impl Light {
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        Light { texture }
+    }
 }
 
 impl Material for Light {
@@ -162,7 +186,13 @@ impl Material for Light {
 
 #[derive(Debug)]
 pub struct Isotropic {
-    pub texture: Box<dyn Texture>,
+    texture: Box<dyn Texture>,
+}
+
+impl Isotropic {
+    pub fn new(texture: Box<dyn Texture>) -> Self {
+        Isotropic { texture }
+    }
 }
 
 impl Material for Isotropic {
@@ -180,7 +210,7 @@ impl Material for Isotropic {
         ))
     }
     fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(Light {
+        Box::new(Isotropic {
             texture: self.texture.clone_box(),
         })
     }

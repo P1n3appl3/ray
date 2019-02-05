@@ -1,15 +1,30 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
+use super::material::{Isotropic, Material};
+use super::texture::Texture;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use rand::random;
 
 #[derive(Debug)]
 pub struct Volume {
-    pub density: f32,
-    pub boundary: Box<dyn Hitable>,
-    pub phase_function: Box<dyn Material>,
+    density: f32,
+    boundary: Box<dyn Hitable>,
+    phase_function: Box<dyn Material>,
+}
+
+impl Volume {
+    pub fn new(
+        density: f32,
+        boundary: Box<dyn Hitable>,
+        phase_func: Box<dyn Texture>,
+    ) -> Self {
+        Volume {
+            density,
+            boundary,
+            phase_function: Box::new(Isotropic::new(phase_func)),
+        }
+    }
 }
 
 impl Clone for Volume {

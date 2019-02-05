@@ -5,7 +5,7 @@ use crate::ray::Ray;
 #[derive(Debug)]
 pub struct BVHNode {
     pub bb: AABB,
-    // TODO: consider if option is needed here if we're guarenteeing it's full
+    // TODO: consider if option is needed here since we're guarenteeing it's full
     pub left: Option<Box<dyn Hitable>>,
     pub right: Option<Box<dyn Hitable>>,
 }
@@ -59,6 +59,9 @@ impl BVHNode {
                 .collect::<Vec<Box<dyn Hitable>>>(),
         ));
         BVHNode::new(left.bb.combine(&right.bb), Some(left), Some(right))
+    }
+    pub fn from_items_sah(items: &mut [Box<dyn Hitable>]) -> Self {
+        unimplemented!();
     }
 }
 impl Hitable for BVHNode {

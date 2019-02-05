@@ -1,7 +1,7 @@
 extern crate ray;
 use ray::background;
 use ray::camera::Camera;
-use ray::model::group::HitableGroup;
+use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
 use ray::model::rect::*;
@@ -11,38 +11,25 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn lone_sphere() -> Scene {
-    let spheres: Vec<Box<dyn Hitable>> = vec![
+    let spheres = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
-            Vec3::new(0, -1000, 0),
-            1000.0,
-            Box::new(Diffuse {
-                texture: Box::new(Perlin::new(5.0, Vec3::new(0.8, 0.4, 0.2), Marble)),
-            }),
-        )),
+            Vec3::new(0, -60, 0),
+            60.0,
+            Box::new(Diffuse::new(Box::new(Perlin::new(
+                0.75,
+                Vec3::new(0.8, 0.4, 0.2),
+                Marble,
+            )))),
+        )) as Box<dyn Hitable>,
         Box::new(Sphere::new(
             Vec3::new(0, 2, 0),
             2.0,
-            Box::new(Diffuse {
-                texture: Box::new(Checkered {
-                    a: Box::new(Solid {
-                        color: Vec3::new(0.6, 0.1, 0.1),
-                    }),
-                    b: Box::new(Solid {
-                        color: Vec3::new(0.4, 0.9, 0.9),
-                    }),
-                    size: 50.0,
-                }),
-                // texture: Box::new(Image::new("earth.png")),
-            }),
+            Box::new(Diffuse::new(Box::new(Image::new("earth.png")))),
         )),
         Box::new(Sphere::new(
             Vec3::new(0, 7, 0),
             2.0,
-            Box::new(Light {
-                texture: Box::new(Solid {
-                    color: Vec3::from_scalar(4),
-                }),
-            }),
+            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(4))))),
         )),
         Box::new(XYRect::new(
             3.0,
@@ -50,15 +37,11 @@ pub fn lone_sphere() -> Scene {
             5.0,
             3.0,
             -2.0,
-            Box::new(Light {
-                texture: Box::new(Solid {
-                    color: Vec3::from_scalar(4),
-                }),
-            }),
+            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(4))))),
         )),
-    ];
-    let width = 150;
-    let height = 100;
+    ]);
+    let width = 600;
+    let height = 400;
     let cam = Camera::new(
         Vec3::new(13, 5, 3),
         Vec3::new(0, 2, 0),
@@ -68,11 +51,11 @@ pub fn lone_sphere() -> Scene {
         0.0,
     );
     Scene {
-        objects: HitableGroup::new(spheres),
+        objects: spheres,
         camera: cam,
         width: width,
         height: height,
-        samples: 500,
+        samples: 250,
         bounces: 50,
         background: Box::new(background::Solid {
             color: Color::default(),

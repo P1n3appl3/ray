@@ -1,5 +1,5 @@
 use super::aabb::AABB;
-use super::group::HitableGroup;
+use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
 use super::transform::FlipNormal;
@@ -239,47 +239,41 @@ impl Hitable for YZRect {
 
 #[derive(Debug)]
 pub struct Prism {
-    faces: HitableGroup,
+    faces: BVHNode,
 }
 
 impl Prism {
     pub fn new(p0: Vec3, p1: Vec3, mat: Box<dyn Material>) -> Self {
         Prism {
-            faces: HitableGroup::new(vec![
+            faces: BVHNode::from_items(&mut [
                 Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone_box()))
                     as Box<dyn Hitable>,
-                Box::new(FlipNormal {
-                    obj: Box::new(XYRect::new(
-                        p0.x,
-                        p0.y,
-                        p1.x,
-                        p1.y,
-                        p0.z,
-                        mat.clone_box(),
-                    )),
-                }),
+                Box::new(FlipNormal::new(Box::new(XYRect::new(
+                    p0.x,
+                    p0.y,
+                    p1.x,
+                    p1.y,
+                    p0.z,
+                    mat.clone_box(),
+                )))),
                 Box::new(XZRect::new(p0.x, p0.z, p1.x, p1.z, p1.y, mat.clone_box())),
-                Box::new(FlipNormal {
-                    obj: Box::new(XZRect::new(
-                        p0.x,
-                        p0.z,
-                        p1.x,
-                        p1.z,
-                        p0.y,
-                        mat.clone_box(),
-                    )),
-                }),
+                Box::new(FlipNormal::new(Box::new(XZRect::new(
+                    p0.x,
+                    p0.z,
+                    p1.x,
+                    p1.z,
+                    p0.y,
+                    mat.clone_box(),
+                )))),
                 Box::new(YZRect::new(p0.y, p0.z, p1.y, p1.z, p1.x, mat.clone_box())),
-                Box::new(FlipNormal {
-                    obj: Box::new(YZRect::new(
-                        p0.y,
-                        p0.z,
-                        p1.y,
-                        p1.z,
-                        p0.x,
-                        mat.clone_box(),
-                    )),
-                }),
+                Box::new(FlipNormal::new(Box::new(YZRect::new(
+                    p0.y,
+                    p0.z,
+                    p1.y,
+                    p1.z,
+                    p0.x,
+                    mat.clone_box(),
+                )))),
             ]),
         }
     }
