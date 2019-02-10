@@ -69,17 +69,14 @@ impl Hitable for XYRect {
             material: &*self.material,
         })
     }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(AABB::new(
+    fn get_bb(&self) -> AABB {
+        AABB::new(
             Vec3::new(self.x0, self.y0, self.k - 0.0001),
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
-        ))
+        )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         Some(&*self.material)
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }
 
@@ -146,17 +143,14 @@ impl Hitable for XZRect {
             material: &*self.material,
         })
     }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(AABB::new(
+    fn get_bb(&self) -> AABB {
+        AABB::new(
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
-        ))
+        )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         Some(&*self.material)
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }
 
@@ -223,17 +217,14 @@ impl Hitable for YZRect {
             material: &*self.material,
         })
     }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(AABB::new(
+    fn get_bb(&self) -> AABB {
+        AABB::new(
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
-        ))
+        )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         Some(&*self.material)
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }
 
@@ -245,7 +236,7 @@ pub struct Prism {
 impl Prism {
     pub fn new(p0: Vec3, p1: Vec3, mat: Box<dyn Material>) -> Self {
         Prism {
-            faces: BVHNode::from_items(&mut [
+            faces: BVHNode::from_items(&mut vec![
                 Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone_box()))
                     as Box<dyn Hitable>,
                 Box::new(FlipNormal::new(Box::new(XYRect::new(
@@ -283,13 +274,10 @@ impl Hitable for Prism {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         self.faces.hit(r, t_min, t_max)
     }
-    fn get_bb(&self) -> Option<AABB> {
+    fn get_bb(&self) -> AABB {
         self.faces.get_bb()
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         None
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        self.faces.clone_box()
     }
 }

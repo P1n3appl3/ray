@@ -18,50 +18,85 @@ impl BVHNode {
     ) -> Self {
         BVHNode { bb, left, right }
     }
-    pub fn from_items(items: &mut [Box<dyn Hitable>]) -> Self {
+    pub fn from_items(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
         if items.len() == 1 {
-            return BVHNode::new(
-                items[0].get_bb().unwrap(),
-                Some(items[0].clone_box()),
-                Some(items[0].clone_box()),
-            );
+            return BVHNode::new(items[0].get_bb(), Some(items.remove(0)), None);
         } else if items.len() == 2 {
             return BVHNode::new(
-                items[0]
-                    .get_bb()
-                    .unwrap()
-                    .combine(&items[1].get_bb().unwrap()),
-                Some(items[0].clone_box()),
-                Some(items[1].clone_box()),
+                items[0].get_bb().combine(&items[1].get_bb()),
+                Some(items.remove(0)),
+                Some(items.remove(0)),
             );
         }
         items.sort_unstable_by(|a, b| {
             // TODO: do something smarter than always choosing x axis (see site)
-            a.get_bb()
-                .unwrap()
-                .min
-                .x
-                .partial_cmp(&b.get_bb().unwrap().min.x)
-                .unwrap()
+            a.get_bb().min.x.partial_cmp(&b.get_bb().min.x).unwrap()
         });
         let half = items.len() / 2;
         // TODO: split while taking ownership instead of cloning
-        let left = Box::new(BVHNode::from_items(
-            &mut items[..half]
-                .iter()
-                .map(|x| x.clone_box())
-                .collect::<Vec<Box<dyn Hitable>>>(),
-        ));
-        let right = Box::new(BVHNode::from_items(
-            &mut items[half..]
-                .iter()
-                .map(|x| x.clone_box())
-                .collect::<Vec<Box<dyn Hitable>>>(),
-        ));
+        let left = Box::new(BVHNode::from_items(&mut items.drain(..half).collect()));
+        let right = Box::new(BVHNode::from_items(&mut items));
         BVHNode::new(left.bb.combine(&right.bb), Some(left), Some(right))
     }
-    pub fn from_items_sah(items: &mut [Box<dyn Hitable>]) -> Self {
-        unimplemented!();
+    pub fn from_items_sah(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
+        let main_box = items
+            .iter()
+            .map(|i| i.get_bb())
+            .fold(items[0].get_bb(), |a, b| a.combine(&b));
+        let x = main_box.max.x - main_box.min.x;
+        let y = main_box.max.y - main_box.min.y;
+        let z = main_box.max.z - main_box.min.z;
+        if x > y && x > z {
+            items.sort_unstable_by(|a, b| {
+                a.get_bb().min.x.partial_cmp(&b.get_bb().min.x).unwrap()
+            });
+        } else if y > x && y > z {
+            items.sort_unstable_by(|a, b| {
+                a.get_bb().min.y.partial_cmp(&b.get_bb().min.y).unwrap()
+            });
+        } else {
+            items.sort_unstable_by(|a, b| {
+                a.get_bb().min.z.partial_cmp(&b.get_bb().min.z).unwrap()
+            });
+        }
+        let mut left_area = vec![0.0; items.len()];
+        let mut right_area = vec![0.0; items.len()];
+        let boxes: Vec<AABB> = items.iter().map(|i| i.get_bb()).collect();
+        left_area[0] = boxes[0].surface_area();
+        let mut left_box = boxes[0];
+        for i in 1..items.len() - 1 {
+            left_box = left_box.combine(&boxes[i]);
+            left_area[i] = left_box.surface_area();
+        }
+        right_area[0] = boxes[0].surface_area();
+        let mut right_box = boxes[0];
+        for i in (1..items.len() - 1).rev() {
+            right_box = right_box.combine(&boxes[i]);
+            right_area[i] = right_box.surface_area();
+        }
+        let mut min_sah = std::f32::MAX;
+        let mut min_sah_idx = 0;
+        for i in 0..items.len() - 1 {
+            let sah = i as f32 * left_area[i]
+                + (items.len() - i - 1) as f32 * right_area[i + 1];
+            if sah < min_sah {
+                min_sah = sah;
+                min_sah_idx = i;
+            }
+        }
+        let left = if min_sah_idx == 0 {
+            items.remove(0)
+        } else {
+            (Box::new(BVHNode::from_items_sah(
+                &mut items.drain(..min_sah_idx + 1).collect(),
+            )) as Box<Hitable>)
+        };
+        let right = if min_sah_idx == items.len() - 2 {
+            items.remove(min_sah_idx + 1)
+        } else {
+            Box::new(BVHNode::from_items_sah(&mut items)) as Box<Hitable>
+        };
+        BVHNode::new(main_box, Some(left), Some(right))
     }
 }
 impl Hitable for BVHNode {
@@ -72,7 +107,6 @@ impl Hitable for BVHNode {
         // both sides are always populated
         let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
         let hit_right = self.right.as_ref().unwrap().hit(r, t_min, t_max);
-
         match (hit_left, hit_right) {
             (None, None) => None,
             (Some(hit), None) | (None, Some(hit)) => Some(hit),
@@ -85,14 +119,7 @@ impl Hitable for BVHNode {
             }
         }
     }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(BVHNode {
-            bb: self.bb,
-            left: self.left.as_ref().map(|x| x.clone_box()),
-            right: self.right.as_ref().map(|x| x.clone_box()),
-        })
-    }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(self.bb)
+    fn get_bb(&self) -> AABB {
+        self.bb
     }
 }

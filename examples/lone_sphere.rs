@@ -40,8 +40,8 @@ pub fn lone_sphere() -> Scene {
             Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(4))))),
         )),
     ]);
-    let width = 600;
-    let height = 400;
+    let width = 300;
+    let height = 200;
     let cam = Camera::new(
         Vec3::new(13, 5, 3),
         Vec3::new(0, 2, 0),

@@ -1,7 +1,7 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct AABB {
     pub min: Vec3,
     pub max: Vec3,
@@ -84,9 +84,20 @@ mod tests {
 
     #[test]
     fn test_surface_area() {
-        let unit = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
-        assert_eq!(unit.surface_area(), 24.0);
+        let cube = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
+        assert_eq!(cube.surface_area(), 24.0);
         let oblong = AABB::new(Vec3::new(-1.0, -2.0, -3.0), Vec3::new(1.0, 2.0, 3.0));
         assert_eq!(oblong.surface_area(), 88.0);
+    }
+
+    #[test]
+    fn test_combine() {
+        let cube = AABB::new(Vec3::new(-1.0, -1.0, -1.0), Vec3::new(1.0, 1.0, 1.0));
+        let offset_cube =
+            AABB::new(Vec3::new(-2.0, -2.0, -2.0), Vec3::new(-1.0, -1.0, -1.0));
+        assert_eq!(
+            cube.combine(&offset_cube),
+            AABB::new(Vec3::new(-2.0, -2.0, -2.0), Vec3::new(1.0, 1.0, 1.0))
+        );
     }
 }

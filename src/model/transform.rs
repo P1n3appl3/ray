@@ -16,12 +16,6 @@ impl FlipNormal {
     }
 }
 
-impl Clone for FlipNormal {
-    fn clone(&self) -> FlipNormal {
-        FlipNormal::new(self.obj.clone_box())
-    }
-}
-
 impl Hitable for FlipNormal {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if let Some(mut temp) = self.obj.hit(r, t_min, t_max) {
@@ -31,14 +25,11 @@ impl Hitable for FlipNormal {
             None
         }
     }
-    fn get_bb(&self) -> Option<AABB> {
+    fn get_bb(&self) -> AABB {
         self.obj.get_bb()
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         self.obj.get_mat()
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }
 
@@ -54,15 +45,6 @@ impl Translate {
     }
 }
 
-impl Clone for Translate {
-    fn clone(&self) -> Translate {
-        Translate {
-            obj: self.obj.clone_box(),
-            offset: self.offset,
-        }
-    }
-}
-
 impl Hitable for Translate {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut moved_r = r;
@@ -74,15 +56,12 @@ impl Hitable for Translate {
             None
         }
     }
-    fn get_bb(&self) -> Option<AABB> {
-        let temp = self.obj.get_bb().unwrap();
-        Some(AABB::new(temp.min + self.offset, temp.max + self.offset))
+    fn get_bb(&self) -> AABB {
+        let temp = self.obj.get_bb();
+        AABB::new(temp.min + self.offset, temp.max + self.offset)
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         self.obj.get_mat()
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }
 
@@ -99,7 +78,7 @@ impl RotateY {
     pub fn new(obj: Box<dyn Hitable>, angle: f32) -> Self {
         let rad = angle * std::f32::consts::PI / 180.0;
         let mut temp = RotateY {
-            obj: obj.clone_box(),
+            obj: obj,
             sin_theta: rad.sin(),
             cos_theta: rad.cos(),
             bb: AABB::default(),
@@ -114,17 +93,6 @@ impl RotateY {
             temp.bb = temp.bb.combine(&AABB::new(v, v));
         });
         temp
-    }
-}
-
-impl Clone for RotateY {
-    fn clone(&self) -> RotateY {
-        RotateY {
-            obj: self.obj.clone_box(),
-            sin_theta: self.sin_theta,
-            cos_theta: self.cos_theta,
-            bb: self.bb,
-        }
     }
 }
 
@@ -158,13 +126,10 @@ impl Hitable for RotateY {
             None
         }
     }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(self.bb)
+    fn get_bb(&self) -> AABB {
+        self.bb
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         self.obj.get_mat()
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }

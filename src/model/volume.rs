@@ -27,16 +27,6 @@ impl Volume {
     }
 }
 
-impl Clone for Volume {
-    fn clone(&self) -> Volume {
-        Volume {
-            density: self.density,
-            boundary: self.boundary.clone_box(),
-            phase_function: self.phase_function.clone_box(),
-        }
-    }
-}
-
 impl Hitable for Volume {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if let Some(mut hit1) = self.boundary.hit(r, std::f32::MIN, std::f32::MAX) {
@@ -63,13 +53,10 @@ impl Hitable for Volume {
         }
         None
     }
-    fn get_bb(&self) -> Option<AABB> {
+    fn get_bb(&self) -> AABB {
         self.boundary.get_bb()
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         Some(&*self.phase_function)
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }

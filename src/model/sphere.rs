@@ -66,16 +66,13 @@ impl Hitable for Sphere {
         }
         None
     }
-    fn get_bb(&self) -> Option<AABB> {
-        Some(AABB::new(
+    fn get_bb(&self) -> AABB {
+        AABB::new(
             self.center - Vec3::from_scalar(self.radius),
             self.center + Vec3::from_scalar(self.radius),
-        ))
+        )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
         Some(&*self.material)
-    }
-    fn clone_box(&self) -> Box<dyn Hitable> {
-        Box::new(self.clone())
     }
 }
