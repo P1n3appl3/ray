@@ -36,19 +36,6 @@ impl XYRect {
     }
 }
 
-impl Clone for XYRect {
-    fn clone(&self) -> XYRect {
-        XYRect {
-            x0: self.x0,
-            x1: self.x1,
-            y0: self.y0,
-            y1: self.y1,
-            k: self.k,
-            material: self.material.clone_box(),
-        }
-    }
-}
-
 impl Hitable for XYRect {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - r.origin.z) / r.dir.z;
@@ -106,19 +93,6 @@ impl XZRect {
             z1,
             k,
             material: mat,
-        }
-    }
-}
-
-impl Clone for XZRect {
-    fn clone(&self) -> XZRect {
-        XZRect {
-            x0: self.x0,
-            x1: self.x1,
-            z0: self.z0,
-            z1: self.z1,
-            k: self.k,
-            material: self.material.clone_box(),
         }
     }
 }
@@ -184,19 +158,6 @@ impl YZRect {
     }
 }
 
-impl Clone for YZRect {
-    fn clone(&self) -> YZRect {
-        YZRect {
-            y0: self.y0,
-            y1: self.y1,
-            z0: self.z0,
-            z1: self.z1,
-            k: self.k,
-            material: self.material.clone_box(),
-        }
-    }
-}
-
 impl Hitable for YZRect {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - r.origin.x) / r.dir.x;
@@ -236,7 +197,7 @@ pub struct Prism {
 impl Prism {
     pub fn new(p0: Vec3, p1: Vec3, mat: Box<dyn Material>) -> Self {
         Prism {
-            faces: BVHNode::from_items(&mut vec![
+            faces: BVHNode::from_items_sah(&mut vec![
                 Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone_box()))
                     as Box<dyn Hitable>,
                 Box::new(FlipNormal::new(Box::new(XYRect::new(

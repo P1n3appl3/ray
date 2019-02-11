@@ -78,7 +78,7 @@ impl RotateY {
     pub fn new(obj: Box<dyn Hitable>, angle: f32) -> Self {
         let rad = angle * std::f32::consts::PI / 180.0;
         let mut temp = RotateY {
-            obj: obj,
+            obj,
             sin_theta: rad.sin(),
             cos_theta: rad.cos(),
             bb: AABB::default(),

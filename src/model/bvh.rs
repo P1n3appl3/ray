@@ -5,7 +5,6 @@ use crate::ray::Ray;
 #[derive(Debug)]
 pub struct BVHNode {
     pub bb: AABB,
-    // TODO: consider if option is needed here since we're guarenteeing it's full
     pub left: Option<Box<dyn Hitable>>,
     pub right: Option<Box<dyn Hitable>>,
 }
@@ -18,7 +17,8 @@ impl BVHNode {
     ) -> Self {
         BVHNode { bb, left, right }
     }
-    pub fn from_items(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
+
+    pub fn from_items_sah(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
         if items.len() == 1 {
             return BVHNode::new(items[0].get_bb(), Some(items.remove(0)), None);
         } else if items.len() == 2 {
@@ -28,17 +28,6 @@ impl BVHNode {
                 Some(items.remove(0)),
             );
         }
-        items.sort_unstable_by(|a, b| {
-            // TODO: do something smarter than always choosing x axis (see site)
-            a.get_bb().min.x.partial_cmp(&b.get_bb().min.x).unwrap()
-        });
-        let half = items.len() / 2;
-        // TODO: split while taking ownership instead of cloning
-        let left = Box::new(BVHNode::from_items(&mut items.drain(..half).collect()));
-        let right = Box::new(BVHNode::from_items(&mut items));
-        BVHNode::new(left.bb.combine(&right.bb), Some(left), Some(right))
-    }
-    pub fn from_items_sah(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
         let main_box = items
             .iter()
             .map(|i| i.get_bb())
@@ -59,6 +48,7 @@ impl BVHNode {
                 a.get_bb().min.z.partial_cmp(&b.get_bb().min.z).unwrap()
             });
         }
+        items.reverse();
         let mut left_area = vec![0.0; items.len()];
         let mut right_area = vec![0.0; items.len()];
         let boxes: Vec<AABB> = items.iter().map(|i| i.get_bb()).collect();
@@ -84,29 +74,26 @@ impl BVHNode {
                 min_sah_idx = i;
             }
         }
-        let left = if min_sah_idx == 0 {
-            items.remove(0)
-        } else {
-            (Box::new(BVHNode::from_items_sah(
-                &mut items.drain(..min_sah_idx + 1).collect(),
-            )) as Box<Hitable>)
-        };
-        let right = if min_sah_idx == items.len() - 2 {
-            items.remove(min_sah_idx + 1)
-        } else {
-            Box::new(BVHNode::from_items_sah(&mut items)) as Box<Hitable>
-        };
+        let left = Box::new(BVHNode::from_items_sah(
+            &mut items.drain(..=min_sah_idx).collect(),
+        )) as Box<Hitable>;
+        let right = Box::new(BVHNode::from_items_sah(&mut items)) as Box<Hitable>;
         BVHNode::new(main_box, Some(left), Some(right))
     }
 }
+
 impl Hitable for BVHNode {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if !self.bb.hit(r, t_min, t_max) {
             return None;
         }
-        // both sides are always populated
+        // left side is always populated
         let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
-        let hit_right = self.right.as_ref().unwrap().hit(r, t_min, t_max);
+        let hit_right = if self.right.is_some() {
+            self.right.as_ref().unwrap().hit(r, t_min, t_max)
+        } else {
+            None
+        };
         match (hit_left, hit_right) {
             (None, None) => None,
             (Some(hit), None) | (None, Some(hit)) => Some(hit),

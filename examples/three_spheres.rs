@@ -10,7 +10,7 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn three_spheres() -> Scene {
-    let spheres = BVHNode::from_items(&mut vec![
+    let spheres = BVHNode::from_items_sah(&mut vec![
         Box::new(Sphere::new(
             Vec3::new(0, -100.5, -1),
             100.0,

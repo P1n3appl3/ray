@@ -83,7 +83,7 @@ pub fn book_cover() -> Scene {
         0.0,
     );
     Scene {
-        objects: BVHNode::from_items(&mut spheres),
+        objects: BVHNode::from_items_sah(&mut spheres),
         camera: cam,
         width: width,
         height: height,

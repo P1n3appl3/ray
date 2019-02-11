@@ -43,7 +43,7 @@ pub fn cornell_box() -> Scene {
         )),
         Vec3::new(130, 0, 65),
     ));
-    let objects = BVHNode::from_items(&mut vec![
+    let objects = BVHNode::from_items_sah(&mut vec![
         // left wall
         Box::new(FlipNormal::new(Box::new(YZRect::new(
             0.0, 0.0, 555.0, 555.0, 555.0, green,
