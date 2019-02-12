@@ -139,7 +139,7 @@ impl Material for Dielectric {
             None => (Vec3::default(), 1.0),
         };
         if random::<f32>() < reflect_prob {
-            // TODO: figure out why i'm not seeing reflections in glass
+            // TODO: maybe adjust to make it more reflective
             Some((attenuation, Ray::new(point, reflected)))
         } else {
             Some((attenuation, Ray::new(point, refracted)))

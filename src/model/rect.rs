@@ -197,7 +197,7 @@ pub struct Prism {
 impl Prism {
     pub fn new(p0: Vec3, p1: Vec3, mat: Box<dyn Material>) -> Self {
         Prism {
-            faces: BVHNode::from_items_sah(&mut vec![
+            faces: BVHNode::from_items(&mut vec![
                 Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone_box()))
                     as Box<dyn Hitable>,
                 Box::new(FlipNormal::new(Box::new(XYRect::new(

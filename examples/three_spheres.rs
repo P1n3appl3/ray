@@ -10,21 +10,21 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn three_spheres() -> Scene {
-    let spheres = BVHNode::from_items_sah(&mut vec![
+    let spheres = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
             Vec3::new(0, -100.5, -1),
             100.0,
-            Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(0.8, 0.8, 0))))),
+            Box::new(Diffuse::new(Box::new(Solid::new(Color::new(0.8, 0.8, 0))))),
         )) as Box<dyn Hitable>,
         Box::new(Sphere::new(
             Vec3::new(0, 0, -1),
             0.5,
-            Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(0.1, 0.2, 0.5))))),
+            Box::new(Diffuse::new(Box::new(Solid::new(Color::new(0.1, 0.2, 0.5))))),
         )),
         Box::new(Sphere::new(
             Vec3::new(1, 0, -1),
             0.5,
-            Box::new(Specular::new(Vec3::new(0.8, 0.6, 0.2), 0.1)),
+            Box::new(Specular::new(Color::new(0.8, 0.6, 0.2), 0.1)),
         )),
         Box::new(Sphere::new(
             Vec3::new(-1, 0, -1),

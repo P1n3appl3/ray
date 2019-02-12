@@ -14,6 +14,12 @@ use std::io::BufWriter;
 
 pub type Color = Vec3;
 
+impl Color {
+    pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
+        Color::new(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0)
+    }
+}
+
 fn color(
     r: Ray,
     world: &impl Hitable,

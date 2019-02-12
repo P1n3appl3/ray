@@ -25,9 +25,9 @@ pub fn all_features() -> Scene {
         70.0,
         Box::new(Dielectric::new(1.5)),
     ));
-    let objects = BVHNode::from_items_sah(&mut vec![
+    let objects = BVHNode::from_items(&mut vec![
         // floor
-        Box::new(BVHNode::from_items_sah(
+        Box::new(BVHNode::from_items(
             &mut iproduct!(0..20, 0..20)
                 .map(|(x, z)| {
                     let w = 100.0;
@@ -107,7 +107,7 @@ pub fn all_features() -> Scene {
         // many tiny spheres
         Box::new(Translate::new(
             Box::new(RotateY::new(
-                Box::new(BVHNode::from_items_sah(
+                Box::new(BVHNode::from_items(
                     &mut (0..1000)
                         .map(|_| {
                             Box::new(Sphere::new(

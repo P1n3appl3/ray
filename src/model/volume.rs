@@ -38,7 +38,7 @@ impl Hitable for Volume {
                 }
                 hit1.t = hit1.t.max(0.0);
                 let dist_inside_boundary = (hit2.t - hit1.t) * r.dir.len();
-                let hit_dist = (-1.0 / self.density) * random::<f32>().log10();
+                let hit_dist = -random::<f32>().log10() / self.density;
                 if hit_dist < dist_inside_boundary {
                     return Some(HitRecord {
                         t: hit1.t + hit_dist / r.dir.len(),

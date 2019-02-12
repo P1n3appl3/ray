@@ -18,7 +18,7 @@ impl BVHNode {
         BVHNode { bb, left, right }
     }
 
-    pub fn from_items_sah(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
+    pub fn from_items(mut items: &mut Vec<Box<dyn Hitable>>) -> Self {
         if items.len() == 1 {
             return BVHNode::new(items[0].get_bb(), Some(items.remove(0)), None);
         } else if items.len() == 2 {
@@ -74,10 +74,10 @@ impl BVHNode {
                 min_sah_idx = i;
             }
         }
-        let left = Box::new(BVHNode::from_items_sah(
+        let left = Box::new(BVHNode::from_items(
             &mut items.drain(..=min_sah_idx).collect(),
         )) as Box<Hitable>;
-        let right = Box::new(BVHNode::from_items_sah(&mut items)) as Box<Hitable>;
+        let right = Box::new(BVHNode::from_items(&mut items)) as Box<Hitable>;
         BVHNode::new(main_box, Some(left), Some(right))
     }
 }

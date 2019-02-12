@@ -11,7 +11,7 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn lone_sphere() -> Scene {
-    let spheres = BVHNode::from_items_sah(&mut vec![
+    let spheres = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
             Vec3::new(0, -60, 0),
             60.0,

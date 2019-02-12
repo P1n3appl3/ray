@@ -73,7 +73,6 @@ impl Checkered3D {
 
 impl Texture for Checkered3D {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
-        // TODO: tiles look rectangular instead of square, prob issue with sphere coords
         if (self.size * p.x).sin() * (self.size * p.y).sin() * (self.size * p.z).sin()
             < 0.0
         {
