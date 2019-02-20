@@ -3,6 +3,7 @@ use itertools::iproduct;
 use rand::random;
 use ray::background;
 use ray::camera::Camera;
+use ray::image::Image;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;

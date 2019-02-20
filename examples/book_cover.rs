@@ -1,6 +1,6 @@
 extern crate ray;
 use rand::random;
-use ray::background;
+use ray::background::Gradient;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
@@ -37,8 +37,8 @@ pub fn book_cover() -> Scene {
             Box::new(Dielectric::new(1.5)),
         )),
     ];
-    for a in -16..11 {
-        for b in -16..11 {
+    for a in -15..15 {
+        for b in -15..15 {
             let pos = Vec3::new(
                 a as f32 + 0.9 * random::<f32>(),
                 0.2,
@@ -53,13 +53,7 @@ pub fn book_cover() -> Scene {
                 match (random::<f32>() * 100.0) as u8 {
                     0...5 => Box::new(Dielectric::new(1.5)),
                     5...30 => Box::new(Specular::new(
-                        (Vec3::new(1, 1, 1)
-                            + Vec3::new(
-                                random::<f32>(),
-                                random::<f32>(),
-                                random::<f32>(),
-                            ))
-                            / 2.0,
+                        (Vec3::new(1, 1, 1) + Vec3::rand()) / 2.0,
                         random::<f32>().powi(4),
                     )),
                     _ => Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
@@ -89,7 +83,7 @@ pub fn book_cover() -> Scene {
         height: height,
         samples: 50,
         bounces: 50,
-        background: Box::new(background::Gradient {
+        background: Box::new(Gradient {
             a: Color::new(1.0, 1.0, 1.0),
             b: Color::new(0.5, 0.7, 1.0),
         }),

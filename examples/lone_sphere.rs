@@ -1,6 +1,7 @@
 extern crate ray;
 use ray::background;
 use ray::camera::Camera;
+use ray::image::Image;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
@@ -13,31 +14,32 @@ use ray::vec3::Vec3;
 pub fn lone_sphere() -> Scene {
     let spheres = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
-            Vec3::new(0, -60, 0),
-            60.0,
+            Vec3::new(0, 2, 0),
+            2.0,
+            Box::new(Diffuse::new(Box::new(Image::new("earth.png")))),
+        )) as Box<dyn Hitable>,
+        Box::new(Sphere::new(
+            Vec3::new(-10, 9, 0),
+            2.0,
+            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(10))))),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(15, 9, 0),
+            2.0,
+            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(10))))),
+        )),
+        Box::new(XZRect::new(
+            -10.0,
+            -10.0,
+            10.0,
+            10.0,
+            -0.0,
+            // Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from_scalar(0.75))))),
             Box::new(Diffuse::new(Box::new(Perlin::new(
                 0.75,
                 Vec3::new(0.8, 0.4, 0.2),
                 Marble,
             )))),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(0, 2, 0),
-            2.0,
-            Box::new(Diffuse::new(Box::new(Image::new("earth.png")))),
-        )),
-        Box::new(Sphere::new(
-            Vec3::new(0, 7, 0),
-            2.0,
-            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(4))))),
-        )),
-        Box::new(XYRect::new(
-            3.0,
-            1.0,
-            5.0,
-            3.0,
-            -2.0,
-            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(4))))),
         )),
     ]);
     let width = 300;
@@ -55,7 +57,7 @@ pub fn lone_sphere() -> Scene {
         camera: cam,
         width: width,
         height: height,
-        samples: 250,
+        samples: 1000,
         bounces: 50,
         background: Box::new(background::Solid {
             color: Color::default(),

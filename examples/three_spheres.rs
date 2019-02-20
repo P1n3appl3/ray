@@ -19,7 +19,9 @@ pub fn three_spheres() -> Scene {
         Box::new(Sphere::new(
             Vec3::new(0, 0, -1),
             0.5,
-            Box::new(Diffuse::new(Box::new(Solid::new(Color::new(0.1, 0.2, 0.5))))),
+            Box::new(Diffuse::new(Box::new(Solid::new(Color::new(
+                0.1, 0.2, 0.5,
+            ))))),
         )),
         Box::new(Sphere::new(
             Vec3::new(1, 0, -1),

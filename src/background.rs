@@ -5,8 +5,6 @@ pub trait Background: Send + Sync {
     fn get_color(&self, r: Ray) -> Color;
 }
 
-// TODO: add environment map (cube or sphere)
-
 pub struct Solid {
     pub color: Color,
 }
