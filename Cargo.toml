@@ -9,9 +9,9 @@ name = "ray"
 path = "src/lib.rs"
 
 [dependencies]
-rand = "0.6.3"
-png = "0.13.2"
+image = "0.21.0"
 itertools = "0.8.0"
+rand = "0.6.3"
 rayon = "1.0.3"
 termion = "1.5.1"
 

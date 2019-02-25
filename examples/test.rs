@@ -1,6 +1,5 @@
 extern crate ray;
 use ray::camera::Camera;
-use ray::image::Image;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
@@ -38,7 +37,7 @@ pub fn test() -> Scene {
         height: height,
         samples: 10,
         bounces: 50,
-        background: Box::new(Image::new("pier.png")),
+        background: Box::new(image::open("pier.png").unwrap().to_rgb()),
     }
 }
 

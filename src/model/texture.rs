@@ -1,6 +1,8 @@
+use crate::scene::Color;
 use crate::vec3::Vec3;
+use image::RgbImage;
 use itertools::iproduct;
-use rand::{seq::SliceRandom, thread_rng, random};
+use rand::{random, seq::SliceRandom, thread_rng};
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3;
@@ -189,5 +191,21 @@ impl Perlin {
             weight /= 2.0;
         }
         accum.abs()
+    }
+}
+
+impl Texture for RgbImage {
+    fn value(&self, u: f32, v: f32, _p: Vec3) -> Vec3 {
+        let i = (u * self.width() as f32)
+            .max(0.0)
+            .min((self.width() - 1) as f32) as u32;
+        let j = ((1.0 - v) * self.height() as f32 - 0.001)
+            .max(0.0)
+            .min((self.height() - 1) as f32) as u32;
+        let p = self.get_pixel(i, j);
+        Color::from_rgb(p[0], p[1], p[2])
+    }
+    fn clone_box(&self) -> Box<dyn Texture> {
+        Box::new(self.clone())
     }
 }

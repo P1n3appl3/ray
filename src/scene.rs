@@ -5,12 +5,9 @@ use crate::model::hitable::Hitable;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use itertools::iproduct;
-use png::HasParameters;
 use rand::random;
 use rayon::prelude::*;
-use std::fs;
-use std::io::BufWriter;
-use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 use termion::cursor;
@@ -19,7 +16,11 @@ pub type Color = Vec3;
 
 impl Color {
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Color::new(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0)
+        Color::new(
+            f32::from(r) / 255.0,
+            f32::from(g) / 255.0,
+            f32::from(b) / 255.0,
+        )
     }
 }
 
@@ -56,7 +57,7 @@ pub struct Scene {
     pub background: Box<dyn Background>,
 }
 
-static PROGRESS_COUNTER: AtomicUsize = ATOMIC_USIZE_INIT;
+static PROGRESS_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 impl Scene {
     pub fn render(&self) -> Vec<u8> {
@@ -99,17 +100,11 @@ impl Scene {
         print!("{}", cursor::Up(4));
         println!("progress: {:.1}%    ", percent * 100.0);
         println!("elapsed: {:.1}s    ", elapsed);
-        println!("remainig: {:.1}s    ", elapsed / percent - elapsed);
+        println!("remaining: {:.1}s    ", elapsed / percent - elapsed);
         println!("speed: {} rays/s    ", (current as f32 / elapsed) as usize);
     }
 
     pub fn render_to_file(&self, filename: &str) -> std::io::Result<()> {
-        let file = fs::File::create(filename)?;
-        let writer = BufWriter::new(file);
-        let mut encoder =
-            png::Encoder::new(writer, self.width as u32, self.height as u32);
-        encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
-        let mut writer = encoder.write_header()?;
         let samples = self.samples as usize;
         let goal = self.width * self.height * samples;
         let start_time = Instant::now();
@@ -124,7 +119,10 @@ impl Scene {
         });
         let data = self.render();
         Scene::show_progress(start_time, goal, goal);
-        writer.write_image_data(&data)?;
+        let output: image::RgbImage =
+            image::ImageBuffer::from_vec(self.width as u32, self.height as u32, data)
+                .unwrap();
+        output.save(filename)?;
         Ok(())
     }
 }

@@ -1,7 +1,6 @@
 extern crate ray;
 use ray::background;
 use ray::camera::Camera;
-use ray::image::Image;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
@@ -16,7 +15,7 @@ pub fn lone_sphere() -> Scene {
         Box::new(Sphere::new(
             Vec3::new(0, 2, 0),
             2.0,
-            Box::new(Diffuse::new(Box::new(Image::new("earth.png")))),
+            Box::new(Diffuse::new(Box::new(image::open("earth.png").unwrap().to_rgb()))),
         )) as Box<dyn Hitable>,
         Box::new(Sphere::new(
             Vec3::new(-10, 9, 0),

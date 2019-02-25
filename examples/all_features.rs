@@ -3,7 +3,6 @@ use itertools::iproduct;
 use rand::random;
 use ray::background;
 use ray::camera::Camera;
-use ray::image::Image;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
@@ -99,7 +98,9 @@ pub fn all_features() -> Scene {
                 Box::new(Sphere::new(
                     Vec3::default(),
                     100.0,
-                    Box::new(Diffuse::new(Box::new(Image::new("earth.png")))),
+                    Box::new(Diffuse::new(Box::new(
+                        image::open("earth.png").unwrap().to_rgb(),
+                    ))),
                 )),
                 60.0,
             )),
@@ -124,8 +125,8 @@ pub fn all_features() -> Scene {
             Vec3::new(-100, 270, 395),
         )),
     ]);
-    let width = 250;
-    let height = 250;
+    let width = 500;
+    let height = 500;
     let cam = Camera::new(
         Vec3::new(600, 300, -800),
         Vec3::new(300, 275, 0),
