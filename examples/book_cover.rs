@@ -1,5 +1,5 @@
 extern crate ray;
-use rand::random;
+use rand::prelude::*;
 use ray::background::Gradient;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
@@ -50,10 +50,10 @@ pub fn book_cover() -> Scene {
             spheres.push(Box::new(Sphere::new(
                 pos,
                 0.2,
-                match (random::<f32>() * 100.0) as u8 {
+                match (thread_rng().gen_range(0, 100)) as u8 {
                     0...5 => Box::new(Dielectric::new(1.5)),
                     5...30 => Box::new(Specular::new(
-                        (Vec3::new(1, 1, 1) + Vec3::rand()) / 2.0,
+                        (Vec3::new(1, 1, 1) + random::<Vec3>()) / 2.0,
                         random::<f32>().powi(4),
                     )),
                     _ => Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(

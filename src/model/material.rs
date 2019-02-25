@@ -18,15 +18,6 @@ pub trait Material: Send + Sync + std::fmt::Debug {
     }
 }
 
-pub fn rand_in_unit_sphere() -> Vec3 {
-    let mut p;
-    while {
-        p = Vec3::rand() * 2.0 - Vec3::from_scalar(1.0);
-        p.square_len() > 1.0
-    } {}
-    p
-}
-
 /// Aproximates the way that glass reflectivity varies with viewing angle
 fn schlick(cosine: f32, refractive_index: f32) -> f32 {
     let r0 = ((1.0 - refractive_index) / (1.0 + refractive_index)).powi(2);
@@ -53,9 +44,9 @@ impl Material for Diffuse {
         u: f32,
         v: f32,
     ) -> Option<(Vec3, Ray)> {
-        let target = point + normal + rand_in_unit_sphere();
-        let new_ray = Ray::new(point, target - point);
-        Some((self.texture.value(u, v, point), new_ray))
+        let target = point + normal + Vec3::rand_in_unit_sphere();
+        let scattered = Ray::new(point, target - point);
+        Some((self.texture.value(u, v, point), scattered))
     }
     fn clone_box(&self) -> Box<dyn Material> {
         Box::new(Diffuse {
@@ -86,7 +77,8 @@ impl Material for Specular {
         _v: f32,
     ) -> Option<(Vec3, Ray)> {
         let reflected = r.dir.normalize().reflect(&normal);
-        let scattered = Ray::new(point, reflected + rand_in_unit_sphere() * self.fuzz);
+        let scattered =
+            Ray::new(point, reflected + Vec3::rand_in_unit_sphere() * self.fuzz);
         if scattered.dir.dot(&normal) > 0.0 {
             Some((self.albedo, scattered))
         } else {
@@ -170,9 +162,9 @@ impl Material for Light {
         u: f32,
         v: f32,
     ) -> Option<(Vec3, Ray)> {
-        let target = point + normal + rand_in_unit_sphere();
-        let new_ray = Ray::new(point, target - point);
-        Some((self.texture.value(u, v, point), new_ray))
+        let target = point + normal + Vec3::rand_in_unit_sphere();
+        let scattered = Ray::new(point, target - point);
+        Some((self.texture.value(u, v, point), scattered))
     }
     fn clone_box(&self) -> Box<dyn Material> {
         Box::new(Light {
@@ -206,7 +198,7 @@ impl Material for Isotropic {
     ) -> Option<(Vec3, Ray)> {
         Some((
             self.texture.value(u, v, point),
-            Ray::new(point, rand_in_unit_sphere()),
+            Ray::new(point, Vec3::rand_in_unit_sphere()),
         ))
     }
     fn clone_box(&self) -> Box<dyn Material> {

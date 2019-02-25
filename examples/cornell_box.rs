@@ -7,7 +7,6 @@ use ray::model::material::*;
 use ray::model::rect::*;
 use ray::model::texture::*;
 use ray::model::transform::*;
-use ray::model::volume::Volume;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
@@ -74,21 +73,11 @@ pub fn cornell_box() -> Scene {
             555.0,
             white.clone_box(),
         )))),
-        // right box
-        Box::new(Volume::new(
-            0.005,
-            right_box,
-            Box::new(Solid::new(Vec3::from_scalar(1))),
-        )),
-        // left box
-        Box::new(Volume::new(
-            0.005,
-            left_box,
-            Box::new(Solid::new(Vec3::from_scalar(0))),
-        )),
+        right_box,
+        left_box,
     ]);
-    let width = 400;
-    let height = 400;
+    let width = 500;
+    let height = 500;
     let cam = Camera::new(
         Vec3::new(278, 278, -760),
         Vec3::new(278, 278, 0),
@@ -102,7 +91,7 @@ pub fn cornell_box() -> Scene {
         camera: cam,
         width: width,
         height: height,
-        samples: 250,
+        samples: 500,
         bounces: 50,
         background: Box::new(background::Solid {
             color: Color::default(),

@@ -1,4 +1,5 @@
-use rand::random;
+use rand::distributions::{Distribution, Standard};
+use rand::{random, Rng};
 use std::fmt;
 use std::ops::*;
 
@@ -36,12 +37,13 @@ impl Vec3 {
     pub fn from_scalar<T: ToF32>(n: T) -> Self {
         Vec3::new(n, n, n)
     }
-    pub fn rand() -> Self {
-        Vec3 {
-            x: random(),
-            y: random(),
-            z: random(),
-        }
+    pub fn rand_in_unit_sphere() -> Self {
+        let mut p;
+        while {
+            p = random::<Vec3>() * 2.0 - Vec3::from_scalar(1.0);
+            p.square_len() > 1.0
+        } {}
+        p
     }
     pub fn square_len(&self) -> f32 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
@@ -88,6 +90,12 @@ impl Vec3 {
         } else {
             None
         }
+    }
+}
+
+impl Distribution<Vec3> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3 {
+        Vec3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>())
     }
 }
 
@@ -233,7 +241,8 @@ mod tests {
         );
         for _ in 0..10 {
             assert!(
-                (Vec3::rand() * random::<f32>() * 2.0).normalize().len() <= 1.0 + EPSILON
+                (random::<Vec3>() * random::<f32>() * 2.0).normalize().len()
+                    <= 1.0 + EPSILON
             );
         }
     }

@@ -46,7 +46,7 @@ impl Hitable for Volume {
                         v: 0.0, // arbitrary
                         point: r.point_at_param(hit1.t),
                         normal: Vec3::default(), // arbitrary
-                        material: &*self.phase_function,
+                        material: self.phase_function.as_ref(),
                     });
                 }
             }
@@ -57,6 +57,6 @@ impl Hitable for Volume {
         self.boundary.get_bb()
     }
     fn get_mat(&self) -> Option<&dyn Material> {
-        Some(&*self.phase_function)
+        Some(self.phase_function.as_ref())
     }
 }

@@ -6,11 +6,14 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use itertools::iproduct;
 use png::HasParameters;
-use progressive::progress;
 use rand::random;
 use rayon::prelude::*;
 use std::fs;
 use std::io::BufWriter;
+use std::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
+use std::thread;
+use std::time::{Duration, Instant};
+use termion::cursor;
 
 pub type Color = Vec3;
 
@@ -53,13 +56,16 @@ pub struct Scene {
     pub background: Box<dyn Background>,
 }
 
+static PROGRESS_COUNTER: AtomicUsize = ATOMIC_USIZE_INIT;
+
 impl Scene {
-    // TODO: add progressive rendering
     pub fn render(&self) -> Vec<u8> {
-        progress(iproduct!((0..self.height).rev(), 0..self.width))
+        iproduct!((0..self.height).rev(), 0..self.width)
+            .collect::<Vec<(usize, usize)>>() // TODO: might not need this?
+            .into_par_iter()
             .map(|(y, x)| {
+                PROGRESS_COUNTER.fetch_add(1, Ordering::Relaxed);
                 let col = ((0..self.samples)
-                    .into_par_iter()
                     .map(|_| {
                         color(
                             self.camera.get_ray(
@@ -68,12 +74,12 @@ impl Scene {
                                 (y as f32 + random::<f32>()) / self.height as f32,
                             ),
                             &self.objects,
-                            &*self.background,
+                            self.background.as_ref(),
                             0,
                             self.bounces,
                         )
                     })
-                    .reduce(Color::default, |a, b| a + b)
+                    .fold(Color::default(), |a, b| a + b)
                     / self.samples as f32)
                     .piecewise_min(Vec3::from_scalar(1));
                 vec![
@@ -86,6 +92,17 @@ impl Scene {
             .flatten()
             .collect::<Vec<u8>>()
     }
+
+    fn show_progress(start: Instant, goal: usize, current: usize) {
+        let percent = current as f32 / goal as f32;
+        let elapsed = (Instant::now() - start).as_nanos() as f32 / 1_000_000_000.0;
+        print!("{}", cursor::Up(4));
+        println!("progress: {:.1}%    ", percent * 100.0);
+        println!("elapsed: {:.1}s    ", elapsed);
+        println!("remainig: {:.1}s    ", elapsed / percent - elapsed);
+        println!("speed: {} rays/s    ", (current as f32 / elapsed) as usize);
+    }
+
     pub fn render_to_file(&self, filename: &str) -> std::io::Result<()> {
         let file = fs::File::create(filename)?;
         let writer = BufWriter::new(file);
@@ -93,7 +110,20 @@ impl Scene {
             png::Encoder::new(writer, self.width as u32, self.height as u32);
         encoder.set(png::ColorType::RGB).set(png::BitDepth::Eight);
         let mut writer = encoder.write_header()?;
+        let samples = self.samples as usize;
+        let goal = self.width * self.height * samples;
+        let start_time = Instant::now();
+        println!("\n\n\n");
+        thread::spawn(move || {
+            let mut prog = 0;
+            while prog < goal {
+                thread::sleep(Duration::from_millis(100));
+                Scene::show_progress(start_time, goal, prog);
+                prog = PROGRESS_COUNTER.load(Ordering::Relaxed) * samples;
+            }
+        });
         let data = self.render();
+        Scene::show_progress(start_time, goal, goal);
         writer.write_image_data(&data)?;
         Ok(())
     }

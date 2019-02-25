@@ -1,6 +1,6 @@
 use crate::vec3::Vec3;
 use itertools::iproduct;
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{seq::SliceRandom, thread_rng, random};
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3;
@@ -145,7 +145,7 @@ impl Perlin {
         };
         temp.rand_vec.copy_from_slice(
             &(0..256)
-                .map(|_| (Vec3::rand() * 2.0 - Vec3::from_scalar(1.0)).normalize())
+                .map(|_| (random::<Vec3>() * 2.0 - Vec3::from_scalar(1.0)).normalize())
                 .collect::<Vec<_>>(),
         );
         let mut perm: Vec<u8> = (0..=255).collect();

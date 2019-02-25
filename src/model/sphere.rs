@@ -57,7 +57,7 @@ impl Hitable for Sphere {
                         v,
                         point,
                         normal,
-                        material: &*self.material,
+                        material: self.material.as_ref(),
                     });
                 }
                 // retry with the other quadratic formula solution
@@ -73,6 +73,6 @@ impl Hitable for Sphere {
         )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
-        Some(&*self.material)
+        Some(self.material.as_ref())
     }
 }

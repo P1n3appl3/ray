@@ -21,8 +21,8 @@ pub fn test() -> Scene {
             Box::new(Specular::new(Vec3::from_scalar(1), 0.0)),
         )) as Box<dyn Hitable>,
     ]);
-    let width = 300;
-    let height = 300;
+    let width = 600;
+    let height = 600;
     let cam = Camera::new(
         Vec3::new(0, 0, -4),
         Vec3::new(0, 0, 0),

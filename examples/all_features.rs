@@ -112,7 +112,7 @@ pub fn all_features() -> Scene {
                     &mut (0..1000)
                         .map(|_| {
                             Box::new(Sphere::new(
-                                Vec3::rand() * 165.0,
+                                random::<Vec3>() * 165.0,
                                 10.0,
                                 white.clone_box(),
                             )) as Box<Hitable>

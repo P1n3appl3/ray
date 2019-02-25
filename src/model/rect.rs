@@ -53,7 +53,7 @@ impl Hitable for XYRect {
             v: (y - self.y0) / (self.y1 - self.y0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 0.0, 1.0),
-            material: &*self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -63,7 +63,7 @@ impl Hitable for XYRect {
         )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
-        Some(&*self.material)
+        Some(self.material.as_ref())
     }
 }
 
@@ -114,7 +114,7 @@ impl Hitable for XZRect {
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 1.0, 0.0),
-            material: &*self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -124,7 +124,7 @@ impl Hitable for XZRect {
         )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
-        Some(&*self.material)
+        Some(self.material.as_ref())
     }
 }
 
@@ -175,7 +175,7 @@ impl Hitable for YZRect {
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(1.0, 0.0, 0.0),
-            material: &*self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -185,7 +185,7 @@ impl Hitable for YZRect {
         )
     }
     fn get_mat(&self) -> Option<&dyn Material> {
-        Some(&*self.material)
+        Some(self.material.as_ref())
     }
 }
 

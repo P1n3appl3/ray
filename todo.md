@@ -1,6 +1,7 @@
-- rng performance, consider passing one arround
+- rng performance, consider passing one arround and using xor/small
 - triangles
 - carry references to materials/textures instead of owning
 - separate material from entity and store tuples of them in bvh
 - interactive view (update as tracing, pause or save on demand)
 - generalize rotations to not just be around the y axis, maybe 4d transform matrix
+- AOS -> SOA
