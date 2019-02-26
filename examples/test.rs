@@ -11,7 +11,7 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn test() -> Scene {
-    let spheres = BVHNode::from_items(&mut vec![
+    let objects = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
             Vec3::new(-2, 3, 8),
             2.0,
@@ -32,7 +32,7 @@ pub fn test() -> Scene {
         Box::new(Sphere::new(
             Vec3::new(3, -1, 0),
             1.0,
-            Box::new(Diffuse::new(Box::new(Gradient{}))),
+            Box::new(Diffuse::new(Box::new(Gradient {}))),
         )),
         Box::new(Translate::new(
             Box::new(RotateY::new(
@@ -57,7 +57,7 @@ pub fn test() -> Scene {
         0.0,
     );
     Scene {
-        objects: spheres,
+        objects,
         camera: cam,
         width: width,
         height: height,

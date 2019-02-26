@@ -2,6 +2,7 @@ use crate::scene::Color;
 use crate::vec3::Vec3;
 use image::RgbImage;
 use itertools::iproduct;
+use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
@@ -98,17 +99,49 @@ pub enum PerlinVariant {
     Marble,
 }
 
+lazy_static! {
+    static ref RAND_VEC: [Vec3; 256] = {
+        let mut temp = [Vec3::default(); 256];
+        temp.copy_from_slice(
+            &(0..256)
+                .map(|_| (random::<Vec3>() * 2.0 - Vec3::from_scalar(1.0)).normalize())
+                .collect::<Vec<_>>(),
+        );
+        temp
+    };
+    static ref PERM_X: [u8; 256] = {
+        let mut temp = [0; 256];
+        let mut perm: Vec<u8> = (0..=255).collect();
+        let mut rng = thread_rng();
+        perm.shuffle(&mut rng);
+        temp.copy_from_slice(&perm);
+        temp
+    };
+    // TODO: dry (nested macro?!?!)
+    static ref PERM_Y: [u8; 256] = {
+        let mut temp = [0; 256];
+        let mut perm: Vec<u8> = (0..=255).collect();
+        let mut rng = thread_rng();
+        perm.shuffle(&mut rng);
+        temp.copy_from_slice(&perm);
+        temp
+    };
+    static ref PERM_Z: [u8; 256] = {
+        let mut temp = [0; 256];
+        let mut perm: Vec<u8> = (0..=255).collect();
+        let mut rng = thread_rng();
+        perm.shuffle(&mut rng);
+        temp.copy_from_slice(&perm);
+        temp
+    };
+}
+
 /// scale is inverted, smaller numbers make the pattern larger
 #[derive(Clone)]
 pub struct Perlin {
     scale: f32,
     color: Vec3,
     kind: PerlinVariant,
-    // TODO: make these static using const fn or a macro
-    rand_vec: [Vec3; 256],
-    perm_x: [u8; 256],
-    perm_y: [u8; 256],
-    perm_z: [u8; 256],
 }
 
 impl std::fmt::Debug for Perlin {
@@ -136,29 +169,7 @@ impl Texture for Perlin {
 
 impl Perlin {
     pub fn new(scale: f32, color: Vec3, kind: PerlinVariant) -> Self {
-        let mut temp = Perlin {
-            scale,
-            color,
-            kind,
-            rand_vec: [Vec3::default(); 256],
-            perm_x: [0; 256],
-            perm_y: [0; 256],
-            perm_z: [0; 256],
-        };
-        temp.rand_vec.copy_from_slice(
-            &(0..256)
-                .map(|_| (random::<Vec3>() * 2.0 - Vec3::from_scalar(1.0)).normalize())
-                .collect::<Vec<_>>(),
-        );
-        let mut perm: Vec<u8> = (0..=255).collect();
-        let mut rng = thread_rng();
-        perm.shuffle(&mut rng);
-        temp.perm_x.copy_from_slice(&perm);
-        perm.shuffle(&mut rng);
-        temp.perm_y.copy_from_slice(&perm);
-        perm.shuffle(&mut rng);
-        temp.perm_z.copy_from_slice(&perm);
-        temp
+        Perlin { scale, color, kind }
     }
     pub fn noise(&self, p: Vec3) -> f32 {
         let u = p.x - p.x.floor();
@@ -172,9 +183,9 @@ impl Perlin {
                 (i as f32 * uu + (1 - i) as f32 * (1.0 - uu))
                     * (j as f32 * vv + (1 - j) as f32 * (1.0 - vv))
                     * (k as f32 * ww + (1 - k) as f32 * (1.0 - ww))
-                    * self.rand_vec[(self.perm_x[(p.x.floor() as usize + i) % 256]
-                        ^ self.perm_y[(p.y.floor() as usize + j) % 256]
-                        ^ self.perm_z[(p.z.floor() as usize + k) % 256])
+                    * RAND_VEC[(PERM_X[(p.x.floor() as usize + i) % 256]
+                        ^ PERM_Y[(p.y.floor() as usize + j) % 256]
+                        ^ PERM_Z[(p.z.floor() as usize + k) % 256])
                         as usize]
                         .dot(&Vec3::new(u - i as f32, v - j as f32, w - k as f32))
             })
