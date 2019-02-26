@@ -5,3 +5,5 @@
 - interactive view (update as tracing, pause or save on demand)
 - generalize rotations to not just be around the y axis, maybe 4d transform matrix
 - AOS -> SOA
+- simd bvh aabb checking (vec3 is bad but try anyway)
+- wasm

@@ -1,5 +1,4 @@
 extern crate ray;
-use ray::background;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
@@ -93,9 +92,7 @@ pub fn cornell_box() -> Scene {
         height: height,
         samples: 500,
         bounces: 50,
-        background: Box::new(background::Solid {
-            color: Color::default(),
-        }),
+        background: Box::new(Solid::new(Color::default())),
     }
 }
 

@@ -1,7 +1,6 @@
 extern crate ray;
 use itertools::iproduct;
 use rand::random;
-use ray::background;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
@@ -142,9 +141,7 @@ pub fn all_features() -> Scene {
         height: height,
         samples: 500,
         bounces: 100,
-        background: Box::new(background::Solid {
-            color: Color::default(),
-        }),
+        background: Box::new(Solid::new(Color::default())),
     }
 }
 

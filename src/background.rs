@@ -7,16 +7,6 @@ pub trait Background: Send + Sync {
     fn get_color(&self, r: Ray) -> Color;
 }
 
-pub struct Solid {
-    pub color: Color,
-}
-
-impl Background for Solid {
-    fn get_color(&self, _r: Ray) -> Color {
-        self.color
-    }
-}
-
 pub struct Gradient {
     pub a: Color,
     pub b: Color,

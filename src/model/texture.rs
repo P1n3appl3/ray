@@ -11,7 +11,7 @@ pub trait Texture: Send + Sync + std::fmt::Debug {
 
 #[derive(Debug, Clone)]
 pub struct Solid {
-    color: Vec3,
+    color: Color,
 }
 
 impl Solid {
@@ -204,6 +204,18 @@ impl Texture for RgbImage {
             .min((self.height() - 1) as f32) as u32;
         let p = self.get_pixel(i, j);
         Color::from_rgb(p[0], p[1], p[2])
+    }
+    fn clone_box(&self) -> Box<dyn Texture> {
+        Box::new(self.clone())
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Gradient {}
+
+impl Texture for Gradient {
+    fn value(&self, u: f32, v: f32, _p: Vec3) -> Vec3 {
+        Color::new(u, v, 1.0 - u - v)
     }
     fn clone_box(&self) -> Box<dyn Texture> {
         Box::new(self.clone())
