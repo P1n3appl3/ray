@@ -36,6 +36,11 @@ pub fn book_cover() -> Scene {
             1.0,
             Box::new(Dielectric::new(1.5)),
         )),
+        Box::new(Sphere::new(
+            Vec3::new(0, 1, 0),
+            -0.99,
+            Box::new(Dielectric::new(1.5)),
+        )),
     ];
     for a in -15..15 {
         for b in -15..15 {

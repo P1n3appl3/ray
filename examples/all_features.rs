@@ -18,7 +18,7 @@ pub fn all_features() -> Scene {
     let ground = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
         0.48, 0.83, 0.53,
     )))));
-    let light = Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(7.0)))));
+    let light = Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(12)))));
     let internal_reflection = Box::new(Sphere::new(
         Vec3::new(360, 150, 145),
         70.0,

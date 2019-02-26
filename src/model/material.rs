@@ -154,17 +154,8 @@ impl Light {
 }
 
 impl Material for Light {
-    fn scatter(
-        &self,
-        _r: Ray,
-        normal: Vec3,
-        point: Vec3,
-        u: f32,
-        v: f32,
-    ) -> Option<(Vec3, Ray)> {
-        let target = point + normal + Vec3::rand_in_unit_sphere();
-        let scattered = Ray::new(point, target - point);
-        Some((self.texture.value(u, v, point), scattered))
+    fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Vec3, Ray)> {
+        None
     }
     fn clone_box(&self) -> Box<dyn Material> {
         Box::new(Light {

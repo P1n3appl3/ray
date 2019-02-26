@@ -4,6 +4,7 @@ use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
 use ray::model::rect::*;
+use ray::model::sphere::Sphere;
 use ray::model::texture::*;
 use ray::model::transform::*;
 use ray::scene::*;
@@ -17,8 +18,7 @@ pub fn cornell_box() -> Scene {
         0.12, 0.45, 0.15,
     )))));
     let white = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from_scalar(0.73)))));
-    // TODO: figure out why mine is so much brighter
-    let light = Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(1.15)))));
+    let light = Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(5)))));
     let left_box = Box::new(Translate::new(
         Box::new(RotateY::new(
             Box::new(Prism::new(
@@ -26,7 +26,7 @@ pub fn cornell_box() -> Scene {
                 Vec3::new(165, 330, 165),
                 white.clone_box(),
             )),
-            15.0,
+            19.0,
         )),
         Vec3::new(265, 0, 295),
     ));
@@ -37,7 +37,7 @@ pub fn cornell_box() -> Scene {
                 Vec3::new(165, 165, 165),
                 white.clone_box(),
             )),
-            -18.0,
+            -22.0,
         )),
         Vec3::new(130, 0, 65),
     ));
@@ -74,6 +74,18 @@ pub fn cornell_box() -> Scene {
         )))),
         right_box,
         left_box,
+        // glass sphere on right box
+        Box::new(Sphere::new(
+            Vec3::new(190, 235, 145),
+            70.0,
+            Box::new(Dielectric::new(1.5)),
+        )),
+        // aluminum sphere on left box
+        Box::new(Sphere::new(
+            Vec3::new(355, 400, 430),
+            70.0,
+            Box::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1)),
+        )),
     ]);
     let width = 500;
     let height = 500;

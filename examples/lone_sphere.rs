@@ -19,14 +19,14 @@ pub fn lone_sphere() -> Scene {
             ))),
         )) as Box<dyn Hitable>,
         Box::new(Sphere::new(
-            Vec3::new(-10, 9, 0),
+            Vec3::new(-10, 7, 3),
             2.0,
-            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(10))))),
+            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(15))))),
         )),
         Box::new(Sphere::new(
-            Vec3::new(15, 9, 0),
+            Vec3::new(10, 7, -1),
             2.0,
-            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(10))))),
+            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(15))))),
         )),
         Box::new(XZRect::new(
             -10.0,
@@ -56,7 +56,7 @@ pub fn lone_sphere() -> Scene {
         camera: cam,
         width: width,
         height: height,
-        samples: 1000,
+        samples: 100,
         bounces: 50,
         background: Box::new(Solid::new(Color::default())),
     }
