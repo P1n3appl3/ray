@@ -38,11 +38,11 @@ pub fn test() -> Scene {
         Box::new(Translate::new(
             Box::new(Triangle::new(
                 Vec3::new(0, 0, 0),
-                Vec3::new(1, 0, 0),
-                Vec3::new(1, 1, 2),
+                Vec3::new(1, 2, 0),
+                Vec3::new(2, 0, 0),
                 Box::new(Diffuse::new(Box::new(Gradient {}))),
             )),
-            Vec3::new(0.5, 1, -2),
+            Vec3::new(0.5, 0.5, -1),
         )),
         Box::new(Translate::new(
             Box::new(RotateY::new(

@@ -24,48 +24,55 @@ impl Triangle {
 }
 
 impl Hitable for Triangle {
+    /*
+    Solving ray triangle intersection with Möller-Trumbore algorithm:
+
+    Triangle verticies A B and C
+    Triangle edges E1 = B - A and E2 = C - A
+    Ray origin O and direction D
+    Barycentric coords u and v express P = (1-u-v)A * uB * vC
+    Solving the system using Cramers rule:
+
+    t        1      |T E1 E2|        (note that scalar tripple product
+    u  = ---------  |D T  E2|         |A B C| is equal to AxB.C and
+    v    |D E1 E2|  |D E1 T |         also A.BxC)
+
+    if 0 <= u <= 1 and 0 <= u + v <= 1 then the collision is valid
+        */
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let v0v1 = self.v1 - self.v0;
-        let v0v2 = self.v2 - self.v0;
-        let normal = v0v1.cross(&v0v2);
-        let normal_squared = normal.dot(&normal);
-        if normal.dot(&r.dir).abs() <= std::f32::EPSILON {
+        let edge1 = self.v1 - self.v0;
+        let edge2 = self.v2 - self.v0;
+        let d_cross_e2 = r.dir.cross(&edge2);
+        let det = edge1.dot(&d_cross_e2);
+        if det.abs() <= std::f32::EPSILON {
             // ray is parallel to plane
             return None;
         }
-        let d = normal.dot(&self.v0);
-        let t = -(normal.dot(&r.origin) + d) / normal.dot(&r.dir);
+        if det <= 0.0 {
+            // intersection is with the back-face of the triangle
+            return None;
+        }
+        let tvec = r.origin - self.v0;
+        let u = tvec.dot(&d_cross_e2) / det;
+        if u <= 0.0 || u >= 1.0 {
+            return None;
+        }
+        let t_cross_e1 = tvec.cross(&edge1);
+        let v = r.dir.dot(&t_cross_e1) / det;
+        if v <= 0.0 || u + v >= 1.0 {
+            return None;
+        }
+        let t = edge2.dot(&t_cross_e1) / det;
         if t < t_min || t > t_max {
-            // ray starts or terminates before the triangle's plane
-            return None;
-        }
-        let point = r.origin + r.dir * t;
-
-        let edge0 = self.v1 - self.v0;
-        let relative_point = point - self.v0;
-        if edge0.cross(&relative_point).dot(&normal) < 0.0 {
-            return None;
-        }
-        let edge1 = self.v2 - self.v1;
-        let relative_point = point - self.v1;
-        let cross = edge1.cross(&relative_point);
-        let u = cross.dot(&normal) / normal_squared;
-        if u < 0.0 {
-            return None;
-        }
-        let edge2 = self.v0 - self.v2;
-        let relative_point = point - self.v2;
-        let cross = edge2.cross(&relative_point);
-        let v = cross.dot(&normal) / normal_squared;
-        if v < 0.0 {
             return None;
         }
         Some(HitRecord {
             t,
             u,
             v,
-            point,
-            normal, // TODO: interpolate this
+            // TODO: figure out if I can safely remove (1-u-v) below
+            point: self.v0 * (1.0 - u - v) + edge1 * u + edge2 * v,
+            normal: edge1.cross(&edge2).normalize(), // TODO: interpolate this
             material: self.material.as_ref(),
         })
     }
@@ -85,7 +92,6 @@ mod tests {
     use crate::model::aabb::AABB;
     use crate::model::material::Specular;
     use lazy_static::lazy_static;
-    use std::f32::EPSILON;
 
     lazy_static! {
         static ref TRI: Triangle = Triangle::new(
@@ -107,26 +113,34 @@ mod tests {
     fn test_hit() {
         let hit = TRI
             .hit(
-                Ray::new(Vec3::new(1, 1, 2), Vec3::new(0, 0, -1)),
+                Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
                 0.0,
                 std::f32::MAX,
             )
             .unwrap();
-        dbg!(hit.normal);
-        dbg!(hit.t);
-        dbg!(hit.u);
-        dbg!(hit.v);
-        assert!(hit.t - 2.0 <= EPSILON);
+        assert_eq!(hit.t, 2.0);
         assert_eq!(hit.normal, Vec3::new(0, 0, -1));
-        dbg!(hit.u);
-        dbg!(hit.v);
-        panic!();
+        assert_eq!(hit.point, Vec3::new(1, 1, 0));
+        assert_eq!(hit.u, 0.25);
+        assert_eq!(hit.v, 0.25);
+        let hit = TRI
+            .hit(
+                Ray::new(Vec3::new(1, 0, -1), Vec3::new(0, 1, 1)),
+                0.0,
+                std::f32::MAX,
+            )
+            .unwrap();
+        assert_eq!(hit.t, 1.0);
+        assert_eq!(hit.normal, Vec3::new(0, 0, -1));
+        assert_eq!(hit.point, Vec3::new(1, 1, 0));
+        assert_eq!(hit.u, 0.25);
+        assert_eq!(hit.v, 0.25);
     }
     #[test]
     fn test_back_hit() {
         assert!(TRI
             .hit(
-                Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
+                Ray::new(Vec3::new(1, 1, 2), Vec3::new(0, 0, -1)),
                 0.0,
                 std::f32::MAX,
             )
@@ -135,7 +149,7 @@ mod tests {
     #[test]
     fn test_miss() {
         let hit = TRI.hit(
-            Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
+            Ray::new(Vec3::new(1, 1, 2), Vec3::new(0, 0, -1)),
             0.0,
             std::f32::MAX,
         );
