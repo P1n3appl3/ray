@@ -6,7 +6,7 @@ use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3;
+    fn value(&self, u: f32, v: f32, p: Vec3) -> Color;
     fn clone_box(&self) -> Box<dyn Texture>;
 }
 
@@ -22,7 +22,7 @@ impl Solid {
 }
 
 impl Texture for Solid {
-    fn value(&self, _u: f32, _v: f32, _p: Vec3) -> Vec3 {
+    fn value(&self, _u: f32, _v: f32, _p: Vec3) -> Color {
         self.color
     }
     fn clone_box(&self) -> Box<dyn Texture> {
@@ -44,7 +44,7 @@ impl Checkered {
 }
 
 impl Texture for Checkered {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
+    fn value(&self, u: f32, v: f32, p: Vec3) -> Color {
         if (self.size * u).sin() * (self.size * v).sin() < 0.0 {
             self.a.value(u, v, p)
         } else {
@@ -74,7 +74,7 @@ impl Checkered3D {
 }
 
 impl Texture for Checkered3D {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
+    fn value(&self, u: f32, v: f32, p: Vec3) -> Color {
         if (self.size * p.x).sin() * (self.size * p.y).sin() * (self.size * p.z).sin()
             < 0.0
         {
@@ -151,7 +151,7 @@ impl std::fmt::Debug for Perlin {
 }
 
 impl Texture for Perlin {
-    fn value(&self, _u: f32, _v: f32, p: Vec3) -> Vec3 {
+    fn value(&self, _u: f32, _v: f32, p: Vec3) -> Color {
         use PerlinVariant::*;
         match self.kind {
             Noise => self.color * (0.5 * (1.0 + self.noise(p * self.scale))),
@@ -206,13 +206,9 @@ impl Perlin {
 }
 
 impl Texture for RgbImage {
-    fn value(&self, u: f32, v: f32, _p: Vec3) -> Vec3 {
-        let i = (u * self.width() as f32)
-            .max(0.0)
-            .min((self.width() - 1) as f32) as u32;
-        let j = ((1.0 - v) * self.height() as f32 - 0.001)
-            .max(0.0)
-            .min((self.height() - 1) as f32) as u32;
+    fn value(&self, u: f32, v: f32, _p: Vec3) -> Color {
+        let i = (u * self.width() as f32) as u32;
+        let j = ((1.0 - v) * self.height() as f32 - 0.001) as u32;
         let p = self.get_pixel(i, j);
         Color::from_rgb(p[0], p[1], p[2])
     }
@@ -225,7 +221,7 @@ impl Texture for RgbImage {
 pub struct Gradient {}
 
 impl Texture for Gradient {
-    fn value(&self, u: f32, v: f32, _p: Vec3) -> Vec3 {
+    fn value(&self, u: f32, v: f32, _p: Vec3) -> Color {
         Color::new(u, v, 1.0 - u - v)
     }
     fn clone_box(&self) -> Box<dyn Texture> {

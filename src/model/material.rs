@@ -154,7 +154,14 @@ impl Light {
 }
 
 impl Material for Light {
-    fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Vec3, Ray)> {
+    fn scatter(
+        &self,
+        _: Ray,
+        _: Vec3,
+        _: Vec3,
+        _: f32,
+        _: f32,
+    ) -> Option<(Vec3, Ray)> {
         None
     }
     fn clone_box(&self) -> Box<dyn Material> {

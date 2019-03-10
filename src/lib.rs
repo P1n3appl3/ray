@@ -1,4 +1,3 @@
-#![feature(drain_filter)]
 #![allow(dead_code)]
 pub mod background;
 pub mod camera;

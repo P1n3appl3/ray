@@ -82,7 +82,7 @@ pub fn cornell_box() -> Scene {
         )),
         // aluminum sphere on left box
         Box::new(Sphere::new(
-            Vec3::new(355, 400, 430),
+            Vec3::new(355, 400, 375),
             70.0,
             Box::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1)),
         )),

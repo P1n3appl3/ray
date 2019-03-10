@@ -7,6 +7,7 @@ use ray::model::rect::Prism;
 use ray::model::sphere::Sphere;
 use ray::model::texture::{Gradient, Solid};
 use ray::model::transform::{RotateY, Translate};
+use ray::model::triangle::Triangle;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
@@ -32,6 +33,12 @@ pub fn test() -> Scene {
         Box::new(Sphere::new(
             Vec3::new(3, -1, 0),
             1.0,
+            Box::new(Diffuse::new(Box::new(Gradient {}))),
+        )),
+        Box::new(Triangle::new(
+            Vec3::new(1, -1, 0),
+            Vec3::new(2, -1, 0),
+            Vec3::new(2, 0, 1),
             Box::new(Diffuse::new(Box::new(Gradient {}))),
         )),
         Box::new(Translate::new(
