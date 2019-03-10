@@ -28,52 +28,37 @@ impl Hitable for Triangle {
         let v0v1 = self.v1 - self.v0;
         let v0v2 = self.v2 - self.v0;
         let normal = v0v1.cross(&v0v2);
-        let area = normal.len() / 2.0;
         if normal.dot(&r.dir) <= std::f32::EPSILON {
             // ray is parallel to plane
             return None;
         }
         let d = normal.dot(&self.v0);
-        let t = (normal.dot(&r.origin) + d) / normal.dot(&r.dir);
+        let t = -(normal.dot(&r.origin) + d) / normal.dot(&r.dir);
         if t < t_min || t > t_max {
-            // ray starts or ends before the triangles plane
+            // ray starts or terminates before the triangle's plane
             return None;
         }
-
         let point = r.origin + r.dir * t;
-
+        let area = normal.len() / 2.0;
         let edge0 = self.v1 - self.v0;
-        let vp0 = point - self.v0;
-        let cross = edge0.cross(&vp0);
-        if normal.dot(&cross) < 0.0 {
-            // point of intersection is outside this edge
+        let relative_point = point - self.v0;
+        if edge0.cross(&relative_point).dot(&normal) < 0.0 {
             return None;
         }
-
         let edge1 = self.v2 - self.v1;
-        let vp1 = point - self.v1;
-        let cross = edge1.cross(&vp1);
-        let u = normal.dot(&cross);
-        if u < 0.0 {
-            // point of intersection is outside this edge
+        let relative_point = point - self.v1;
+        if edge1.cross(&relative_point).dot(&normal) < 0.0 {
             return None;
         }
-
         let edge2 = self.v0 - self.v2;
-        let vp2 = point - self.v2;
-        let cross = edge2.cross(&vp2);
-        let v = normal.dot(&cross);
-        if v < 0.0 {
-            // point of intersection is outside this edge
+        let relative_point = point - self.v2;
+        if edge2.cross(&relative_point).dot(&normal) < 0.0 {
             return None;
         }
-
-        dbg!(u / area);
-        dbg!(v / area);
         Some(HitRecord {
             t,
-            u: u / area,
-            v: v / area,
+            u: 0.0,
+            v: 0.0,
             point,
             normal, // TODO: interpolate this
             material: self.material.as_ref(),
@@ -115,11 +100,13 @@ mod tests {
     }
     #[test]
     fn test_hit() {
-        let hit = TRI.hit(
-            Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
-            0.0,
-            std::f32::MAX,
-        ).unwrap();
+        let hit = TRI
+            .hit(
+                Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
+                0.0,
+                std::f32::MAX,
+            )
+            .unwrap();
         assert!(hit.t - 1.0 <= EPSILON);
         assert_eq!(hit.normal, Vec3::new(0, 0, -1));
         dbg!(hit.u);
