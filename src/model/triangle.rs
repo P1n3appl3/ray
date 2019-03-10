@@ -28,7 +28,8 @@ impl Hitable for Triangle {
         let v0v1 = self.v1 - self.v0;
         let v0v2 = self.v2 - self.v0;
         let normal = v0v1.cross(&v0v2);
-        if normal.dot(&r.dir) <= std::f32::EPSILON {
+        let normal_squared = normal.dot(&normal);
+        if normal.dot(&r.dir).abs() <= std::f32::EPSILON {
             // ray is parallel to plane
             return None;
         }
@@ -39,7 +40,7 @@ impl Hitable for Triangle {
             return None;
         }
         let point = r.origin + r.dir * t;
-        let area = normal.len() / 2.0;
+
         let edge0 = self.v1 - self.v0;
         let relative_point = point - self.v0;
         if edge0.cross(&relative_point).dot(&normal) < 0.0 {
@@ -47,18 +48,22 @@ impl Hitable for Triangle {
         }
         let edge1 = self.v2 - self.v1;
         let relative_point = point - self.v1;
-        if edge1.cross(&relative_point).dot(&normal) < 0.0 {
+        let cross = edge1.cross(&relative_point);
+        let u = cross.dot(&normal) / normal_squared;
+        if u < 0.0 {
             return None;
         }
         let edge2 = self.v0 - self.v2;
         let relative_point = point - self.v2;
-        if edge2.cross(&relative_point).dot(&normal) < 0.0 {
+        let cross = edge2.cross(&relative_point);
+        let v = cross.dot(&normal) / normal_squared;
+        if v < 0.0 {
             return None;
         }
         Some(HitRecord {
             t,
-            u: 0.0,
-            v: 0.0,
+            u,
+            v,
             point,
             normal, // TODO: interpolate this
             material: self.material.as_ref(),
@@ -102,16 +107,30 @@ mod tests {
     fn test_hit() {
         let hit = TRI
             .hit(
-                Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
+                Ray::new(Vec3::new(1, 1, 2), Vec3::new(0, 0, -1)),
                 0.0,
                 std::f32::MAX,
             )
             .unwrap();
-        assert!(hit.t - 1.0 <= EPSILON);
+        dbg!(hit.normal);
+        dbg!(hit.t);
+        dbg!(hit.u);
+        dbg!(hit.v);
+        assert!(hit.t - 2.0 <= EPSILON);
         assert_eq!(hit.normal, Vec3::new(0, 0, -1));
         dbg!(hit.u);
         dbg!(hit.v);
         panic!();
+    }
+    #[test]
+    fn test_back_hit() {
+        assert!(TRI
+            .hit(
+                Ray::new(Vec3::new(1, 1, -2), Vec3::new(0, 0, 1)),
+                0.0,
+                std::f32::MAX,
+            )
+            .is_none());
     }
     #[test]
     fn test_miss() {
