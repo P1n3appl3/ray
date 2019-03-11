@@ -4,9 +4,9 @@ A toy raytracer made by following the excellent tutorials: "Ray Tracing in One W
 
 ## Examples
 
-![Cornell Box](https://imgur.com/nRxOnPy)
-![Ray Tracing In One Weekend](https://imgur.com/oCkkcKU)
-![Ray Tracing: The Next Week](https://imgur.com/Vgl8uKd)
+![Cornell Box](https://i.imgur.com/nRxOnPy.png)
+![Ray Tracing In One Weekend](https://i.imgur.com/oCkkcKU.png)
+![Ray Tracing: The Next Week](https://i.imgur.com/Vgl8uKd.png)
 
 If I do more renders I'll put them [here](https://imgur.com/a/CIZrqYd).
 
