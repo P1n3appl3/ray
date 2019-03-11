@@ -31,6 +31,7 @@ impl Hitable for Triangle {
     Triangle edges E1 = B - A and E2 = C - A
     Ray origin O and direction D
     Barycentric coords u and v express P = (1-u-v)A * uB * vC
+    Relative position of ray origin to vertex A is called T = (O-A)
     Solving the system using Cramers rule:
 
     t        1      |T E1 E2|        (note that scalar tripple product

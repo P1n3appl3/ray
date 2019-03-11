@@ -96,5 +96,5 @@ pub fn book_cover() -> Scene {
 }
 
 fn main() {
-    book_cover().render_to_file("book_cover.png").unwrap();
+    book_cover().render_to_file("one_weekend.png").unwrap();
 }

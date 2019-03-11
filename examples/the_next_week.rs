@@ -79,18 +79,6 @@ pub fn all_features() -> Scene {
             internal_reflection,
             Box::new(Solid::new(Vec3::new(0.2, 0.4, 0.9))),
         )),
-        // smoke
-        Box::new(Volume::new(
-            0.0001,
-            Box::new(Sphere::new(
-                Vec3::default(),
-                5000.0,
-                Box::new(Dielectric::new(
-                    0.0, // arbitrary
-                )),
-            )),
-            Box::new(Solid::new(Vec3::from_scalar(1))),
-        )),
         // globe
         Box::new(Translate::new(
             Box::new(RotateY::new(
@@ -146,5 +134,5 @@ pub fn all_features() -> Scene {
 }
 
 fn main() {
-    all_features().render_to_file("all_features.png").unwrap();
+    all_features().render_to_file("the_next_week.png").unwrap();
 }

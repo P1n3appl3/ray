@@ -4,7 +4,11 @@ A toy raytracer made by following the excellent tutorials: "Ray Tracing in One W
 
 ## Examples
 
-Coming soon...
+![Cornell Box](https://imgur.com/nRxOnPy)
+![Ray Tracing In One Weekend](https://imgur.com/oCkkcKU)
+![Ray Tracing: The Next Week](https://imgur.com/Vgl8uKd)
+
+If I do more renders I'll put them [here](https://imgur.com/a/CIZrqYd).
 
 ## Features
 
@@ -31,3 +35,4 @@ Coming soon...
   - [demofox](https://blog.demofox.org/2016/09/21/path-tracing-getting-started-with-diffuse-and-emissive/) has written dozens of informative posts on ray tracing techniques
   - [Kevin Beason](http://www.kevinbeason.com/worklog/) wrote a fairly advanced raytracer and has great doccumentation of their progress
 - While I haven't made heavy use of them yet, the [MERL BDRF database](https://www.merl.com/brdf/), [HDRI Haven](https://hdrihaven.com/), and [texturify](http://texturify.com/) are great free resources for texturing and environment mapping.
+- [This](https://all3dp.com/3d-file-format-3d-files-3d-printer-3d-cad-vrml-stl-obj/) is a great comparison of popular 3d file formats.
