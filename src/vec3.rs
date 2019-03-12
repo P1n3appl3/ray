@@ -1,5 +1,6 @@
 use rand::distributions::{Distribution, Standard};
 use rand::{random, Rng};
+use std::f32;
 use std::fmt;
 use std::ops::*;
 
@@ -16,6 +17,12 @@ impl ToF32 for f32 {
 impl ToF32 for i32 {
     fn to(&self) -> f32 {
         *self as f32
+    }
+}
+
+impl ToF32 for u8 {
+    fn to(&self) -> f32 {
+        f32::from(*self) / 255.0
     }
 }
 

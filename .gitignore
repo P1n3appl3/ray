@@ -1,6 +1,7 @@
 /target
 **/*.rs.bk
 *.ppm
+*.hdr
 *.png
 !earth.png
 !example_outputs/*.png

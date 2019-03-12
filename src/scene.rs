@@ -3,11 +3,12 @@ use crate::camera::Camera;
 use crate::model::bvh::BVHNode;
 use crate::model::hitable::Hitable;
 use crate::ray::Ray;
-use crate::vec3::Vec3;
+use crate::vec3::{ToF32, Vec3};
 use image::{ImageBuffer, Pixel, Rgb, RgbImage};
 use itertools::iproduct;
 use rand::random;
 use rayon::prelude::*;
+use std::f32;
 use std::fs::File;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -19,11 +20,7 @@ pub type Color = Vec3;
 
 impl Color {
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Color::new(
-            f32::from(r) / 255.0,
-            f32::from(g) / 255.0,
-            f32::from(b) / 255.0,
-        )
+        Color::new(r.to(), g.to(), b.to())
     }
 }
 
@@ -84,7 +81,7 @@ impl Scene {
                         )
                     })
                     .fold(Color::default(), |a, b| a + b)
-                    / self.samples as f32;
+                    / f32::from(self.samples);
                 Rgb {
                     data: [col.x, col.y, col.z],
                 }
@@ -94,7 +91,7 @@ impl Scene {
 
     fn show_progress(start: Instant, goal: usize, current: usize) {
         let percent = current as f32 / goal as f32;
-        let elapsed = (Instant::now() - start).as_millis() as f32 / 1_000_000.0;
+        let elapsed = (Instant::now() - start).as_millis() as f32 / 1000.0;
         print!("{}", cursor::Up(4));
         println!("progress: {:.1}%    ", percent * 100.0);
         println!("elapsed: {:.1}s    ", elapsed);
