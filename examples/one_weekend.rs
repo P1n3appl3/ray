@@ -10,7 +10,7 @@ use ray::model::texture::*;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
-pub fn book_cover() -> Scene {
+pub fn main() {
     let mut spheres = vec![
         Box::new(Sphere::new(
             Vec3::new(0, -1000, 0),
@@ -93,8 +93,6 @@ pub fn book_cover() -> Scene {
             b: Color::new(0.5, 0.7, 1.0),
         }),
     }
-}
-
-fn main() {
-    book_cover().render_to_file("one_weekend.png").unwrap();
+    .render_to_file("one_weekend.png")
+    .unwrap();
 }

@@ -9,7 +9,7 @@ use ray::model::texture::{PerlinVariant::*, *};
 use ray::scene::*;
 use ray::vec3::Vec3;
 
-pub fn lone_sphere() -> Scene {
+pub fn main() {
     let spheres = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
             Vec3::new(0, 2, 0),
@@ -60,8 +60,6 @@ pub fn lone_sphere() -> Scene {
         bounces: 50,
         background: Box::new(Solid::new(Color::default())),
     }
-}
-
-fn main() {
-    lone_sphere().render_to_file("lone_sphere.png").unwrap();
+    .render_to_file("lone_sphere.png")
+    .unwrap();
 }

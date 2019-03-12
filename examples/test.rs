@@ -11,18 +11,12 @@ use ray::model::triangle::Triangle;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
-pub fn test() -> Scene {
+pub fn main() {
+    let mirror = Box::new(Specular::new(Vec3::from_scalar(1), 0.0));
     let objects = BVHNode::from_items(&mut vec![
-        Box::new(Sphere::new(
-            Vec3::new(-2, 3, 8),
-            2.0,
-            Box::new(Specular::new(Vec3::from_scalar(1), 0.0)),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(2, 2, 4),
-            1.0,
-            Box::new(Specular::new(Vec3::from_scalar(1), 0.0)),
-        )),
+        Box::new(Sphere::new(Vec3::new(-2, 3, 8), 2.0, mirror.clone_box()))
+            as Box<dyn Hitable>,
+        Box::new(Sphere::new(Vec3::new(2, 2, 4), 1.0, mirror)),
         Box::new(Sphere::new(
             Vec3::new(0, -100, 0),
             98.0,
@@ -58,7 +52,7 @@ pub fn test() -> Scene {
     ]);
     let width = 600;
     let height = 600;
-    let cam = Camera::new(
+    let camera = Camera::new(
         Vec3::new(0, 2, -4),
         Vec3::new(0, 0, 0),
         Vec3::new(0, 1, 0),
@@ -68,15 +62,13 @@ pub fn test() -> Scene {
     );
     Scene {
         objects,
-        camera: cam,
-        width: width,
-        height: height,
+        camera,
+        width,
+        height,
         samples: 10,
         bounces: 50,
         background: Box::new(image::open("pier.png").unwrap().to_rgb()),
     }
-}
-
-fn main() {
-    test().render_to_file("test.png").unwrap();
+    .render_to_file("test.png")
+    .unwrap();
 }

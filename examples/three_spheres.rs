@@ -9,7 +9,7 @@ use ray::model::texture::*;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
-pub fn three_spheres() -> Scene {
+pub fn main() {
     let spheres = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(
             Vec3::new(0, -100.5, -1),
@@ -54,15 +54,13 @@ pub fn three_spheres() -> Scene {
         camera: cam,
         width: width,
         height: height,
-        samples: 50,
+        samples: 100,
         bounces: 50,
         background: Box::new(background::Gradient {
             a: Color::new(1.0, 1.0, 1.0),
             b: Color::new(0.5, 0.7, 1.0),
         }),
     }
-}
-
-fn main() {
-    three_spheres().render_to_file("three_spheres.png").unwrap();
+    .render_to_file("three_spheres.png")
+    .unwrap();
 }

@@ -4,9 +4,12 @@ use crate::model::bvh::BVHNode;
 use crate::model::hitable::Hitable;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+use image::{ImageBuffer, Pixel, Rgb, RgbImage};
 use itertools::iproduct;
 use rand::random;
 use rayon::prelude::*;
+use std::fs::File;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -60,13 +63,13 @@ pub struct Scene {
 static PROGRESS_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 impl Scene {
-    pub fn render(&self) -> Vec<u8> {
+    pub fn render(&self) -> Vec<Rgb<f32>> {
         iproduct!((0..self.height).rev(), 0..self.width)
             .collect::<Vec<(usize, usize)>>() // TODO: might not need this?
             .into_par_iter()
             .map(|(y, x)| {
                 PROGRESS_COUNTER.fetch_add(1, Ordering::Relaxed);
-                let col = ((0..self.samples)
+                let col = (0..self.samples)
                     .map(|_| {
                         color(
                             self.camera.get_ray(
@@ -81,22 +84,17 @@ impl Scene {
                         )
                     })
                     .fold(Color::default(), |a, b| a + b)
-                    / self.samples as f32)
-                    .piecewise_min(Vec3::from_scalar(1));
-                vec![
-                    // sqrt for gamma 2 correction to brighten image
-                    (col.x.sqrt() * 255.999) as u8,
-                    (col.y.sqrt() * 255.999) as u8,
-                    (col.z.sqrt() * 255.999) as u8,
-                ]
+                    / self.samples as f32;
+                Rgb {
+                    data: [col.x, col.y, col.z],
+                }
             })
-            .flatten()
-            .collect::<Vec<u8>>()
+            .collect::<Vec<Rgb<f32>>>()
     }
 
     fn show_progress(start: Instant, goal: usize, current: usize) {
         let percent = current as f32 / goal as f32;
-        let elapsed = (Instant::now() - start).as_nanos() as f32 / 1_000_000_000.0;
+        let elapsed = (Instant::now() - start).as_millis() as f32 / 1_000_000.0;
         print!("{}", cursor::Up(4));
         println!("progress: {:.1}%    ", percent * 100.0);
         println!("elapsed: {:.1}s    ", elapsed);
@@ -119,9 +117,22 @@ impl Scene {
         });
         let data = self.render();
         Scene::show_progress(start_time, goal, goal);
-        let output: image::RgbImage =
-            image::ImageBuffer::from_vec(self.width as u32, self.height as u32, data)
-                .unwrap();
+        let buffer = File::create(PathBuf::from(filename).with_extension("hdr"))?;
+        let encoder = image::hdr::HDREncoder::new(buffer);
+        encoder.encode(data.as_slice(), self.width, self.height)?;
+        let data = data
+            .iter()
+            .map(|p| {
+                p.channels()
+                    .iter()
+                    // cap pixel brightness at 1 and sqrt for gamma 2 correction
+                    .map(|n| (n.min(1.0).sqrt() * 255.999) as u8)
+                    .collect::<Vec<u8>>()
+            })
+            .flatten()
+            .collect::<Vec<u8>>();
+        let output: RgbImage =
+            ImageBuffer::from_vec(self.width as u32, self.height as u32, data).unwrap();
         output.save(filename)?;
         Ok(())
     }

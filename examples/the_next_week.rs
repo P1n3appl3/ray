@@ -13,7 +13,7 @@ use ray::model::volume::Volume;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
-pub fn all_features() -> Scene {
+pub fn main() {
     let white = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from_scalar(0.73)))));
     let ground = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
         0.48, 0.83, 0.53,
@@ -131,8 +131,6 @@ pub fn all_features() -> Scene {
         bounces: 100,
         background: Box::new(Solid::new(Color::default())),
     }
-}
-
-fn main() {
-    all_features().render_to_file("the_next_week.png").unwrap();
+    .render_to_file("the_next_week.png")
+    .unwrap();
 }

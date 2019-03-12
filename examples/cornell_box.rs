@@ -10,7 +10,7 @@ use ray::model::transform::*;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
-pub fn cornell_box() -> Scene {
+pub fn main() {
     let red = Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
         0.65, 0.05, 0.05,
     )))));
@@ -48,10 +48,8 @@ pub fn cornell_box() -> Scene {
         )))) as Box<Hitable>,
         // right wall
         Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
-        // big light
-        Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // light
-        // Box::new(XZRect::new(213.0, 227.0, 343.0, 332.0, 554.0, light)),
+        Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // ceiling
         Box::new(FlipNormal::new(Box::new(XZRect::new(
             0.0,
@@ -106,8 +104,6 @@ pub fn cornell_box() -> Scene {
         bounces: 50,
         background: Box::new(Solid::new(Color::default())),
     }
-}
-
-fn main() {
-    cornell_box().render_to_file("cornell_box.png").unwrap();
+    .render_to_file("cornell_box.png")
+    .unwrap();
 }
