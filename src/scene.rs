@@ -61,32 +61,40 @@ static PROGRESS_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 impl Scene {
     pub fn render(&self) -> Vec<Rgb<f32>> {
-        iproduct!((0..self.height).rev(), 0..self.width)
-            .collect::<Vec<(usize, usize)>>() // TODO: might not need this?
-            .into_par_iter()
-            .map(|(y, x)| {
-                PROGRESS_COUNTER.fetch_add(1, Ordering::Relaxed);
-                let col = (0..self.samples)
-                    .map(|_| {
-                        color(
-                            self.camera.get_ray(
-                                // TODO: add jitter sampling
-                                (x as f32 + random::<f32>()) / self.width as f32,
-                                (y as f32 + random::<f32>()) / self.height as f32,
-                            ),
-                            &self.objects,
-                            self.background.as_ref(),
-                            0,
-                            self.bounces,
-                        )
-                    })
-                    .fold(Color::default(), |a, b| a + b)
-                    / f32::from(self.samples);
-                Rgb {
-                    data: [col.x, col.y, col.z],
-                }
+        if cfg!(feature = "single_thread") {
+            iproduct!((0..self.height).rev(), 0..self.width)
+                .map(|(y, x)| self.render_pixel(x, y))
+                .collect::<Vec<Rgb<f32>>>()
+        } else {
+            iproduct!((0..self.height).rev(), 0..self.width)
+                .collect::<Vec<(usize, usize)>>() // TODO: might not need this?
+                .into_par_iter()
+                .map(|(y, x)| self.render_pixel(x, y))
+                .collect::<Vec<Rgb<f32>>>()
+        }
+    }
+
+    fn render_pixel(&self, x: usize, y: usize) -> Rgb<f32> {
+        PROGRESS_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let col = (0..self.samples)
+            .map(|_| {
+                color(
+                    self.camera.get_ray(
+                        // TODO: add jitter sampling
+                        (x as f32 + random::<f32>()) / self.width as f32,
+                        (y as f32 + random::<f32>()) / self.height as f32,
+                    ),
+                    &self.objects,
+                    self.background.as_ref(),
+                    0,
+                    self.bounces,
+                )
             })
-            .collect::<Vec<Rgb<f32>>>()
+            .fold(Color::default(), |a, b| a + b)
+            / f32::from(self.samples);
+        Rgb {
+            data: [col.x, col.y, col.z],
+        }
     }
 
     fn show_progress(start: Instant, goal: usize, current: usize) {
@@ -114,9 +122,12 @@ impl Scene {
         });
         let data = self.render();
         Scene::show_progress(start_time, goal, goal);
-        let buffer = File::create(PathBuf::from(filename).with_extension("hdr"))?;
-        let encoder = image::hdr::HDREncoder::new(buffer);
-        encoder.encode(data.as_slice(), self.width, self.height)?;
+        #[cfg(feature = "hdr_output")]
+        {
+            let buffer = File::create(PathBuf::from(filename).with_extension("hdr"))?;
+            let encoder = image::hdr::HDREncoder::new(buffer);
+            encoder.encode(data.as_slice(), self.width, self.height)?;
+        }
         let data = data
             .iter()
             .map(|p| {

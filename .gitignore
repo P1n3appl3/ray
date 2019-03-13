@@ -3,5 +3,5 @@
 *.ppm
 *.hdr
 *.png
+*.obj
 !earth.png
-!example_outputs/*.png

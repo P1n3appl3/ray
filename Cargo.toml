@@ -15,6 +15,13 @@ rand = "0.6.3"
 rayon = "1.0.3"
 termion = "1.5.1"
 lazy_static = "1.2.0"
+tobj = "0.1.6"
+serde = "1.0.89"
 
 [profile.release]
 debug = true
+
+[features]
+default = ["hdr_output"]
+hdr_output = []
+single_thread = []
