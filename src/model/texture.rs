@@ -1,7 +1,7 @@
 use crate::scene::Color;
 use crate::vec3::{ToF32, Vec3};
 use image::hdr::HDRDecoder;
-use image::{ImageBuffer, Pixel, Primitive, Rgb};
+use image::{ImageBuffer, Pixel, Primitive, Rgb, RgbImage};
 use itertools::iproduct;
 use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
@@ -193,6 +193,10 @@ where
         let channels = self.get_pixel(x, y).channels();
         Color::new(channels[0].to(), channels[1].to(), channels[2].to())
     }
+}
+
+pub fn load_ldr_image(filename: &str) -> RgbImage {
+    image::open(filename).unwrap().to_rgb()
 }
 
 pub fn load_hdr_image(filename: &str) -> ImageBuffer<Rgb<f32>, Vec<f32>> {

@@ -3,9 +3,10 @@ use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
+use ray::model::mesh::Mesh;
 use ray::model::rect::Prism;
 use ray::model::sphere::Sphere;
-use ray::model::texture::{load_hdr_image, Gradient, Solid};
+use ray::model::texture::{load_ldr_image, Gradient, Solid};
 use ray::model::transform::{RotateY, Translate};
 use ray::model::triangle::Triangle;
 use ray::scene::*;
@@ -22,8 +23,8 @@ pub fn main() {
     let (mirror, gradient, floor) = (0, 1, 2);
     let objects = BVHNode::from_items(&mut vec![
         Box::new(Sphere::new(Vec3::new(-2, 3, 4), 2.0, mirror)) as Box<dyn Hitable>,
-        Box::new(Sphere::new(Vec3::new(2, 2, 4), 1.0, mirror)),
-        Box::new(Sphere::new(Vec3::new(0, -500, 0), 498.0, floor)),
+        Box::new(Sphere::new(Vec3::new(2, 5, 5), 2.0, mirror)),
+        // Box::new(Sphere::new(Vec3::new(0, -500, 0), 498.0, floor)),
         Box::new(Sphere::new(Vec3::new(4, -1, -1), 1.0, gradient)),
         Box::new(Translate::new(
             Box::new(Triangle::new(
@@ -32,14 +33,18 @@ pub fn main() {
                 Vec3::new(2, 0, 0),
                 gradient,
             )),
-            Vec3::new(0.5, 0.5, -1),
+            Vec3::new(1.5, 2, -1),
         )),
         Box::new(Translate::new(
             Box::new(RotateY::new(
                 Box::new(Prism::new(Vec3::default(), Vec3::new(2, 2, 2), gradient)),
                 -35.0,
             )),
-            Vec3::new(-3, -1, -2),
+            Vec3::new(-4, -1, -2),
+        )),
+        Box::new(Translate::new(
+            Box::new(RotateY::new(Box::new(Mesh::new("teapot.obj", 2)), -30.0)),
+            Vec3::new(1, -1, 1),
         )),
     ]);
     let width = 600;
@@ -60,7 +65,7 @@ pub fn main() {
         height,
         samples: 10,
         bounces: 50,
-        background: Box::new(load_hdr_image("sunrise.hdr")),
+        background: Box::new(load_ldr_image("bg.png")),
     }
     .render_to_file("test.png")
     .unwrap();
