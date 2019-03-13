@@ -25,3 +25,10 @@ debug = true
 default = ["hdr_output"]
 hdr_output = []
 single_thread = []
+
+[dev-dependencies]
+criterion = "0.2"
+
+[[bench]]
+name = "benko"
+harness = false

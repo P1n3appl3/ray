@@ -2,7 +2,7 @@ use super::ray::Ray;
 use super::vec3::Vec3;
 use rand::random;
 
-fn rand_in_unit_disk() -> Vec3 {
+pub fn rand_in_unit_disk() -> Vec3 {
     let mut p;
     while {
         p = Vec3::new(
