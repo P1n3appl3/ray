@@ -1,7 +1,7 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use crate::ray::Ray;
+use crate::scene::MatID;
 use crate::vec3::Vec3;
 
 #[derive(Debug)]
@@ -9,16 +9,16 @@ pub struct Triangle {
     v0: Vec3,
     v1: Vec3,
     v2: Vec3,
-    material: Box<dyn Material>,
+    material: MatID,
 }
 
 impl Triangle {
-    pub fn new(v0: Vec3, v1: Vec3, v2: Vec3, mat: Box<dyn Material>) -> Self {
+    pub fn new(v0: Vec3, v1: Vec3, v2: Vec3, material: MatID) -> Self {
         Triangle {
             v0,
             v1,
             v2,
-            material: mat,
+            material,
         }
     }
 }
@@ -74,7 +74,7 @@ impl Hitable for Triangle {
             // TODO: figure out if I can safely remove (1-u-v) below
             point: self.v0 * (1.0 - u - v) + edge1 * u + edge2 * v,
             normal: edge1.cross(&edge2).normalize(), // TODO: interpolate this
-            material: self.material.as_ref(),
+            material: self.material,
         })
     }
     fn get_bb(&self) -> AABB {
@@ -82,16 +82,12 @@ impl Hitable for Triangle {
         let max = self.v0.piecewise_max(self.v1).piecewise_max(self.v2);
         AABB::new(min, max)
     }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        Some(self.material.as_ref())
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::model::aabb::AABB;
-    use crate::model::material::Specular;
     use lazy_static::lazy_static;
 
     lazy_static! {
@@ -99,7 +95,7 @@ mod tests {
             Vec3::new(0, 0, 0),
             Vec3::new(0, 4, 0),
             Vec3::new(4, 0, 0),
-            Box::new(Specular::new(Vec3::default(), 0.0)),
+            MatID::default(),
         );
     }
 

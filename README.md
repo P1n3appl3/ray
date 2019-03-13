@@ -36,3 +36,4 @@ If I do more renders I'll put them [here](https://imgur.com/a/CIZrqYd).
   - [Kevin Beason](http://www.kevinbeason.com/worklog/) wrote a fairly advanced raytracer and has great doccumentation of their progress
 - The [MERL BDRF database](https://www.merl.com/brdf/), [HDRI Haven](https://hdrihaven.com/), and [texturify](http://texturify.com/) are great free resources for texturing and environment mapping.
 - [This](https://all3dp.com/3d-file-format-3d-files-3d-printer-3d-cad-vrml-stl-obj/) is a great comparison of popular 3d file formats.
+- Adam Perry wrote [a great walkthrough](https://blog.anp.lol/rust/2016/07/24/profiling-rust-perf-flamegraph/) for performance profiling rust with flamegraphs.

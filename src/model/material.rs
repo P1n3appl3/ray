@@ -4,7 +4,6 @@ use crate::vec3::Vec3;
 use rand::random;
 
 pub trait Material: Send + Sync + std::fmt::Debug {
-    fn clone_box(&self) -> Box<dyn Material>;
     fn scatter(
         &self,
         r: Ray,
@@ -48,11 +47,6 @@ impl Material for Diffuse {
         let scattered = Ray::new(point, target - point);
         Some((self.texture.value(u, v, point), scattered))
     }
-    fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(Diffuse {
-            texture: self.texture.clone_box(),
-        })
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -84,9 +78,6 @@ impl Material for Specular {
         } else {
             None
         }
-    }
-    fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(self.clone())
     }
 }
 
@@ -137,9 +128,6 @@ impl Material for Dielectric {
             Some((attenuation, Ray::new(point, refracted)))
         }
     }
-    fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(self.clone())
-    }
 }
 
 #[derive(Debug)]
@@ -156,11 +144,6 @@ impl Light {
 impl Material for Light {
     fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Vec3, Ray)> {
         None
-    }
-    fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(Light {
-            texture: self.texture.clone_box(),
-        })
     }
     fn emit(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
         self.texture.value(u, v, p)
@@ -191,10 +174,5 @@ impl Material for Isotropic {
             self.texture.value(u, v, point),
             Ray::new(point, Vec3::rand_in_unit_sphere()),
         ))
-    }
-    fn clone_box(&self) -> Box<dyn Material> {
-        Box::new(Isotropic {
-            texture: self.texture.clone_box(),
-        })
     }
 }

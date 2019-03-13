@@ -1,6 +1,5 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use itertools::iproduct;
@@ -27,9 +26,6 @@ impl Hitable for FlipNormal {
     }
     fn get_bb(&self) -> AABB {
         self.obj.get_bb()
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        self.obj.get_mat()
     }
 }
 
@@ -59,9 +55,6 @@ impl Hitable for Translate {
     fn get_bb(&self) -> AABB {
         let temp = self.obj.get_bb();
         AABB::new(temp.min + self.offset, temp.max + self.offset)
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        self.obj.get_mat()
     }
 }
 
@@ -128,8 +121,5 @@ impl Hitable for RotateY {
     }
     fn get_bb(&self) -> AABB {
         self.bb
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        self.obj.get_mat()
     }
 }

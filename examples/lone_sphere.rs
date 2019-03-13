@@ -10,40 +10,27 @@ use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn main() {
+    let materials: Vec<Box<dyn Material>> = vec![
+        Box::new(Diffuse::new(Box::new(
+            image::open("earth.png").unwrap().to_rgb(),
+        ))),
+        Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(15))))),
+        Box::new(Diffuse::new(Box::new(Perlin::new(
+            0.75,
+            Vec3::new(0.8, 0.4, 0.2),
+            Marble,
+        )))),
+    ];
+    let (earth, light, marble) = (0, 1, 2);
     let spheres = BVHNode::from_items(&mut vec![
-        Box::new(Sphere::new(
-            Vec3::new(0, 2, 0),
-            2.0,
-            Box::new(Diffuse::new(Box::new(
-                image::open("earth.png").unwrap().to_rgb(),
-            ))),
-        )) as Box<dyn Hitable>,
-        Box::new(Sphere::new(
-            Vec3::new(-10, 7, 3),
-            2.0,
-            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(15))))),
-        )),
-        Box::new(Sphere::new(
-            Vec3::new(10, 7, -1),
-            2.0,
-            Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(15))))),
-        )),
-        Box::new(XZRect::new(
-            -10.0,
-            -10.0,
-            10.0,
-            10.0,
-            -0.0,
-            Box::new(Diffuse::new(Box::new(Perlin::new(
-                0.75,
-                Vec3::new(0.8, 0.4, 0.2),
-                Marble,
-            )))),
-        )),
+        Box::new(Sphere::new(Vec3::new(0, 2, 0), 2.0, earth)) as Box<dyn Hitable>,
+        Box::new(Sphere::new(Vec3::new(-10, 7, 3), 2.0, light)),
+        Box::new(Sphere::new(Vec3::new(10, 7, -1), 2.0, light)),
+        Box::new(XZRect::new(-10.0, -10.0, 10.0, 10.0, -0.0, marble)),
     ]);
     let width = 300;
     let height = 200;
-    let cam = Camera::new(
+    let camera = Camera::new(
         Vec3::new(13, 5, 3),
         Vec3::new(0, 2, 0),
         Vec3::new(0, 1, 0),
@@ -53,9 +40,10 @@ pub fn main() {
     );
     Scene {
         objects: spheres,
-        camera: cam,
-        width: width,
-        height: height,
+        materials,
+        camera,
+        width,
+        height,
         samples: 100,
         bounces: 50,
         background: Box::new(Solid::new(Color::default())),

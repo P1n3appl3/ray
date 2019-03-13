@@ -1,9 +1,9 @@
 use super::aabb::AABB;
 use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use super::transform::FlipNormal;
 use crate::ray::Ray;
+use crate::scene::MatID;
 use crate::vec3::Vec3;
 
 #[derive(Debug)]
@@ -13,25 +13,18 @@ pub struct XYRect {
     y0: f32,
     y1: f32,
     k: f32,
-    material: Box<dyn Material>,
+    material: MatID,
 }
 
 impl XYRect {
-    pub fn new(
-        x0: f32,
-        y0: f32,
-        x1: f32,
-        y1: f32,
-        k: f32,
-        mat: Box<dyn Material>,
-    ) -> Self {
+    pub fn new(x0: f32, y0: f32, x1: f32, y1: f32, k: f32, material: MatID) -> Self {
         XYRect {
             x0,
             x1,
             y0,
             y1,
             k,
-            material: mat,
+            material,
         }
     }
 }
@@ -53,7 +46,7 @@ impl Hitable for XYRect {
             v: (y - self.y0) / (self.y1 - self.y0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 0.0, 1.0),
-            material: self.material.as_ref(),
+            material: self.material,
         })
     }
     fn get_bb(&self) -> AABB {
@@ -61,9 +54,6 @@ impl Hitable for XYRect {
             Vec3::new(self.x0, self.y0, self.k - 0.0001),
             Vec3::new(self.x1, self.y1, self.k + 0.0001),
         )
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        Some(self.material.as_ref())
     }
 }
 
@@ -74,25 +64,18 @@ pub struct XZRect {
     z0: f32,
     z1: f32,
     k: f32,
-    material: Box<dyn Material>,
+    material: MatID,
 }
 
 impl XZRect {
-    pub fn new(
-        x0: f32,
-        z0: f32,
-        x1: f32,
-        z1: f32,
-        k: f32,
-        mat: Box<dyn Material>,
-    ) -> Self {
+    pub fn new(x0: f32, z0: f32, x1: f32, z1: f32, k: f32, material: MatID) -> Self {
         XZRect {
             x0,
             x1,
             z0,
             z1,
             k,
-            material: mat,
+            material,
         }
     }
 }
@@ -114,7 +97,7 @@ impl Hitable for XZRect {
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 1.0, 0.0),
-            material: self.material.as_ref(),
+            material: self.material,
         })
     }
     fn get_bb(&self) -> AABB {
@@ -122,9 +105,6 @@ impl Hitable for XZRect {
             Vec3::new(self.x0, self.k - 0.0001, self.z0),
             Vec3::new(self.x1, self.k + 0.0001, self.z1),
         )
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        Some(self.material.as_ref())
     }
 }
 
@@ -135,25 +115,18 @@ pub struct YZRect {
     z0: f32,
     z1: f32,
     k: f32,
-    material: Box<dyn Material>,
+    material: MatID,
 }
 
 impl YZRect {
-    pub fn new(
-        y0: f32,
-        z0: f32,
-        y1: f32,
-        z1: f32,
-        k: f32,
-        mat: Box<dyn Material>,
-    ) -> Self {
+    pub fn new(y0: f32, z0: f32, y1: f32, z1: f32, k: f32, material: MatID) -> Self {
         YZRect {
             y0,
             y1,
             z0,
             z1,
             k,
-            material: mat,
+            material,
         }
     }
 }
@@ -175,7 +148,7 @@ impl Hitable for YZRect {
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(1.0, 0.0, 0.0),
-            material: self.material.as_ref(),
+            material: self.material,
         })
     }
     fn get_bb(&self) -> AABB {
@@ -183,9 +156,6 @@ impl Hitable for YZRect {
             Vec3::new(self.k - 0.0001, self.y0, self.z0),
             Vec3::new(self.k + 0.0001, self.y1, self.z1),
         )
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        Some(self.material.as_ref())
     }
 }
 
@@ -195,36 +165,21 @@ pub struct Prism {
 }
 
 impl Prism {
-    pub fn new(p0: Vec3, p1: Vec3, mat: Box<dyn Material>) -> Self {
+    pub fn new(p0: Vec3, p1: Vec3, mat: MatID) -> Self {
         Prism {
             faces: BVHNode::from_items(&mut vec![
-                Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone_box()))
+                Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat))
                     as Box<dyn Hitable>,
                 Box::new(FlipNormal::new(Box::new(XYRect::new(
-                    p0.x,
-                    p0.y,
-                    p1.x,
-                    p1.y,
-                    p0.z,
-                    mat.clone_box(),
+                    p0.x, p0.y, p1.x, p1.y, p0.z, mat,
                 )))),
-                Box::new(XZRect::new(p0.x, p0.z, p1.x, p1.z, p1.y, mat.clone_box())),
+                Box::new(XZRect::new(p0.x, p0.z, p1.x, p1.z, p1.y, mat)),
                 Box::new(FlipNormal::new(Box::new(XZRect::new(
-                    p0.x,
-                    p0.z,
-                    p1.x,
-                    p1.z,
-                    p0.y,
-                    mat.clone_box(),
+                    p0.x, p0.z, p1.x, p1.z, p0.y, mat,
                 )))),
-                Box::new(YZRect::new(p0.y, p0.z, p1.y, p1.z, p1.x, mat.clone_box())),
+                Box::new(YZRect::new(p0.y, p0.z, p1.y, p1.z, p1.x, mat)),
                 Box::new(FlipNormal::new(Box::new(YZRect::new(
-                    p0.y,
-                    p0.z,
-                    p1.y,
-                    p1.z,
-                    p0.x,
-                    mat.clone_box(),
+                    p0.y, p0.z, p1.y, p1.z, p0.x, mat,
                 )))),
             ]),
         }
@@ -237,8 +192,5 @@ impl Hitable for Prism {
     }
     fn get_bb(&self) -> AABB {
         self.faces.get_bb()
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        None
     }
 }

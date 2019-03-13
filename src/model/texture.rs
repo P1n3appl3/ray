@@ -10,7 +10,6 @@ use std::io::BufReader;
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Color;
-    fn clone_box(&self) -> Box<dyn Texture>;
 }
 
 #[derive(Debug, Clone)]
@@ -27,9 +26,6 @@ impl Solid {
 impl Texture for Solid {
     fn value(&self, _u: f32, _v: f32, _p: Vec3) -> Color {
         self.color
-    }
-    fn clone_box(&self) -> Box<dyn Texture> {
-        Box::new(self.clone())
     }
 }
 
@@ -53,13 +49,6 @@ impl Texture for Checkered {
         } else {
             self.b.value(u, v, p)
         }
-    }
-    fn clone_box(&self) -> Box<dyn Texture> {
-        Box::new(Checkered {
-            a: self.a.clone_box(),
-            b: self.b.clone_box(),
-            size: self.size,
-        })
     }
 }
 #[derive(Debug)]
@@ -86,13 +75,6 @@ impl Texture for Checkered3D {
             self.b.value(u, v, p)
         }
     }
-    fn clone_box(&self) -> Box<dyn Texture> {
-        Box::new(Checkered3D {
-            a: self.a.clone_box(),
-            b: self.b.clone_box(),
-            size: self.size,
-        })
-    }
 }
 
 #[derive(Clone)]
@@ -100,6 +82,15 @@ pub enum PerlinVariant {
     Noise,
     Rock,
     Marble,
+}
+
+fn rand_arr() -> [u8; 256] {
+    let mut temp = [0; 256];
+    let mut perm: Vec<u8> = (0..=255).collect();
+    let mut rng = thread_rng();
+    perm.shuffle(&mut rng);
+    temp.copy_from_slice(&perm);
+    temp
 }
 
 lazy_static! {
@@ -112,31 +103,9 @@ lazy_static! {
         );
         temp
     };
-    static ref PERM_X: [u8; 256] = {
-        let mut temp = [0; 256];
-        let mut perm: Vec<u8> = (0..=255).collect();
-        let mut rng = thread_rng();
-        perm.shuffle(&mut rng);
-        temp.copy_from_slice(&perm);
-        temp
-    };
-    // TODO: dry (nested macro?!?!)
-    static ref PERM_Y: [u8; 256] = {
-        let mut temp = [0; 256];
-        let mut perm: Vec<u8> = (0..=255).collect();
-        let mut rng = thread_rng();
-        perm.shuffle(&mut rng);
-        temp.copy_from_slice(&perm);
-        temp
-    };
-    static ref PERM_Z: [u8; 256] = {
-        let mut temp = [0; 256];
-        let mut perm: Vec<u8> = (0..=255).collect();
-        let mut rng = thread_rng();
-        perm.shuffle(&mut rng);
-        temp.copy_from_slice(&perm);
-        temp
-    };
+    static ref PERM_X: [u8; 256] = rand_arr();
+    static ref PERM_Y: [u8; 256] = rand_arr();
+    static ref PERM_Z: [u8; 256] = rand_arr();
 }
 
 /// scale is inverted, smaller numbers make the pattern larger
@@ -164,9 +133,6 @@ impl Texture for Perlin {
             }
             Rock => self.color * (self.turb(p * self.scale)),
         }
-    }
-    fn clone_box(&self) -> Box<dyn Texture> {
-        Box::new(self.clone())
     }
 }
 
@@ -215,9 +181,6 @@ impl Texture for Gradient {
     fn value(&self, u: f32, v: f32, _p: Vec3) -> Color {
         Color::new(u, v, 1.0 - u - v)
     }
-    fn clone_box(&self) -> Box<dyn Texture> {
-        Box::new(self.clone())
-    }
 }
 
 impl<T> Texture for ImageBuffer<Rgb<T>, Vec<T>>
@@ -229,9 +192,6 @@ where
         let y = ((1.0 - v) * self.height() as f32 - 0.001) as u32;
         let channels = self.get_pixel(x, y).channels();
         Color::new(channels[0].to(), channels[1].to(), channels[2].to())
-    }
-    fn clone_box(&self) -> Box<dyn Texture> {
-        Box::new(self.clone())
     }
 }
 
@@ -246,7 +206,7 @@ pub fn load_hdr_image(filename: &str) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
             .read_image_hdr()
             .unwrap()
             .into_iter()
-            .map(|p| p.channels().iter().cloned().collect::<Vec<f32>>())
+            .map(|p| p.channels().to_vec())
             .flatten()
             .collect::<Vec<f32>>(),
     )

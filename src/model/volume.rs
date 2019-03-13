@@ -1,8 +1,7 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
-use super::material::{Isotropic, Material};
-use super::texture::Texture;
 use crate::ray::Ray;
+use crate::scene::MatID;
 use crate::vec3::Vec3;
 use rand::random;
 
@@ -10,19 +9,15 @@ use rand::random;
 pub struct Volume {
     density: f32,
     boundary: Box<dyn Hitable>,
-    phase_function: Box<dyn Material>,
+    phase_function: MatID,
 }
 
 impl Volume {
-    pub fn new(
-        density: f32,
-        boundary: Box<dyn Hitable>,
-        phase_func: Box<dyn Texture>,
-    ) -> Self {
+    pub fn new(density: f32, boundary: Box<dyn Hitable>, phase_function: MatID) -> Self {
         Volume {
             density,
             boundary,
-            phase_function: Box::new(Isotropic::new(phase_func)),
+            phase_function,
         }
     }
 }
@@ -46,7 +41,7 @@ impl Hitable for Volume {
                         v: 0.0, // arbitrary
                         point: r.point_at_param(hit1.t),
                         normal: Vec3::default(), // arbitrary
-                        material: self.phase_function.as_ref(),
+                        material: self.phase_function,
                     });
                 }
             }
@@ -55,8 +50,5 @@ impl Hitable for Volume {
     }
     fn get_bb(&self) -> AABB {
         self.boundary.get_bb()
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        Some(self.phase_function.as_ref())
     }
 }

@@ -2,6 +2,7 @@ use crate::background::Background;
 use crate::camera::Camera;
 use crate::model::bvh::BVHNode;
 use crate::model::hitable::Hitable;
+use crate::model::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{ToF32, Vec3};
 use image::{ImageBuffer, Pixel, Rgb, RgbImage};
@@ -17,6 +18,7 @@ use std::time::{Duration, Instant};
 use termion::cursor;
 
 pub type Color = Vec3;
+pub type MatID = u16;
 
 impl Color {
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
@@ -27,18 +29,21 @@ impl Color {
 fn color(
     r: Ray,
     world: &impl Hitable,
+    materials: &[Box<dyn Material>],
     bg: &dyn Background,
     depth: u16,
     bounces: u16,
 ) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
-        let emited = hit.material.emit(hit.u, hit.v, hit.point);
+        let material = &materials[hit.material as usize];
+        let emited = material.emit(hit.u, hit.v, hit.point);
         if let Some((attenuation, scattered)) =
-            hit.material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
+            material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
         {
             if depth < bounces {
                 return emited
-                    + attenuation * color(scattered, world, bg, depth + 1, bounces);
+                    + attenuation
+                        * color(scattered, world, materials, bg, depth + 1, bounces);
             }
         }
         emited
@@ -51,6 +56,7 @@ pub struct Scene {
     pub width: usize,
     pub height: usize,
     pub objects: BVHNode,
+    pub materials: Vec<Box<dyn Material>>,
     pub camera: Camera,
     pub samples: u16,
     pub bounces: u16,
@@ -85,6 +91,7 @@ impl Scene {
                         (y as f32 + random::<f32>()) / self.height as f32,
                     ),
                     &self.objects,
+                    &self.materials,
                     self.background.as_ref(),
                     0,
                     self.bounces,

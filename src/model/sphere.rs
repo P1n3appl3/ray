@@ -1,39 +1,29 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use crate::ray::Ray;
+use crate::scene::MatID;
 use crate::vec3::Vec3;
 use std::f32::consts::PI;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Sphere {
     center: Vec3,
     radius: f32,
-    material: Box<dyn Material>,
+    material: MatID,
 }
 
 impl Sphere {
-    pub fn new(c: Vec3, r: f32, mat: Box<dyn Material>) -> Self {
+    pub fn new(c: Vec3, r: f32, material: MatID) -> Self {
         Sphere {
             center: c,
             radius: r,
-            material: mat,
+            material,
         }
     }
     pub fn get_uv(&self, p: Vec3) -> (f32, f32) {
         let phi = p.z.atan2(p.x);
         let theta = p.y.asin();
         (1.0 - (phi + PI) / (2.0 * PI), (theta + PI / 2.0) / PI)
-    }
-}
-
-impl Clone for Sphere {
-    fn clone(&self) -> Sphere {
-        Sphere {
-            center: self.center,
-            radius: self.radius,
-            material: self.material.clone_box(),
-        }
     }
 }
 
@@ -57,7 +47,7 @@ impl Hitable for Sphere {
                         v,
                         point,
                         normal,
-                        material: self.material.as_ref(),
+                        material: self.material,
                     });
                 }
                 // retry with the other quadratic formula solution
@@ -71,8 +61,5 @@ impl Hitable for Sphere {
             self.center - Vec3::from_scalar(self.radius),
             self.center + Vec3::from_scalar(self.radius),
         )
-    }
-    fn get_mat(&self) -> Option<&dyn Material> {
-        Some(self.material.as_ref())
     }
 }

@@ -2,6 +2,7 @@ pub mod aabb;
 pub mod bvh;
 pub mod hitable;
 pub mod material;
+pub mod mesh;
 pub mod rect;
 pub mod sphere;
 pub mod texture;
