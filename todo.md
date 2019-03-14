@@ -1,9 +1,8 @@
 - adaptive super sampling
 - rng performance, consider passing one arround and using xor/small
-- carry references to materials/textures instead of owning
-- separate material from entity and store tuples of them in bvh
 - interactive view (update as tracing, pause or save on demand)
 - generalize rotations to not just be around the y axis, maybe 4d transform matrix
 - simd bvh aabb checking (vec3 is bad but try anyway)
 - wasm
 - lens flare (http://resources.mpi-inf.mpg.de/lensflareRendering/)
+- real bxdf

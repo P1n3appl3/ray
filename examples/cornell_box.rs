@@ -18,8 +18,8 @@ pub fn main() {
         Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
             0.12, 0.45, 0.15,
         ))))),
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from_scalar(0.73))))),
-        Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(5))))),
+        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73))))),
+        Box::new(Light::new(Box::new(Solid::new(Vec3::from(5))))),
         Box::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1)),
         Box::new(Dielectric::new(1.5)),
     ];
@@ -38,7 +38,7 @@ pub fn main() {
         )),
         Vec3::new(130, 0, 65),
     ));
-    let objects = BVHNode::from_items(&mut vec![
+    let objects = BVHNode::from(&mut vec![
         // left wall
         Box::new(FlipNormal::new(Box::new(YZRect::new(
             0.0, 0.0, 555.0, 555.0, 555.0, green,

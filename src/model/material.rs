@@ -101,7 +101,7 @@ impl Material for Dielectric {
         _u: f32,
         _v: f32,
     ) -> Option<(Vec3, Ray)> {
-        let attenuation = Vec3::from_scalar(1.0);
+        let attenuation = Vec3::from(1.0);
         let reflected = r.dir.reflect(&normal);
         let outward_normal;
         let index_ratio;

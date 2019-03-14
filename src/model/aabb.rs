@@ -16,10 +16,7 @@ impl AABB {
     }
 
     pub fn default() -> Self {
-        AABB::new(
-            Vec3::from_scalar(std::f32::MAX),
-            Vec3::from_scalar(std::f32::MIN),
-        )
+        AABB::new(Vec3::from(std::f32::MAX), Vec3::from(std::f32::MIN))
     }
 
     // TODO: early escape is a potential optimization
@@ -27,12 +24,8 @@ impl AABB {
     pub fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> bool {
         let temp0 = (self.min - r.origin) / r.dir;
         let temp1 = (self.max - r.origin) / r.dir;
-        let t0 = temp0
-            .piecewise_min(temp1)
-            .piecewise_max(Vec3::from_scalar(t_min));
-        let t1 = temp0
-            .piecewise_max(temp1)
-            .piecewise_min(Vec3::from_scalar(t_max));
+        let t0 = temp0.piecewise_min(temp1).piecewise_max(Vec3::from(t_min));
+        let t1 = temp0.piecewise_max(temp1).piecewise_min(Vec3::from(t_max));
         !(t1.x <= t0.y
             || t1.x <= t0.z
             || t1.y <= t0.x

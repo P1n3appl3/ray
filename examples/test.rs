@@ -14,14 +14,14 @@ use ray::vec3::Vec3;
 
 pub fn main() {
     let materials = vec![
-        Box::new(Specular::new(Vec3::from_scalar(1), 0.0)) as Box<dyn Material>,
+        Box::new(Specular::new(Vec3::from(1), 0.0)) as Box<dyn Material>,
         Box::new(Diffuse::new(Box::new(Gradient {}))),
         Box::new(Diffuse::new(Box::new(Solid::new(Color::from_rgb(
             200, 200, 175,
         ))))),
     ];
     let (mirror, gradient, floor) = (0, 1, 2);
-    let objects = BVHNode::from_items(&mut vec![
+    let objects = BVHNode::from(&mut vec![
         Box::new(Sphere::new(Vec3::new(-2, 3, 4), 2.0, mirror)) as Box<dyn Hitable>,
         Box::new(Sphere::new(Vec3::new(2, 5, 5), 2.0, mirror)),
         // Box::new(Sphere::new(Vec3::new(0, -500, 0), 498.0, floor)),
@@ -43,7 +43,10 @@ pub fn main() {
             Vec3::new(-4, -1, -2),
         )),
         Box::new(Translate::new(
-            Box::new(RotateY::new(Box::new(Mesh::new("teapot.obj", 2)), -30.0)),
+            Box::new(RotateY::new(
+                Box::new(Mesh::new("teapot.obj", floor)),
+                -30.0,
+            )),
             Vec3::new(1, -1, 1),
         )),
     ]);

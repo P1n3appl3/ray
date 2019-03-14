@@ -14,7 +14,7 @@ pub fn main() {
         Box::new(Diffuse::new(Box::new(
             image::open("earth.png").unwrap().to_rgb(),
         ))),
-        Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(15))))),
+        Box::new(Light::new(Box::new(Solid::new(Vec3::from(15))))),
         Box::new(Diffuse::new(Box::new(Perlin::new(
             0.75,
             Vec3::new(0.8, 0.4, 0.2),
@@ -22,7 +22,7 @@ pub fn main() {
         )))),
     ];
     let (earth, light, marble) = (0, 1, 2);
-    let spheres = BVHNode::from_items(&mut vec![
+    let spheres = BVHNode::from(&mut vec![
         Box::new(Sphere::new(Vec3::new(0, 2, 0), 2.0, earth)) as Box<dyn Hitable>,
         Box::new(Sphere::new(Vec3::new(-10, 7, 3), 2.0, light)),
         Box::new(Sphere::new(Vec3::new(10, 7, -1), 2.0, light)),

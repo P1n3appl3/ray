@@ -14,7 +14,7 @@ pub fn main() {
     let mut materials: Vec<Box<dyn Material>> = vec![
         Box::new(Diffuse::new(Box::new(Checkered3D::new(
             Box::new(Solid::new(Vec3::new(0.6, 0.1, 0.1))),
-            Box::new(Solid::new(Vec3::from_scalar(0.7))),
+            Box::new(Solid::new(Vec3::from(0.7))),
             10.0,
         )))),
         Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(0.2, 0.3, 0.7))))),
@@ -70,7 +70,7 @@ pub fn main() {
         0.0,
     );
     Scene {
-        objects: BVHNode::from_items(&mut spheres),
+        objects: BVHNode::from(&mut spheres),
         materials,
         camera,
         width,

@@ -41,13 +41,10 @@ impl Vec3 {
             z: z.to(),
         }
     }
-    pub fn from_scalar<T: ToF32>(n: T) -> Self {
-        Vec3::new(n, n, n)
-    }
     pub fn rand_in_unit_sphere() -> Self {
         let mut p;
         while {
-            p = random::<Vec3>() * 2.0 - Vec3::from_scalar(1.0);
+            p = random::<Vec3>() * 2.0 - Vec3::from(1.0);
             p.square_len() > 1.0
         } {}
         p
@@ -59,7 +56,7 @@ impl Vec3 {
         self.square_len().sqrt()
     }
     pub fn normalize(&self) -> Self {
-        *self / Self::from_scalar(self.len())
+        *self / Self::from(self.len())
     }
     pub fn piecewise_max(&self, other: Self) -> Self {
         Vec3::new(
@@ -97,6 +94,15 @@ impl Vec3 {
         } else {
             None
         }
+    }
+}
+
+impl<T> From<T> for Vec3
+where
+    T: ToF32,
+{
+    fn from(n: T) -> Self {
+        Vec3::new(n, n, n)
     }
 }
 
@@ -219,7 +225,7 @@ mod tests {
                 y: 0.25,
                 z: 0.25
             },
-            Vec3::from_scalar(0.25)
+            Vec3::from(0.25)
         );
     }
 
@@ -244,7 +250,7 @@ mod tests {
     fn test_norm() {
         assert_eq!(
             Vec3::new(8, 4, 8).normalize(),
-            Vec3::new(2, 1, 2) / Vec3::from_scalar(3)
+            Vec3::new(2, 1, 2) / Vec3::from(3)
         );
         for _ in 0..10 {
             assert!(

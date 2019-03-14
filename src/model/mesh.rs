@@ -35,7 +35,7 @@ impl Mesh {
             })
             .collect();
         Mesh {
-            faces: BVHNode::from_items(&mut triangles),
+            faces: BVHNode::from(&mut triangles),
         }
     }
 }

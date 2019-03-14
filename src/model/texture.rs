@@ -98,7 +98,7 @@ lazy_static! {
         let mut temp = [Vec3::default(); 256];
         temp.copy_from_slice(
             &(0..256)
-                .map(|_| (random::<Vec3>() * 2.0 - Vec3::from_scalar(1.0)).normalize())
+                .map(|_| (random::<Vec3>() * 2.0 - Vec3::from(1.0)).normalize())
                 .collect::<Vec<_>>(),
         );
         temp

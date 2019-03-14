@@ -58,8 +58,8 @@ impl Hitable for Sphere {
     }
     fn get_bb(&self) -> AABB {
         AABB::new(
-            self.center - Vec3::from_scalar(self.radius),
-            self.center + Vec3::from_scalar(self.radius),
+            self.center - Vec3::from(self.radius),
+            self.center + Vec3::from(self.radius),
         )
     }
 }

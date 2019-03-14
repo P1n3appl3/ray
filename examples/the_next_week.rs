@@ -15,11 +15,11 @@ use ray::vec3::Vec3;
 
 pub fn main() {
     let materials: Vec<Box<dyn Material>> = vec![
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from_scalar(0.73))))),
+        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73))))),
         Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
             0.48, 0.83, 0.53,
         ))))),
-        Box::new(Light::new(Box::new(Solid::new(Vec3::from_scalar(12))))),
+        Box::new(Light::new(Box::new(Solid::new(Vec3::from(12))))),
         Box::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0)),
         Box::new(Specular::new(Vec3::new(0.9, 0.5, 0.5), 0.25)),
         Box::new(Dielectric::new(1.5)),
@@ -39,9 +39,9 @@ pub fn main() {
         (0, 1, 2, 3, 4, 5, 6, 7, 8);
     let internal_reflection =
         Box::new(Sphere::new(Vec3::new(360, 150, 145), 70.0, glass));
-    let objects = BVHNode::from_items(&mut vec![
+    let objects = BVHNode::from(&mut vec![
         // floor
-        Box::new(BVHNode::from_items(
+        Box::new(BVHNode::from(
             &mut iproduct!(0..20, 0..20)
                 .map(|(x, z)| {
                     let w = 100.0;
@@ -75,7 +75,7 @@ pub fn main() {
         // many tiny spheres
         Box::new(Translate::new(
             Box::new(RotateY::new(
-                Box::new(BVHNode::from_items(
+                Box::new(BVHNode::from(
                     &mut (0..1000)
                         .map(|_| {
                             Box::new(Sphere::new(random::<Vec3>() * 165.0, 10.0, white))

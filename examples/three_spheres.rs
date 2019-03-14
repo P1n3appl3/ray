@@ -19,7 +19,7 @@ pub fn main() {
         Box::new(Dielectric::new(1.5)),
     ];
     let (ground, blue, metal, glass) = (0, 1, 2, 3);
-    let spheres = BVHNode::from_items(&mut vec![
+    let spheres = BVHNode::from(&mut vec![
         Box::new(Sphere::new(Vec3::new(0, -100.5, -1), 100.0, ground))
             as Box<dyn Hitable>,
         Box::new(Sphere::new(Vec3::new(0, 0, -1), 0.5, blue)),
