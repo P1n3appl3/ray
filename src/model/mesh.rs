@@ -13,14 +13,14 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new(filename: &str, material: MatID) -> Self {
+    pub fn new(filename: &str, scale: f32, material: MatID) -> Self {
         let teapot = tobj::load_obj(&std::path::Path::new(filename));
         let (model, _) = teapot.unwrap();
         let mesh = &model[0].mesh;
         let points = mesh
             .positions
             .chunks(3)
-            .map(|pos| Vec3::new(pos[0], pos[1], pos[2]))
+            .map(|pos| Vec3::new(pos[0], pos[1], pos[2]) * scale)
             .collect::<Vec<_>>();
         let mut triangles = mesh
             .indices

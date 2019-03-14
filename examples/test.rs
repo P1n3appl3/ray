@@ -44,7 +44,7 @@ pub fn main() {
         )),
         Box::new(Translate::new(
             Box::new(RotateY::new(
-                Box::new(Mesh::new("teapot.obj", floor)),
+                Box::new(Mesh::new("teapot.obj", 0.5, floor)),
                 -30.0,
             )),
             Vec3::new(1, -1, 1),
