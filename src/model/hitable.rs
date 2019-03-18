@@ -1,17 +1,17 @@
 use super::aabb::AABB;
+use super::material::Material;
 use crate::ray::Ray;
-use crate::scene::MatID;
 use crate::vec3::Vec3;
 
 /// The relevant information for a ray collision with an object
 #[derive(Clone)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub t: f32,
     pub u: f32,
     pub v: f32,
     pub point: Vec3,
     pub normal: Vec3,
-    pub material: MatID,
+    pub material: &'a dyn Material,
 }
 
 pub trait Hitable: std::fmt::Debug + Send + Sync {

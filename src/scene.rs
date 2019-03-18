@@ -2,7 +2,6 @@ use crate::background::Background;
 use crate::camera::Camera;
 use crate::model::bvh::BVHNode;
 use crate::model::hitable::Hitable;
-use crate::model::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{ToF32, Vec3};
 use image::{ImageBuffer, Pixel, Rgb, RgbImage};
@@ -29,30 +28,20 @@ impl Color {
 fn color(
     r: Ray,
     world: &impl Hitable,
-    materials: &[Box<dyn Material>],
     bg: &dyn Background,
     show_bg: bool,
     depth: u16,
     max_bounces: u16,
 ) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
-        let material = &materials[hit.material as usize];
-        let emited = material.emit(hit.u, hit.v, hit.point);
+        let emited = hit.material.emit(hit.u, hit.v, hit.point);
         if let Some((attenuation, scattered)) =
-            material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
+            hit.material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
         {
             if depth < max_bounces {
                 return emited
                     + attenuation
-                        * color(
-                            scattered,
-                            world,
-                            materials,
-                            bg,
-                            show_bg,
-                            depth + 1,
-                            max_bounces,
-                        );
+                        * color(scattered, world, bg, show_bg, depth + 1, max_bounces);
             }
         }
         emited
@@ -67,7 +56,6 @@ pub struct Scene {
     pub width: usize,
     pub height: usize,
     pub objects: BVHNode,
-    pub materials: Vec<Box<dyn Material>>,
     pub camera: Camera,
     pub samples: u16,
     pub bounces: u16,
@@ -103,7 +91,6 @@ impl Scene {
                         (y as f32 + random::<f32>()) / self.height as f32,
                     ),
                     &self.objects,
-                    &self.materials,
                     self.background.as_ref(),
                     self.show_bg,
                     0,

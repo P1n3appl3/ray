@@ -12,33 +12,30 @@ use ray::model::transform::{RotateY, Translate};
 use ray::model::volume::Volume;
 use ray::scene::*;
 use ray::vec3::Vec3;
+use std::sync::Arc;
 
 pub fn main() {
-    let materials: Vec<Box<dyn Material>> = vec![
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73))))),
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
-            0.48, 0.83, 0.53,
-        ))))),
-        Box::new(Light::new(Box::new(Solid::new(Vec3::from(12))))),
-        Box::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0)),
-        Box::new(Specular::new(Vec3::new(0.9, 0.5, 0.5), 0.25)),
-        Box::new(Dielectric::new(1.5)),
-        Box::new(Light::new(Box::new(Perlin::new(
-            0.05,
-            Vec3::new(1.6, 0.6, 0.2),
-            Rock,
-        )))),
-        Box::new(Isotropic::new(Box::new(Solid::new(Vec3::new(
-            0.2, 0.4, 0.9,
-        ))))),
-        Box::new(Diffuse::new(Box::new(
-            image::open("earth.png").unwrap().to_rgb(),
-        ))),
-    ];
-    let (white, ground, light, mirror, metal, glass, glow_rock, smoke, earth) =
-        (0, 1, 2, 3, 4, 5, 6, 7, 8);
+    let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73)))));
+    let ground = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+        0.48, 0.83, 0.53,
+    )))));
+    let light = Arc::new(Light::new(Box::new(Solid::new(Vec3::from(12)))));
+    let mirror = Arc::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
+    let metal = Arc::new(Specular::new(Vec3::new(0.9, 0.5, 0.5), 0.25));
+    let glass = Arc::new(Dielectric::new(1.5));
+    let glow_rock = Arc::new(Light::new(Box::new(Perlin::new(
+        0.05,
+        Vec3::new(1.6, 0.6, 0.2),
+        Rock,
+    ))));
+    let smoke = Arc::new(Isotropic::new(Box::new(Solid::new(Vec3::new(
+        0.2, 0.4, 0.9,
+    )))));
+    let earth = Arc::new(Diffuse::new(Box::new(
+        image::open("earth.png").unwrap().to_rgb(),
+    )));
     let internal_reflection =
-        Box::new(Sphere::new(Vec3::new(360, 150, 145), 70.0, glass));
+        Box::new(Sphere::new(Vec3::new(360, 150, 145), 70.0, glass.clone()));
     let objects = BVHNode::from(&mut vec![
         // floor
         Box::new(BVHNode::from(
@@ -52,7 +49,7 @@ pub fn main() {
                     Box::new(Prism::new(
                         Vec3::new(x0, 0, z0),
                         Vec3::new(x1, 100.0 * (random::<f32>() + 0.01), z1),
-                        ground,
+                        ground.clone(),
                     )) as Box<Hitable>
                 })
                 .collect::<Vec<Box<Hitable>>>(),
@@ -78,8 +75,11 @@ pub fn main() {
                 Box::new(BVHNode::from(
                     &mut (0..1000)
                         .map(|_| {
-                            Box::new(Sphere::new(random::<Vec3>() * 165.0, 10.0, white))
-                                as Box<Hitable>
+                            Box::new(Sphere::new(
+                                random::<Vec3>() * 165.0,
+                                10.0,
+                                white.clone(),
+                            )) as Box<Hitable>
                         })
                         .collect::<Vec<Box<Hitable>>>(),
                 )),
@@ -100,7 +100,6 @@ pub fn main() {
     );
     Scene {
         objects,
-        materials,
         camera,
         width,
         height,

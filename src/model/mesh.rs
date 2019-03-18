@@ -1,9 +1,10 @@
 use super::aabb::AABB;
 use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
+use super::material::{Material, Specular};
 use crate::ray::Ray;
-use crate::scene::MatID;
 use crate::vec3::Vec3;
+use std::sync::Arc;
 use tobj;
 
 #[derive(Debug)]
@@ -12,9 +13,29 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new(filename: &str, scale: f32, material: MatID) -> Self {
+    fn generate_normals(points: &[Vec3], indices: &[u32]) -> Vec<Vec3> {
+        (0..points.len())
+            .map(|p| {
+                indices
+                    .chunks(3)
+                    .filter_map(|i| {
+                        let (a, b, c) = (i[0] as usize, i[1] as usize, i[2] as usize);
+                        if a == p || b == p || c == p {
+                            Some((points[b] - points[a]).cross(&(points[c] - points[a])))
+                        } else {
+                            None
+                        }
+                    })
+                    .fold(Vec3::default(), |a, b| a + b)
+                    .normalize()
+            })
+            .collect()
+    }
+
+    pub fn new(filename: &str, scale: f32, material: Arc<dyn Material>) -> Self {
         let teapot = tobj::load_obj(&std::path::Path::new(filename));
         let (model, _material) = teapot.unwrap();
+        // TODO: support objs with more than 1 mesh
         let mesh = &model[0].mesh;
         let points: Vec<Vec3> = mesh
             .positions
@@ -22,25 +43,7 @@ impl Mesh {
             .map(|pos| Vec3::new(pos[0], pos[1], pos[2]) * scale)
             .collect();
         let normals: Vec<Vec3> = if mesh.normals.is_empty() {
-            (0..points.len())
-                .map(|p| {
-                    mesh.indices
-                        .chunks(3)
-                        .filter_map(|i| {
-                            let (a, b, c) = (i[0] as usize, i[1] as usize, i[2] as usize);
-                            if a == p || b == p || c == p {
-                                Some(
-                                    (points[b] - points[a])
-                                        .cross(&(points[c] - points[a])),
-                                )
-                            } else {
-                                None
-                            }
-                        })
-                        .fold(Vec3::default(), |a, b| a + b)
-                        .normalize()
-                })
-                .collect()
+            Mesh::generate_normals(&points, &mesh.indices)
         } else {
             mesh.normals
                 .chunks(3)
@@ -55,16 +58,19 @@ impl Mesh {
                 .map(|pos| Vec3::new(pos[0], pos[1], 0.0))
                 .collect()
         };
+        let vertices: Vec<Arc<Vertex>> = (0..points.len())
+            .map(|i| Arc::new(Vertex::new(points[i], normals[i], texture_coords[i])))
+            .collect();
         let mut triangles = mesh
             .indices
             .chunks(3)
             .map(|i| {
                 let (a, b, c) = (i[0] as usize, i[1] as usize, i[2] as usize);
                 Box::new(Triangle::new(
-                    Vertex::new(points[a], normals[a], texture_coords[a]),
-                    Vertex::new(points[b], normals[b], texture_coords[b]),
-                    Vertex::new(points[c], normals[c], texture_coords[c]),
-                    material,
+                    vertices[a].clone(),
+                    vertices[b].clone(),
+                    vertices[c].clone(),
+                    material.clone(),
                 )) as Box<dyn Hitable>
             })
             .collect();
@@ -113,14 +119,19 @@ impl From<Vec3> for Vertex {
 
 #[derive(Debug)]
 pub struct Triangle {
-    v0: Vertex,
-    v1: Vertex,
-    v2: Vertex,
-    material: MatID,
+    v0: Arc<Vertex>,
+    v1: Arc<Vertex>,
+    v2: Arc<Vertex>,
+    material: Arc<dyn Material>,
 }
 
 impl Triangle {
-    pub fn new(v0: Vertex, v1: Vertex, v2: Vertex, material: MatID) -> Self {
+    pub fn new(
+        v0: Arc<Vertex>,
+        v1: Arc<Vertex>,
+        v2: Arc<Vertex>,
+        material: Arc<dyn Material>,
+    ) -> Self {
         Triangle {
             v0,
             v1,
@@ -184,7 +195,7 @@ impl Hitable for Triangle {
             point: self.v0.pos + edge1 * u + edge2 * v,
             // interpolate normal between vertex normals
             normal: self.v0.normal * w + self.v1.normal * u + self.v2.normal * v,
-            material: self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -210,10 +221,10 @@ mod tests {
 
     lazy_static! {
         static ref TRI: Triangle = Triangle::new(
-            Vec3::new(0, 0, 0).into(),
-            Vec3::new(0, 4, 0).into(),
-            Vec3::new(4, 0, 0).into(),
-            MatID::default(),
+            Arc::new(Vec3::new(0, 0, 0).into()),
+            Arc::new(Vec3::new(0, 4, 0).into()),
+            Arc::new(Vec3::new(4, 0, 0).into()),
+            Arc::new(Specular::new(Vec3::from(1), 0.0)),
         );
     }
 

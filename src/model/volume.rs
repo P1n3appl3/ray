@@ -1,19 +1,24 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
+use super::material::Material;
 use crate::ray::Ray;
-use crate::scene::MatID;
 use crate::vec3::Vec3;
 use rand::random;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct Volume {
     density: f32,
     boundary: Box<dyn Hitable>,
-    phase_function: MatID,
+    phase_function: Arc<dyn Material>,
 }
 
 impl Volume {
-    pub fn new(density: f32, boundary: Box<dyn Hitable>, phase_function: MatID) -> Self {
+    pub fn new(
+        density: f32,
+        boundary: Box<dyn Hitable>,
+        phase_function: Arc<dyn Material>,
+    ) -> Self {
         Volume {
             density,
             boundary,
@@ -41,7 +46,7 @@ impl Hitable for Volume {
                         v: 0.0, // arbitrary
                         point: r.point_at_param(hit1.t),
                         normal: Vec3::default(), // arbitrary
-                        material: self.phase_function,
+                        material: self.phase_function.as_ref(),
                     });
                 }
             }

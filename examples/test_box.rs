@@ -9,24 +9,22 @@ use ray::model::texture::*;
 use ray::model::transform::*;
 use ray::scene::*;
 use ray::vec3::Vec3;
+use std::sync::Arc;
 
 pub fn main() {
-    let materials: Vec<Box<dyn Material>> = vec![
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
-            0.65, 0.05, 0.05,
-        ))))),
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
-            0.12, 0.45, 0.15,
-        ))))),
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73))))),
-        Box::new(Light::new(Box::new(Solid::new(Vec3::from(5))))),
-        Box::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.0)),
-    ];
-    let (red, green, white, light, metal) = (0, 1, 2, 3, 4);
+    let red = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let blue = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from_rgb(
+        32, 32, 237,
+    )))));
+    let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73)))));
+    let light = Arc::new(Light::new(Box::new(Solid::new(Vec3::from(5)))));
+    let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.0));
     let objects = BVHNode::from(&mut vec![
         // left wall
         Box::new(FlipNormal::new(Box::new(YZRect::new(
-            0.0, 0.0, 555.0, 555.0, 555.0, green,
+            0.0, 0.0, 555.0, 555.0, 555.0, blue,
         )))) as Box<Hitable>,
         // right wall
         Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
@@ -34,13 +32,23 @@ pub fn main() {
         Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // ceiling
         Box::new(FlipNormal::new(Box::new(XZRect::new(
-            0.0, 0.0, 555.0, 555.0, 555.0, white,
+            0.0,
+            0.0,
+            555.0,
+            555.0,
+            555.0,
+            white.clone(),
         )))),
         // floor
-        Box::new(XZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, white)),
+        Box::new(XZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, white.clone())),
         // back wall
         Box::new(FlipNormal::new(Box::new(XYRect::new(
-            0.0, 0.0, 555.0, 555.0, 555.0, white,
+            0.0,
+            0.0,
+            555.0,
+            555.0,
+            555.0,
+            white.clone(),
         )))),
         Box::new(Translate::new(
             Box::new(Mesh::new("teapot.obj", 80.0, metal)),
@@ -59,7 +67,6 @@ pub fn main() {
     );
     Scene {
         objects,
-        materials,
         camera,
         width,
         height,

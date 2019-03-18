@@ -9,29 +9,24 @@ use ray::model::sphere::Sphere;
 use ray::model::texture::*;
 use ray::scene::*;
 use ray::vec3::Vec3;
+use std::sync::Arc;
 
 pub fn main() {
-    let mut materials: Vec<Box<dyn Material>> = vec![
-        Box::new(Diffuse::new(Box::new(Checkered3D::new(
-            Box::new(Solid::new(Vec3::new(0.6, 0.1, 0.1))),
-            Box::new(Solid::new(Vec3::from(0.7))),
-            10.0,
-        )))),
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(0.2, 0.3, 0.7))))),
-        Box::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0)),
-        Box::new(Dielectric::new(1.5)),
-    ];
-    let checker = 0;
-    let blue = 1;
-    let metal = 2;
-    let glass = 3;
+    let checker = Arc::new(Diffuse::new(Box::new(Checkered3D::new(
+        Box::new(Solid::new(Vec3::new(0.6, 0.1, 0.1))),
+        Box::new(Solid::new(Vec3::from(0.7))),
+        10.0,
+    ))));
+    let blue = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(0.2, 0.3, 0.7)))));
+    let metal = Arc::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
+    let glass = Arc::new(Dielectric::new(1.5));
     let mut spheres = vec![
         Box::new(Sphere::new(Vec3::new(0, -1000, 0), 1000.0, checker))
             as Box<dyn Hitable>,
         Box::new(Sphere::new(Vec3::new(-4, 1, 0), 1.0, blue)),
         Box::new(Sphere::new(Vec3::new(4, 1, 0), 1.0, metal)),
-        Box::new(Sphere::new(Vec3::new(0, 1, 0), 1.0, glass)),
-        Box::new(Sphere::new(Vec3::new(0, 1, 0), -0.99, glass)),
+        Box::new(Sphere::new(Vec3::new(0, 1, 0), 1.0, glass.clone())),
+        Box::new(Sphere::new(Vec3::new(0, 1, 0), -0.99, glass.clone())),
     ];
     for a in -15..15 {
         for b in -15..15 {
@@ -43,19 +38,23 @@ pub fn main() {
             if (pos - Vec3::new(4, 0.2, 0)).len() < 0.9 {
                 continue;
             }
-            spheres.push(Box::new(Sphere::new(pos, 0.2, materials.len() as MatID)));
-            materials.push(match (thread_rng().gen_range(0, 100)) as u8 {
-                0...5 => Box::new(Dielectric::new(1.5)),
-                5...30 => Box::new(Specular::new(
-                    (Vec3::new(1, 1, 1) + random::<Vec3>()) / 2.0,
-                    random::<f32>().powi(4),
-                )),
-                _ => Box::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
-                    random::<f32>() * random::<f32>(),
-                    random::<f32>() * random::<f32>(),
-                    random::<f32>() * random::<f32>(),
-                ))))),
-            });
+            spheres.push(Box::new(Sphere::new(
+                pos,
+                0.2,
+                match (thread_rng().gen_range(0, 100)) as u8 {
+                    0...5 => glass.clone(),
+                    5...30 => Arc::new(Specular::new(
+                        (Vec3::new(1, 1, 1) + random::<Vec3>()) / 2.0,
+                        random::<f32>().powi(4),
+                    )),
+                    _ => Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+                        random::<f32>() * random::<f32>(),
+                        random::<f32>() * random::<f32>(),
+                        random::<f32>() * random::<f32>(),
+                    ))))),
+                },
+            )));
+                                              ;
         }
     }
 
@@ -71,7 +70,6 @@ pub fn main() {
     );
     Scene {
         objects: BVHNode::from(&mut spheres),
-        materials,
         camera,
         width,
         height,

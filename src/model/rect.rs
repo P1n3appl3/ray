@@ -1,10 +1,11 @@
 use super::aabb::AABB;
 use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
+use super::material::Material;
 use super::transform::FlipNormal;
 use crate::ray::Ray;
-use crate::scene::MatID;
 use crate::vec3::Vec3;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct XYRect {
@@ -13,11 +14,18 @@ pub struct XYRect {
     y0: f32,
     y1: f32,
     k: f32,
-    material: MatID,
+    material: Arc<dyn Material>,
 }
 
 impl XYRect {
-    pub fn new(x0: f32, y0: f32, x1: f32, y1: f32, k: f32, material: MatID) -> Self {
+    pub fn new(
+        x0: f32,
+        y0: f32,
+        x1: f32,
+        y1: f32,
+        k: f32,
+        material: Arc<dyn Material>,
+    ) -> Self {
         XYRect {
             x0,
             x1,
@@ -46,7 +54,7 @@ impl Hitable for XYRect {
             v: (y - self.y0) / (self.y1 - self.y0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 0.0, 1.0),
-            material: self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -64,11 +72,18 @@ pub struct XZRect {
     z0: f32,
     z1: f32,
     k: f32,
-    material: MatID,
+    material: Arc<dyn Material>,
 }
 
 impl XZRect {
-    pub fn new(x0: f32, z0: f32, x1: f32, z1: f32, k: f32, material: MatID) -> Self {
+    pub fn new(
+        x0: f32,
+        z0: f32,
+        x1: f32,
+        z1: f32,
+        k: f32,
+        material: Arc<dyn Material>,
+    ) -> Self {
         XZRect {
             x0,
             x1,
@@ -97,7 +112,7 @@ impl Hitable for XZRect {
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(0.0, 1.0, 0.0),
-            material: self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -115,11 +130,18 @@ pub struct YZRect {
     z0: f32,
     z1: f32,
     k: f32,
-    material: MatID,
+    material: Arc<dyn Material>,
 }
 
 impl YZRect {
-    pub fn new(y0: f32, z0: f32, y1: f32, z1: f32, k: f32, material: MatID) -> Self {
+    pub fn new(
+        y0: f32,
+        z0: f32,
+        y1: f32,
+        z1: f32,
+        k: f32,
+        material: Arc<dyn Material>,
+    ) -> Self {
         YZRect {
             y0,
             y1,
@@ -148,7 +170,7 @@ impl Hitable for YZRect {
             v: (z - self.z0) / (self.z1 - self.z0),
             point: r.point_at_param(t),
             normal: Vec3::new(1.0, 0.0, 0.0),
-            material: self.material,
+            material: self.material.as_ref(),
         })
     }
     fn get_bb(&self) -> AABB {
@@ -165,21 +187,36 @@ pub struct Prism {
 }
 
 impl Prism {
-    pub fn new(p0: Vec3, p1: Vec3, mat: MatID) -> Self {
+    pub fn new(p0: Vec3, p1: Vec3, mat: Arc<dyn Material>) -> Self {
         Prism {
             faces: BVHNode::from(&mut vec![
-                Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat))
+                Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone()))
                     as Box<dyn Hitable>,
                 Box::new(FlipNormal::new(Box::new(XYRect::new(
-                    p0.x, p0.y, p1.x, p1.y, p0.z, mat,
+                    p0.x,
+                    p0.y,
+                    p1.x,
+                    p1.y,
+                    p0.z,
+                    mat.clone(),
                 )))),
-                Box::new(XZRect::new(p0.x, p0.z, p1.x, p1.z, p1.y, mat)),
+                Box::new(XZRect::new(p0.x, p0.z, p1.x, p1.z, p1.y, mat.clone())),
                 Box::new(FlipNormal::new(Box::new(XZRect::new(
-                    p0.x, p0.z, p1.x, p1.z, p0.y, mat,
+                    p0.x,
+                    p0.z,
+                    p1.x,
+                    p1.z,
+                    p0.y,
+                    mat.clone(),
                 )))),
-                Box::new(YZRect::new(p0.y, p0.z, p1.y, p1.z, p1.x, mat)),
+                Box::new(YZRect::new(p0.y, p0.z, p1.y, p1.z, p1.x, mat.clone())),
                 Box::new(FlipNormal::new(Box::new(YZRect::new(
-                    p0.y, p0.z, p1.y, p1.z, p0.x, mat,
+                    p0.y,
+                    p0.z,
+                    p1.y,
+                    p1.z,
+                    p0.x,
+                    mat.clone(),
                 )))),
             ]),
         }

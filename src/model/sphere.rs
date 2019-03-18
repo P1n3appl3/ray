@@ -1,19 +1,20 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
+use super::material::Material;
 use crate::ray::Ray;
-use crate::scene::MatID;
 use crate::vec3::Vec3;
 use std::f32::consts::PI;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
     center: Vec3,
     radius: f32,
-    material: MatID,
+    material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(c: Vec3, r: f32, material: MatID) -> Self {
+    pub fn new(c: Vec3, r: f32, material: Arc<dyn Material>) -> Self {
         Sphere {
             center: c,
             radius: r,
@@ -47,7 +48,7 @@ impl Hitable for Sphere {
                         v,
                         point,
                         normal,
-                        material: self.material,
+                        material: self.material.as_ref(),
                     });
                 }
                 // retry with the other quadratic formula solution

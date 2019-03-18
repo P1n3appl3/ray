@@ -5,51 +5,37 @@ use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
 use ray::model::mesh::Mesh;
-use ray::model::sphere::Sphere;
-use ray::model::texture::{Checkered3D, Solid};
-use ray::model::transform::{RotateY, Translate};
+use ray::model::rect::{XYRect, XZRect};
+use ray::model::texture::{Checkered, Solid};
 use ray::scene::*;
 use ray::vec3::Vec3;
+use std::sync::Arc;
 
 pub fn main() {
-    let materials = vec![
-        Box::new(Diffuse::new(Box::new(Checkered3D::new(
-            Box::new(Solid::new(Vec3::new(0.6, 0.1, 0.1))),
-            Box::new(Solid::new(Vec3::from(0.8))),
-            10.0,
-        )))) as Box<dyn Material>,
-        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.7))))),
-        Box::new(Specular::new(Vec3::from(1), 0.0)),
-    ];
-    let (checker, white, mirror) = (0, 1, 2);
+    let checker = Arc::new(Diffuse::new(Box::new(Checkered::new(
+        Box::new(Solid::new(Vec3::from(0.4))),
+        Box::new(Solid::new(Vec3::from(0.8))),
+        20.0,
+    ))));
+    let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.7)))));
     let objects = BVHNode::from(&mut vec![
-        Box::new(Sphere::new(Vec3::new(0, -1000, 0), 1000.0, checker))
+        Box::new(XZRect::new(-10.0, -10.0, 10.0, 10.0, 0.0, checker.clone()))
             as Box<dyn Hitable>,
-        Box::new(Translate::new(
-            Box::new(Mesh::new("teapot.obj", 0.8, white)),
-            Vec3::new(1.5, 0, 2),
-        )),
-        Box::new(Translate::new(
-            Box::new(RotateY::new(
-                Box::new(Mesh::new("cube.obj", 1.0, mirror)),
-                30.0,
-            )),
-            Vec3::new(-2, 1, 3),
-        )),
+        Box::new(XYRect::new(-10.0, 0.0, 10.0, 20.0, 10.0, checker)),
+        Box::new(Mesh::new("teapot.obj", 0.8, white)),
     ]);
-    let width = 500;
-    let height = 500;
+    let width = 300;
+    let height = 300;
     let camera = Camera::new(
-        Vec3::new(0, 3, -4),
+        Vec3::new(3, 3, -10),
         Vec3::new(0, 1, 0),
         Vec3::new(0, 1, 0),
-        90.0,
+        30.0,
         width as f32 / height as f32,
         0.0,
     );
     Scene {
-        objects,
-        materials,
+        objects: BVHNode::from(objects),
         camera,
         width,
         height,
