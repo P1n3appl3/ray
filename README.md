@@ -12,10 +12,11 @@ If I do more renders I'll put them [here](https://imgur.com/a/CIZrqYd).
 
 ## Features
 
-- Geometric primatives: sphere, rect, box, and triangle
+- Geometric primatives: sphere, rectangle, and rectancular prism
+- 3D Mesh support (using .obj files)
 - Materials: diffuse, specular, and dielectric
-- Textures: constant, image based, and procedural (checkered/perlin noise/gradient)
-- Acceleration using bounded volume heirarchy and parallelization (using rayon)
+- Textures: constant, image based (including hdr), and procedural (checkered/perlin noise/gradient)
+- Acceleration using bounded volume heirarchy and [parallelization](https://github.com/rayon-rs/rayon)
 - Global illumination using textured world sphere and emmisive entities
 - Camera with depth of field
 

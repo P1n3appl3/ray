@@ -47,6 +47,7 @@ pub fn main() {
         samples: 100,
         bounces: 50,
         background: Box::new(Solid::new(Color::default())),
+        show_bg: true,
     }
     .render_to_file("lone_sphere.png")
     .unwrap();

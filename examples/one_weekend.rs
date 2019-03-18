@@ -81,6 +81,7 @@ pub fn main() {
             a: Color::new(1.0, 1.0, 1.0),
             b: Color::new(0.5, 0.7, 1.0),
         }),
+        show_bg: true,
     }
     .render_to_file("one_weekend.png")
     .unwrap();

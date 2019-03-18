@@ -1,59 +1,46 @@
 extern crate ray;
+use ray::background::Gradient;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
 use ray::model::mesh::Mesh;
-use ray::model::rect::Prism;
 use ray::model::sphere::Sphere;
-use ray::model::texture::{load_ldr_image, Gradient, Solid};
+use ray::model::texture::{Checkered3D, Solid};
 use ray::model::transform::{RotateY, Translate};
-use ray::model::triangle::Triangle;
 use ray::scene::*;
 use ray::vec3::Vec3;
 
 pub fn main() {
     let materials = vec![
-        Box::new(Specular::new(Vec3::from(1), 0.0)) as Box<dyn Material>,
-        Box::new(Diffuse::new(Box::new(Gradient {}))),
-        Box::new(Diffuse::new(Box::new(Solid::new(Color::from_rgb(
-            200, 200, 175,
-        ))))),
+        Box::new(Diffuse::new(Box::new(Checkered3D::new(
+            Box::new(Solid::new(Vec3::new(0.6, 0.1, 0.1))),
+            Box::new(Solid::new(Vec3::from(0.8))),
+            10.0,
+        )))) as Box<dyn Material>,
+        Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.7))))),
+        Box::new(Specular::new(Vec3::from(1), 0.0)),
     ];
-    let (mirror, gradient, floor) = (0, 1, 2);
+    let (checker, white, mirror) = (0, 1, 2);
     let objects = BVHNode::from(&mut vec![
-        Box::new(Sphere::new(Vec3::new(-2, 3, 4), 2.0, mirror)) as Box<dyn Hitable>,
-        Box::new(Sphere::new(Vec3::new(2, 5, 5), 2.0, mirror)),
-        // Box::new(Sphere::new(Vec3::new(0, -500, 0), 498.0, floor)),
-        Box::new(Sphere::new(Vec3::new(4, -1, -1), 1.0, gradient)),
+        Box::new(Sphere::new(Vec3::new(0, -1000, 0), 1000.0, checker))
+            as Box<dyn Hitable>,
         Box::new(Translate::new(
-            Box::new(Triangle::new(
-                Vec3::new(0, 0, 0),
-                Vec3::new(1, 2, 0),
-                Vec3::new(2, 0, 0),
-                gradient,
-            )),
-            Vec3::new(1.5, 2, -1),
+            Box::new(Mesh::new("teapot.obj", 0.8, white)),
+            Vec3::new(1.5, 0, 2),
         )),
         Box::new(Translate::new(
             Box::new(RotateY::new(
-                Box::new(Prism::new(Vec3::default(), Vec3::new(2, 2, 2), gradient)),
-                -35.0,
+                Box::new(Mesh::new("cube.obj", 1.0, mirror)),
+                30.0,
             )),
-            Vec3::new(-4, -1, -2),
-        )),
-        Box::new(Translate::new(
-            Box::new(RotateY::new(
-                Box::new(Mesh::new("teapot.obj", 0.5, floor)),
-                -30.0,
-            )),
-            Vec3::new(1, -1, 1),
+            Vec3::new(-2, 1, 3),
         )),
     ]);
-    let width = 600;
-    let height = 600;
+    let width = 500;
+    let height = 500;
     let camera = Camera::new(
-        Vec3::new(0, 2, -5),
+        Vec3::new(0, 3, -4),
         Vec3::new(0, 1, 0),
         Vec3::new(0, 1, 0),
         90.0,
@@ -66,9 +53,13 @@ pub fn main() {
         camera,
         width,
         height,
-        samples: 10,
+        samples: 50,
         bounces: 50,
-        background: Box::new(load_ldr_image("bg.png")),
+        background: Box::new(Gradient {
+            a: Color::new(1.0, 1.0, 1.0),
+            b: Color::new(0.5, 0.7, 1.0),
+        }),
+        show_bg: true,
     }
     .render_to_file("test.png")
     .unwrap();

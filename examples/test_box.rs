@@ -3,8 +3,8 @@ use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
+use ray::model::mesh::Mesh;
 use ray::model::rect::*;
-use ray::model::sphere::Sphere;
 use ray::model::texture::*;
 use ray::model::transform::*;
 use ray::scene::*;
@@ -20,24 +20,9 @@ pub fn main() {
         ))))),
         Box::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73))))),
         Box::new(Light::new(Box::new(Solid::new(Vec3::from(5))))),
-        Box::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1)),
-        Box::new(Dielectric::new(1.5)),
+        Box::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.0)),
     ];
-    let (red, green, white, light, metal, glass) = (0, 1, 2, 3, 4, 5);
-    let left_box = Box::new(Translate::new(
-        Box::new(RotateY::new(
-            Box::new(Prism::new(Vec3::default(), Vec3::new(165, 330, 165), white)),
-            19.0,
-        )),
-        Vec3::new(265, 0, 295),
-    ));
-    let right_box = Box::new(Translate::new(
-        Box::new(RotateY::new(
-            Box::new(Prism::new(Vec3::default(), Vec3::new(165, 165, 165), white)),
-            -22.0,
-        )),
-        Vec3::new(130, 0, 65),
-    ));
+    let (red, green, white, light, metal) = (0, 1, 2, 3, 4);
     let objects = BVHNode::from(&mut vec![
         // left wall
         Box::new(FlipNormal::new(Box::new(YZRect::new(
@@ -57,12 +42,10 @@ pub fn main() {
         Box::new(FlipNormal::new(Box::new(XYRect::new(
             0.0, 0.0, 555.0, 555.0, 555.0, white,
         )))),
-        right_box,
-        left_box,
-        // glass sphere on right box
-        Box::new(Sphere::new(Vec3::new(190, 235, 145), 70.0, glass)),
-        // aluminum sphere on left box
-        Box::new(Sphere::new(Vec3::new(355, 400, 300), 70.0, metal)),
+        Box::new(Translate::new(
+            Box::new(Mesh::new("teapot.obj", 80.0, metal)),
+            Vec3::new(275, 0, 275),
+        )),
     ]);
     let width = 500;
     let height = 500;
@@ -85,6 +68,6 @@ pub fn main() {
         background: Box::new(Solid::new(Color::default())),
         show_bg: false,
     }
-    .render_to_file("cornell_box.png")
+    .render_to_file("test_box.png")
     .unwrap();
 }

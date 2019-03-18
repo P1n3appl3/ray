@@ -31,8 +31,9 @@ fn color(
     world: &impl Hitable,
     materials: &[Box<dyn Material>],
     bg: &dyn Background,
+    show_bg: bool,
     depth: u16,
-    bounces: u16,
+    max_bounces: u16,
 ) -> Color {
     if let Some(hit) = world.hit(r, 0.001, std::f32::MAX) {
         let material = &materials[hit.material as usize];
@@ -40,15 +41,25 @@ fn color(
         if let Some((attenuation, scattered)) =
             material.scatter(r, hit.normal, hit.point, hit.u, hit.v)
         {
-            if depth < bounces {
+            if depth < max_bounces {
                 return emited
                     + attenuation
-                        * color(scattered, world, materials, bg, depth + 1, bounces);
+                        * color(
+                            scattered,
+                            world,
+                            materials,
+                            bg,
+                            show_bg,
+                            depth + 1,
+                            max_bounces,
+                        );
             }
         }
         emited
-    } else {
+    } else if show_bg || depth > 0 {
         bg.get_color(r)
+    } else {
+        Color::default()
     }
 }
 
@@ -60,6 +71,7 @@ pub struct Scene {
     pub camera: Camera,
     pub samples: u16,
     pub bounces: u16,
+    pub show_bg: bool,
     pub background: Box<dyn Background>,
 }
 
@@ -93,6 +105,7 @@ impl Scene {
                     &self.objects,
                     &self.materials,
                     self.background.as_ref(),
+                    self.show_bg,
                     0,
                     self.bounces,
                 )

@@ -107,6 +107,7 @@ pub fn main() {
         samples: 500,
         bounces: 100,
         background: Box::new(Solid::new(Color::default())),
+        show_bg: true,
     }
     .render_to_file("the_next_week.png")
     .unwrap();
