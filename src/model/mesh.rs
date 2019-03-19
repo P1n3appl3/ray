@@ -1,7 +1,7 @@
 use super::aabb::AABB;
 use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
-use super::material::{Material, Specular};
+use super::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use std::sync::Arc;
@@ -217,6 +217,7 @@ impl Hitable for Triangle {
 mod tests {
     use super::*;
     use crate::model::aabb::AABB;
+    use crate::model::material::Specular;
     use lazy_static::lazy_static;
 
     lazy_static! {

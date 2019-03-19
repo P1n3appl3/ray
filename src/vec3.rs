@@ -1,5 +1,5 @@
-use rand::distributions::{Distribution, Standard};
-use rand::{random, Rng};
+use rand::distributions::{Distribution, Standard, UnitSphereSurface};
+use rand::prelude::*;
 use std::f32;
 use std::fmt;
 use std::ops::*;
@@ -48,6 +48,10 @@ impl Vec3 {
             p.square_len() > 1.0
         } {}
         p
+    }
+    pub fn almost_faster_rand() -> Self {
+        let r = UnitSphereSurface::new().sample(&mut thread_rng());
+        Vec3::new(r[0] as f32, r[1] as f32, r[2] as f32) * random::<f32>().cbrt()
     }
     pub fn square_len(&self) -> f32 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)

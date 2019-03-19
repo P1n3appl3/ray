@@ -1,5 +1,7 @@
 use super::ray::Ray;
 use super::vec3::Vec3;
+use rand::distributions::UnitCircle;
+use rand::prelude::*;
 use rand::random;
 
 pub fn rand_in_unit_disk() -> Vec3 {
@@ -13,6 +15,11 @@ pub fn rand_in_unit_disk() -> Vec3 {
         p.dot(&p) >= 1.0
     } {}
     p
+}
+
+pub fn almost_faster_rand() -> Vec3 {
+    let r = UnitCircle::new().sample(&mut thread_rng());
+    Vec3::new(r[0] as f32, r[1] as f32, 0) * random::<f32>().sqrt()
 }
 
 pub struct Camera {

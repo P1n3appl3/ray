@@ -7,6 +7,7 @@ use ray::model::material::*;
 use ray::model::mesh::Mesh;
 use ray::model::rect::{XYRect, XZRect};
 use ray::model::texture::{Checkered, Solid};
+use ray::model::transform::*;
 use ray::scene::*;
 use ray::vec3::Vec3;
 use std::sync::Arc;
@@ -18,6 +19,8 @@ pub fn main() {
         20.0,
     ))));
     let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.7)))));
+    let red = Arc::new(Specular::new(Vec3::from_rgb(240, 17, 24), 0.35));
+    let glass = Arc::new(Dielectric::new(1.5));
     let objects = BVHNode::from(&mut vec![
         Box::new(XZRect::new(-10.0, -10.0, 10.0, 10.0, 0.0, checker.clone()))
             as Box<dyn Hitable>,
@@ -27,8 +30,8 @@ pub fn main() {
     let width = 300;
     let height = 300;
     let camera = Camera::new(
-        Vec3::new(3, 3, -10),
-        Vec3::new(0, 1, 0),
+        Vec3::new(5, 5, -10),
+        Vec3::new(0, 0, 0),
         Vec3::new(0, 1, 0),
         30.0,
         width as f32 / height as f32,

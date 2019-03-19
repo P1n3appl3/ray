@@ -12,8 +12,16 @@ lazy_static! {
 }
 
 fn bench_rand(c: &mut Criterion) {
-    c.bench_function("unit sphere", |b| b.iter(|| Vec3::rand_in_unit_sphere()));
-    c.bench_function("unit disk", |b| b.iter(|| camera::rand_in_unit_disk()));
+    c.bench(
+        "unit sphere",
+        Benchmark::new("Brute force", |b| b.iter(|| Vec3::rand_in_unit_sphere()))
+            .with_function("Polar", |b| b.iter(|| Vec3::almost_faster_rand())),
+    );
+    c.bench(
+        "unit disk",
+        Benchmark::new("Brute force", |b| b.iter(|| camera::rand_in_unit_disk()))
+            .with_function("Polar", |b| b.iter(|| camera::almost_faster_rand())),
+    );
 }
 
 fn bench_aabb(c: &mut Criterion) {

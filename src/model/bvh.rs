@@ -26,11 +26,7 @@ impl Hitable for BVHNode {
         }
         // left side is always populated
         let hit_left = self.left.as_ref().unwrap().hit(r, t_min, t_max);
-        let hit_right = if self.right.is_some() {
-            self.right.as_ref().unwrap().hit(r, t_min, t_max)
-        } else {
-            None
-        };
+        let hit_right = self.right.as_ref().and_then(|h| h.hit(r, t_min, t_max));
         match (hit_left, hit_right) {
             (None, None) => None,
             (Some(hit), None) | (None, Some(hit)) => Some(hit),
