@@ -1,3 +1,4 @@
+use crate::axis::Axis;
 use rand::distributions::{Distribution, Standard, UnitSphereSurface};
 use rand::prelude::*;
 use std::f32;
@@ -41,6 +42,7 @@ impl Vec3 {
             z: z.to(),
         }
     }
+
     pub fn rand_in_unit_sphere() -> Self {
         let mut p;
         while {
@@ -49,19 +51,42 @@ impl Vec3 {
         } {}
         p
     }
+
     pub fn almost_faster_rand() -> Self {
         let r = UnitSphereSurface::new().sample(&mut thread_rng());
         Vec3::new(r[0] as f32, r[1] as f32, r[2] as f32) * random::<f32>().cbrt()
     }
+
+    pub fn get_axis(&self, a: Axis) -> f32 {
+        match a {
+            Axis::X => self.x,
+            Axis::Y => self.y,
+            Axis::Z => self.z,
+        }
+    }
+
+    pub fn set_axis(&self, a: Axis, val: f32) -> Vec3 {
+        let mut temp = *self;
+        match a {
+            Axis::X => temp.x = val,
+            Axis::Y => temp.y = val,
+            Axis::Z => temp.z = val,
+        }
+        temp
+    }
+
     pub fn square_len(&self) -> f32 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
+
     pub fn len(&self) -> f32 {
         self.square_len().sqrt()
     }
+
     pub fn normalize(&self) -> Self {
         *self / Self::from(self.len())
     }
+
     pub fn piecewise_max(&self, other: Self) -> Self {
         Vec3::new(
             self.x.max(other.x),
@@ -69,6 +94,7 @@ impl Vec3 {
             self.z.max(other.z),
         )
     }
+
     pub fn piecewise_min(&self, other: Self) -> Self {
         Vec3::new(
             self.x.min(other.x),
@@ -76,9 +102,11 @@ impl Vec3 {
             self.z.min(other.z),
         )
     }
+
     pub fn dot(&self, other: &Self) -> f32 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
+
     pub fn cross(&self, other: &Self) -> Self {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
@@ -86,9 +114,11 @@ impl Vec3 {
             z: self.x * other.y - self.y * other.x,
         }
     }
+
     pub fn reflect(&self, normal: &Self) -> Self {
         *self - (*normal * self.dot(normal) * 2.0)
     }
+
     pub fn refract(&self, normal: &Self, index_ratio: f32) -> Option<Self> {
         let unit = self.normalize();
         let dt = unit.dot(normal);
@@ -101,10 +131,7 @@ impl Vec3 {
     }
 }
 
-impl<T> From<T> for Vec3
-where
-    T: ToF32,
-{
+impl<T: ToF32> From<T> for Vec3 {
     fn from(n: T) -> Self {
         Vec3::new(n, n, n)
     }

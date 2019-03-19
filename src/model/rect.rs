@@ -3,22 +3,25 @@ use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
 use super::transform::FlipNormal;
+use crate::axis::Axis;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use std::sync::Arc;
 
 #[derive(Debug)]
-pub struct XYRect {
-    x0: f32,
-    x1: f32,
-    y0: f32,
-    y1: f32,
+pub struct Rect {
+    axis_a: Axis,
+    axis_b: Axis,
+    a0: f32,
+    a1: f32,
+    b0: f32,
+    b1: f32,
     k: f32,
     material: Arc<dyn Material>,
 }
 
-impl XYRect {
-    pub fn new(
+impl Rect {
+    pub fn xy(
         x0: f32,
         y0: f32,
         x1: f32,
@@ -26,115 +29,18 @@ impl XYRect {
         k: f32,
         material: Arc<dyn Material>,
     ) -> Self {
-        XYRect {
-            x0,
-            x1,
-            y0,
-            y1,
+        Rect {
+            axis_a: Axis::X,
+            axis_b: Axis::Y,
+            a0: x0,
+            a1: x1,
+            b0: y0,
+            b1: y1,
             k,
             material,
         }
     }
-}
-
-impl Hitable for XYRect {
-    fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let t = (self.k - r.origin.z) / r.dir.z;
-        if t < t_min || t > t_max {
-            return None;
-        }
-        let x = r.origin.x + t * r.dir.x;
-        let y = r.origin.y + t * r.dir.y;
-        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
-            return None;
-        }
-        Some(HitRecord {
-            t,
-            u: (x - self.x0) / (self.x1 - self.x0),
-            v: (y - self.y0) / (self.y1 - self.y0),
-            point: r.point_at_param(t),
-            normal: Vec3::new(0.0, 0.0, 1.0),
-            material: self.material.as_ref(),
-        })
-    }
-    fn get_bb(&self) -> AABB {
-        AABB::new(
-            Vec3::new(self.x0, self.y0, self.k - 0.0001),
-            Vec3::new(self.x1, self.y1, self.k + 0.0001),
-        )
-    }
-}
-
-#[derive(Debug)]
-pub struct XZRect {
-    x0: f32,
-    x1: f32,
-    z0: f32,
-    z1: f32,
-    k: f32,
-    material: Arc<dyn Material>,
-}
-
-impl XZRect {
-    pub fn new(
-        x0: f32,
-        z0: f32,
-        x1: f32,
-        z1: f32,
-        k: f32,
-        material: Arc<dyn Material>,
-    ) -> Self {
-        XZRect {
-            x0,
-            x1,
-            z0,
-            z1,
-            k,
-            material,
-        }
-    }
-}
-
-impl Hitable for XZRect {
-    fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let t = (self.k - r.origin.y) / r.dir.y;
-        if t < t_min || t > t_max {
-            return None;
-        }
-        let x = r.origin.x + t * r.dir.x;
-        let z = r.origin.z + t * r.dir.z;
-        if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
-            return None;
-        }
-        Some(HitRecord {
-            t,
-            u: (x - self.x0) / (self.x1 - self.x0),
-            v: (z - self.z0) / (self.z1 - self.z0),
-            point: r.point_at_param(t),
-            normal: Vec3::new(0.0, 1.0, 0.0),
-            material: self.material.as_ref(),
-        })
-    }
-    fn get_bb(&self) -> AABB {
-        AABB::new(
-            Vec3::new(self.x0, self.k - 0.0001, self.z0),
-            Vec3::new(self.x1, self.k + 0.0001, self.z1),
-        )
-    }
-}
-
-#[derive(Debug)]
-pub struct YZRect {
-    y0: f32,
-    y1: f32,
-    z0: f32,
-    z1: f32,
-    k: f32,
-    material: Arc<dyn Material>,
-}
-
-impl YZRect {
-    pub fn new(
+    pub fn yz(
         y0: f32,
         z0: f32,
         y1: f32,
@@ -142,92 +48,71 @@ impl YZRect {
         k: f32,
         material: Arc<dyn Material>,
     ) -> Self {
-        YZRect {
-            y0,
-            y1,
-            z0,
-            z1,
+        Rect {
+            axis_a: Axis::Y,
+            axis_b: Axis::Z,
+            a0: y0,
+            a1: y1,
+            b0: z0,
+            b1: z1,
+            k,
+            material,
+        }
+    }
+    pub fn xz(
+        x0: f32,
+        z0: f32,
+        x1: f32,
+        z1: f32,
+        k: f32,
+        material: Arc<dyn Material>,
+    ) -> Self {
+        Rect {
+            axis_a: Axis::X,
+            axis_b: Axis::Z,
+            a0: x0,
+            a1: x1,
+            b0: z0,
+            b1: z1,
             k,
             material,
         }
     }
 }
 
-impl Hitable for YZRect {
+impl Hitable for Rect {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let t = (self.k - r.origin.x) / r.dir.x;
+        let other_axis = Axis::other(self.axis_a, self.axis_b);
+        let t = (self.k - r.origin.get_axis(other_axis)) / r.dir.get_axis(other_axis);
         if t < t_min || t > t_max {
             return None;
         }
-        let y = r.origin.y + t * r.dir.y;
-        let z = r.origin.z + t * r.dir.z;
-        if y < self.y0 || y > self.y1 || z < self.z0 || z > self.z1 {
+        let a = r.origin.get_axis(self.axis_a) + t * r.dir.get_axis(self.axis_a);
+        let b = r.origin.get_axis(self.axis_b) + t * r.dir.get_axis(self.axis_b);
+        if a < self.a0 || a > self.a1 || b < self.b0 || b > self.b1 {
             return None;
         }
         Some(HitRecord {
             t,
-            u: (y - self.y0) / (self.y1 - self.y0),
-            v: (z - self.z0) / (self.z1 - self.z0),
+            u: (a - self.a0) / (self.a1 - self.a0),
+            v: (b - self.b0) / (self.b1 - self.b0),
             point: r.point_at_param(t),
-            normal: Vec3::new(1.0, 0.0, 0.0),
+            normal: Vec3::default().set_axis(other_axis, 1.0),
             material: self.material.as_ref(),
         })
     }
+
     fn get_bb(&self) -> AABB {
+        let other_axis = Axis::other(self.axis_a, self.axis_b);
         AABB::new(
-            Vec3::new(self.k - 0.0001, self.y0, self.z0),
-            Vec3::new(self.k + 0.0001, self.y1, self.z1),
+            Vec3::default()
+                .set_axis(self.axis_a, self.a0)
+                .set_axis(self.axis_b, self.b0)
+                .set_axis(other_axis, self.k - 0.0001),
+            Vec3::default()
+                .set_axis(self.axis_a, self.a1)
+                .set_axis(self.axis_b, self.b1)
+                .set_axis(other_axis, self.k + 0.0001),
         )
-    }
-}
-
-#[derive(Debug)]
-pub struct Prism {
-    faces: BVHNode,
-}
-
-impl Prism {
-    pub fn new(p0: Vec3, p1: Vec3, mat: Arc<dyn Material>) -> Self {
-        Prism {
-            faces: BVHNode::from(&mut vec![
-                Box::new(XYRect::new(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone()))
-                    as Box<dyn Hitable>,
-                Box::new(FlipNormal::new(Box::new(XYRect::new(
-                    p0.x,
-                    p0.y,
-                    p1.x,
-                    p1.y,
-                    p0.z,
-                    mat.clone(),
-                )))),
-                Box::new(XZRect::new(p0.x, p0.z, p1.x, p1.z, p1.y, mat.clone())),
-                Box::new(FlipNormal::new(Box::new(XZRect::new(
-                    p0.x,
-                    p0.z,
-                    p1.x,
-                    p1.z,
-                    p0.y,
-                    mat.clone(),
-                )))),
-                Box::new(YZRect::new(p0.y, p0.z, p1.y, p1.z, p1.x, mat.clone())),
-                Box::new(FlipNormal::new(Box::new(YZRect::new(
-                    p0.y,
-                    p0.z,
-                    p1.y,
-                    p1.z,
-                    p0.x,
-                    mat.clone(),
-                )))),
-            ]),
-        }
-    }
-}
-
-impl Hitable for Prism {
-    fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        self.faces.hit(r, t_min, t_max)
-    }
-    fn get_bb(&self) -> AABB {
-        self.faces.get_bb()
     }
 }
