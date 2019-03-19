@@ -12,12 +12,12 @@ use ray::vec3::Vec3;
 use std::sync::Arc;
 
 pub fn main() {
-    let checker = Arc::new(Diffuse::new(Box::new(Checkered3D::new(
-        Box::new(Solid::new(Vec3::new(0.6, 0.1, 0.1))),
-        Box::new(Solid::new(Vec3::from(0.7))),
+    let checker = Arc::new(Diffuse::new(Checkered3D::new(
+        Solid::new(Vec3::new(0.6, 0.1, 0.1)),
+        Solid::new(Vec3::from(0.7)),
         10.0,
-    ))));
-    let blue = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(0.2, 0.3, 0.7)))));
+    )));
+    let blue = Arc::new(Diffuse::new(Solid::new(Vec3::new(0.2, 0.3, 0.7))));
     let metal = Arc::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
     let glass = Arc::new(Dielectric::new(1.5));
     let mut spheres = vec![
@@ -47,11 +47,11 @@ pub fn main() {
                         (Vec3::new(1, 1, 1) + random::<Vec3>()) / 2.0,
                         random::<f32>().powi(4),
                     )),
-                    _ => Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+                    _ => Arc::new(Diffuse::new(Solid::new(Vec3::new(
                         random::<f32>() * random::<f32>(),
                         random::<f32>() * random::<f32>(),
                         random::<f32>() * random::<f32>(),
-                    ))))),
+                    )))),
                 },
             )));
                                               ;

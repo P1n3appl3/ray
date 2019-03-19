@@ -17,12 +17,12 @@ use std::sync::Arc;
 
 #[allow(unused_variables)]
 pub fn main() {
-    let checker = Arc::new(Diffuse::new(Box::new(Checkered::new(
-        Box::new(Solid::new(Vec3::from(0.4))),
-        Box::new(Solid::new(Vec3::from(0.8))),
+    let checker = Arc::new(Diffuse::new(Checkered::new(
+        Solid::new(Vec3::from(0.4)),
+        Solid::new(Vec3::from(0.8)),
         20.0,
-    ))));
-    let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.7)))));
+    )));
+    let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.7))));
     let red = Arc::new(Specular::new(Vec3::from_rgb(240, 17, 24), 0.35));
     let glass = Arc::new(Dielectric::new(1.5));
     let objects = BVHNode::from(&mut vec![

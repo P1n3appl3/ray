@@ -1,5 +1,4 @@
 extern crate ray;
-use ray::axis::Axis;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
@@ -13,14 +12,10 @@ use ray::vec3::Vec3;
 use std::sync::Arc;
 
 pub fn main() {
-    let red = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
-        0.65, 0.05, 0.05,
-    )))));
-    let blue = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from_rgb(
-        32, 32, 237,
-    )))));
-    let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73)))));
-    let light = Arc::new(Light::new(Box::new(Solid::new(Vec3::from(5)))));
+    let red = Arc::new(Diffuse::new(Solid::new(Vec3::new(0.65, 0.05, 0.05))));
+    let blue = Arc::new(Diffuse::new(Solid::new(Vec3::from_rgb(32, 32, 237))));
+    let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.73))));
+    let light = Arc::new(Light::new(Solid::new(Vec3::from(5))));
     let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.0));
     let objects = BVHNode::from(&mut vec![
         // left wall

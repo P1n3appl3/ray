@@ -24,17 +24,17 @@ fn schlick(cosine: f32, refractive_index: f32) -> f32 {
 }
 
 #[derive(Debug)]
-pub struct Diffuse {
-    texture: Box<dyn Texture>,
+pub struct Diffuse<T: Texture> {
+    texture: T,
 }
 
-impl Diffuse {
-    pub fn new(texture: Box<dyn Texture>) -> Self {
+impl<T: Texture> Diffuse<T> {
+    pub fn new(texture: T) -> Self {
         Diffuse { texture }
     }
 }
 
-impl Material for Diffuse {
+impl<T: Texture> Material for Diffuse<T> {
     fn scatter(
         &self,
         _r: Ray,
@@ -131,17 +131,17 @@ impl Material for Dielectric {
 }
 
 #[derive(Debug)]
-pub struct Light {
-    texture: Box<dyn Texture>,
+pub struct Light<T: Texture> {
+    texture: T,
 }
 
-impl Light {
-    pub fn new(texture: Box<dyn Texture>) -> Self {
+impl<T: Texture> Light<T> {
+    pub fn new(texture: T) -> Self {
         Light { texture }
     }
 }
 
-impl Material for Light {
+impl<T: Texture> Material for Light<T> {
     fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Vec3, Ray)> {
         None
     }
@@ -151,17 +151,17 @@ impl Material for Light {
 }
 
 #[derive(Debug)]
-pub struct Isotropic {
-    texture: Box<dyn Texture>,
+pub struct Isotropic<T: Texture> {
+    texture: T,
 }
 
-impl Isotropic {
-    pub fn new(texture: Box<dyn Texture>) -> Self {
+impl<T: Texture> Isotropic<T> {
+    pub fn new(texture: T) -> Self {
         Isotropic { texture }
     }
 }
 
-impl Material for Isotropic {
+impl<T: Texture> Material for Isotropic<T> {
     fn scatter(
         &self,
         _r: Ray,

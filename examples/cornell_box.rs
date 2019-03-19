@@ -14,14 +14,14 @@ use ray::vec3::Vec3;
 use std::sync::Arc;
 
 pub fn main() {
-    let red = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+    let red = Arc::new(Diffuse::new(Solid::new(Vec3::new(
         0.65, 0.05, 0.05,
-    )))));
-    let green = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::new(
+    ))));
+    let green = Arc::new(Diffuse::new(Solid::new(Vec3::new(
         0.12, 0.45, 0.15,
-    )))));
-    let white = Arc::new(Diffuse::new(Box::new(Solid::new(Vec3::from(0.73)))));
-    let light = Arc::new(Light::new(Box::new(Solid::new(Vec3::from(5)))));
+    ))));
+    let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.73))));
+    let light = Arc::new(Light::new(Solid::new(Vec3::from(5))));
     let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1));
     let glass = Arc::new(Dielectric::new(1.5));
     let left_box = Box::new(Translate::new(
