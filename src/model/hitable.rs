@@ -3,7 +3,7 @@ use super::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 
-/// The relevant information for a ray collision with an object
+/// The relevant geometric information for a ray collision with an object
 #[derive(Clone)]
 pub struct HitRecord<'a> {
     pub t: f32,

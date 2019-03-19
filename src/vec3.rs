@@ -65,7 +65,7 @@ impl Vec3 {
         }
     }
 
-    pub fn set_axis(&self, a: Axis, val: f32) -> Vec3 {
+    pub fn set_axis(&self, a: Axis, val: f32) -> Self {
         let mut temp = *self;
         match a {
             Axis::X => temp.x = val,
@@ -73,6 +73,40 @@ impl Vec3 {
             Axis::Z => temp.z = val,
         }
         temp
+    }
+
+    // Each axis rotation just uses a solution based on the rotation matrix
+    // stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space
+    pub fn rotate_x(&self, cos_theta: f32, sin_theta: f32) -> Vec3 {
+        Vec3::new(
+            self.x,
+            cos_theta * self.y - sin_theta * self.z,
+            sin_theta * self.y + cos_theta * self.z,
+        )
+    }
+
+    pub fn rotate_y(&self, cos_theta: f32, sin_theta: f32) -> Vec3 {
+        Vec3::new(
+            cos_theta * self.x + sin_theta * self.z,
+            self.y,
+            -sin_theta * self.x + cos_theta * self.z,
+        )
+    }
+
+    pub fn rotate_z(&self, cos_theta: f32, sin_theta: f32) -> Vec3 {
+        Vec3::new(
+            cos_theta * self.x - sin_theta * self.y,
+            sin_theta * self.x + cos_theta * self.y,
+            self.z,
+        )
+    }
+
+    pub fn rotate(&self, a: Axis, cos_theta: f32, sin_theta: f32) -> Self {
+        match a {
+            Axis::X => self.rotate_x(cos_theta, sin_theta),
+            Axis::Y => self.rotate_y(cos_theta, sin_theta),
+            Axis::Z => self.rotate_z(cos_theta, sin_theta),
+        }
     }
 
     pub fn square_len(&self) -> f32 {

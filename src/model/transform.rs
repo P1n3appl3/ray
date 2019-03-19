@@ -79,7 +79,6 @@ impl<T: Hitable> Rotate<T> {
             cos_theta: rad.cos(),
             bb: AABB::default(),
         };
-        let (axis_a, axis_b) = Axis::other_two(axis);
         // go through every point in the bounding box and compute its rotated position
         // then form a new bounding box by expanding one to fit all those points
         iproduct!(0..2, 0..2, 0..2).for_each(|(i, j, k)| {
@@ -88,11 +87,7 @@ impl<T: Hitable> Rotate<T> {
                 j as f32 * temp.bb.max.y + (1 - j) as f32 * temp.bb.min.y,
                 k as f32 * temp.bb.max.z + (1 - k) as f32 * temp.bb.min.z,
             );
-            let new_a = temp.cos_theta * point.get_axis(axis_a)
-                + temp.sin_theta * point.get_axis(axis_b);
-            let new_b = -temp.sin_theta * point.get_axis(axis_a)
-                + temp.cos_theta * point.get_axis(axis_b);
-            let v = point.set_axis(axis_a, new_a).set_axis(axis_b, new_b);
+            let v = point.rotate(axis, temp.cos_theta, temp.sin_theta);
             temp.bb = temp.bb.combine(&AABB::new(v, v));
         });
         temp
@@ -101,56 +96,13 @@ impl<T: Hitable> Rotate<T> {
 
 impl<T: Hitable> Hitable for Rotate<T> {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let (axis_a, axis_b) = Axis::other_two(self.axis);
         let rotated_r = Ray::new(
-            r.origin
-                .set_axis(
-                    axis_a,
-                    self.cos_theta * r.origin.get_axis(axis_a)
-                        - self.sin_theta * r.origin.get_axis(axis_b),
-                )
-                .set_axis(
-                    axis_b,
-                    self.sin_theta * r.origin.get_axis(axis_a)
-                        + self.cos_theta * r.origin.get_axis(axis_b),
-                ),
-            r.dir
-                .set_axis(
-                    axis_a,
-                    self.cos_theta * r.dir.get_axis(axis_a)
-                        - self.sin_theta * r.dir.get_axis(axis_b),
-                )
-                .set_axis(
-                    axis_b,
-                    self.sin_theta * r.dir.get_axis(axis_a)
-                        + self.cos_theta * r.dir.get_axis(axis_b),
-                ),
+            r.origin.rotate(self.axis, self.cos_theta, -self.sin_theta),
+            r.dir.rotate(self.axis, self.cos_theta, -self.sin_theta),
         );
         if let Some(mut rec) = self.obj.hit(rotated_r, t_min, t_max) {
-            rec.point = rec
-                .point
-                .set_axis(
-                    axis_a,
-                    self.cos_theta * rec.point.get_axis(axis_a)
-                        + self.sin_theta * rec.point.get_axis(axis_b),
-                )
-                .set_axis(
-                    axis_b,
-                    -self.sin_theta * rec.point.get_axis(axis_a)
-                        + self.cos_theta * rec.point.get_axis(axis_b),
-                );
-            rec.normal = rec
-                .normal
-                .set_axis(
-                    axis_a,
-                    self.cos_theta * rec.normal.get_axis(axis_a)
-                        + self.sin_theta * rec.normal.get_axis(axis_b),
-                )
-                .set_axis(
-                    axis_b,
-                    -self.sin_theta * rec.normal.get_axis(axis_a)
-                        + self.cos_theta * rec.normal.get_axis(axis_b),
-                );
+            rec.point = rec.point.rotate(self.axis, self.cos_theta, self.sin_theta);
+            rec.normal = rec.normal.rotate(self.axis, self.cos_theta, self.sin_theta);
             Some(rec)
         } else {
             None

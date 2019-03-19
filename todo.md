@@ -4,4 +4,4 @@
 - simd bvh aabb checking (vec3 is bad but try anyway)
 - wasm
 - lens flare (http://resources.mpi-inf.mpg.de/lensflareRendering/)
-- real bxdf
+- real bxdf (or general material handling overhaul)

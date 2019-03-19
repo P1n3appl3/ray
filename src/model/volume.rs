@@ -7,16 +7,16 @@ use rand::random;
 use std::sync::Arc;
 
 #[derive(Debug)]
-pub struct Volume {
+pub struct Volume<T: Hitable> {
     density: f32,
-    boundary: Box<dyn Hitable>,
+    boundary: T,
     phase_function: Arc<dyn Material>,
 }
 
-impl Volume {
+impl<T: Hitable> Volume<T> {
     pub fn new(
         density: f32,
-        boundary: Box<dyn Hitable>,
+        boundary: T,
         phase_function: Arc<dyn Material>,
     ) -> Self {
         Volume {
@@ -27,7 +27,7 @@ impl Volume {
     }
 }
 
-impl Hitable for Volume {
+impl<T: Hitable> Hitable for Volume<T> {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if let Some(mut hit1) = self.boundary.hit(r, std::f32::MIN, std::f32::MAX) {
             if let Some(mut hit2) = self.boundary.hit(r, hit1.t + 0.0001, std::f32::MAX) {

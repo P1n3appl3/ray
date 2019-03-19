@@ -42,21 +42,25 @@ pub fn main() {
         Box::new(Translate::new(
             Rotate::new(
                 Rotate::new(
-                    Rotate::new(Prism::new(0.into(), 20.into(), white), Axis::X, 45.0),
-                    Axis::Y,
+                    Rotate::new(
+                        Prism::new((-10).into(), 10.into(), white),
+                        Axis::X,
+                        45.0,
+                    ),
+                    Axis::Z,
                     45.0,
                 ),
-                Axis::Z,
-                45.0,
+                Axis::Y,
+                87.0,
             ),
-            Vec3::new(-10, 10, -10),
+            Vec3::new(0, 20, -10),
         )),
     ]);
     let width = 300;
     let height = 300;
     let camera = Camera::new(
-        Vec3::new(30, 30, -100),
-        Vec3::new(0, 10, 0),
+        Vec3::new(15, 30, -100),
+        Vec3::new(0, 15, 0),
         Vec3::new(0, 1, 0),
         30.0,
         width as f32 / height as f32,
