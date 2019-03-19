@@ -1,9 +1,11 @@
 extern crate ray;
+use ray::axis::Axis;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
-use ray::model::rect::*;
+use ray::model::prism::Prism;
+use ray::model::rect::Rect;
 use ray::model::sphere::Sphere;
 use ray::model::texture::*;
 use ray::model::transform::*;
@@ -23,51 +25,45 @@ pub fn main() {
     let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1));
     let glass = Arc::new(Dielectric::new(1.5));
     let left_box = Box::new(Translate::new(
-        Box::new(RotateY::new(
-            Box::new(Prism::new(
-                Vec3::default(),
-                Vec3::new(165, 330, 165),
-                white.clone(),
-            )),
+        Rotate::new(
+            Prism::new(Vec3::default(), Vec3::new(165, 330, 165), white.clone()),
+            Axis::Y,
             19.0,
-        )),
+        ),
         Vec3::new(265, 0, 295),
     ));
     let right_box = Box::new(Translate::new(
-        Box::new(RotateY::new(
-            Box::new(Prism::new(
-                Vec3::default(),
-                Vec3::new(165, 165, 165),
-                white.clone(),
-            )),
+        Rotate::new(
+            Prism::new(Vec3::default(), Vec3::new(165, 165, 165), white.clone()),
+            Axis::Y,
             -22.0,
-        )),
+        ),
         Vec3::new(130, 0, 65),
     ));
     let objects = BVHNode::from(&mut vec![
         // left wall
-        Box::new(FlipNormal::new(Box::new(YZRect::new(
+        Box::new(FlipNormal::new(Rect::yz(
             0.0, 0.0, 555.0, 555.0, 555.0, green,
-        )))) as Box<Hitable>,
+        ))) as Box<Hitable>,
         // right wall
-        Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
+        Box::new(Rect::yz(0.0, 0.0, 555.0, 555.0, 0.0, red)),
         // light
-        Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
+        Box::new(Rect::xz(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // ceiling
-        Box::new(FlipNormal::new(Box::new(XZRect::new(
+        Box::new(FlipNormal::new(Rect::xz(
             0.0,
             0.0,
             555.0,
             555.0,
             555.0,
             white.clone(),
-        )))),
+        ))),
         // floor
-        Box::new(XZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, white.clone())),
+        Box::new(Rect::xz(0.0, 0.0, 555.0, 555.0, 0.0, white.clone())),
         // back wall
-        Box::new(FlipNormal::new(Box::new(XYRect::new(
+        Box::new(FlipNormal::new(Rect::xy(
             0.0, 0.0, 555.0, 555.0, 555.0, white,
-        )))),
+        ))),
         right_box,
         left_box,
         // glass sphere on right box

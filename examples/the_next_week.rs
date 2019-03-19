@@ -1,14 +1,16 @@
 extern crate ray;
 use itertools::iproduct;
 use rand::random;
+use ray::axis::Axis;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
-use ray::model::rect::*;
+use ray::model::prism::Prism;
+use ray::model::rect::Rect;
 use ray::model::sphere::Sphere;
 use ray::model::texture::{PerlinVariant::*, *};
-use ray::model::transform::{RotateY, Translate};
+use ray::model::transform::{Rotate, Translate};
 use ray::model::volume::Volume;
 use ray::scene::*;
 use ray::vec3::Vec3;
@@ -54,7 +56,7 @@ pub fn main() {
                 })
                 .collect::<Vec<Box<Hitable>>>(),
         )) as Box<Hitable>,
-        Box::new(XZRect::new(123.0, 147.0, 423.0, 412.0, 554.0, light)),
+        Box::new(Rect::xz(123.0, 147.0, 423.0, 412.0, 554.0, light)),
         Box::new(Sphere::new(Vec3::new(220, 280, 300), 70.0, mirror)),
         Box::new(Sphere::new(Vec3::new(400, 375, 200), 70.0, metal)),
         Box::new(Sphere::new(Vec3::new(260, 150, 45), 50.0, glass)),
@@ -63,16 +65,13 @@ pub fn main() {
         Box::new(Volume::new(0.2, internal_reflection, smoke)),
         // globe
         Box::new(Translate::new(
-            Box::new(RotateY::new(
-                Box::new(Sphere::new(Vec3::default(), 100.0, earth)),
-                60.0,
-            )),
+            Rotate::new(Sphere::new(Vec3::default(), 100.0, earth), Axis::Y, 60.0),
             Vec3::new(400, 200, 400),
         )),
         // many tiny spheres
         Box::new(Translate::new(
-            Box::new(RotateY::new(
-                Box::new(BVHNode::from(
+            Rotate::new(
+                BVHNode::from(
                     &mut (0..1000)
                         .map(|_| {
                             Box::new(Sphere::new(
@@ -82,9 +81,10 @@ pub fn main() {
                             )) as Box<Hitable>
                         })
                         .collect::<Vec<Box<Hitable>>>(),
-                )),
+                ),
+                Axis::Y,
                 15.0,
-            )),
+            ),
             Vec3::new(-100, 270, 395),
         )),
     ]);

@@ -1,7 +1,6 @@
 - adaptive super sampling
 - rng performance, consider passing one arround and using xor/small
 - interactive view (update as tracing, pause or save on demand)
-- generalize rotations to not just be around the y axis, maybe 4d transform matrix
 - simd bvh aabb checking (vec3 is bad but try anyway)
 - wasm
 - lens flare (http://resources.mpi-inf.mpg.de/lensflareRendering/)

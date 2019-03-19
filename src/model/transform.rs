@@ -1,5 +1,6 @@
 use super::aabb::AABB;
 use super::hitable::{HitRecord, Hitable};
+use crate::axis::Axis;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use itertools::iproduct;
@@ -59,61 +60,97 @@ impl<T: Hitable> Hitable for Translate<T> {
 }
 
 #[derive(Debug)]
-pub struct RotateY<T: Hitable> {
+pub struct Rotate<T: Hitable> {
     obj: T,
+    axis: Axis,
     sin_theta: f32,
     cos_theta: f32,
     bb: AABB,
 }
 
-impl<T: Hitable> RotateY<T> {
+impl<T: Hitable> Rotate<T> {
     /// angle is in degrees
-    pub fn new(obj: T, angle: f32) -> Self {
+    pub fn new(obj: T, axis: Axis, angle: f32) -> Self {
         let rad = angle * std::f32::consts::PI / 180.0;
-        let mut temp = RotateY {
+        let mut temp = Rotate {
             obj,
+            axis,
             sin_theta: rad.sin(),
             cos_theta: rad.cos(),
             bb: AABB::default(),
         };
+        let (axis_a, axis_b) = Axis::other_two(axis);
+        // go through every point in the bounding box and compute its rotated position
+        // then form a new bounding box by expanding one to fit all those points
         iproduct!(0..2, 0..2, 0..2).for_each(|(i, j, k)| {
-            let x = i as f32 * temp.bb.max.x + (1 - i) as f32 * temp.bb.min.x;
-            let y = j as f32 * temp.bb.max.y + (1 - j) as f32 * temp.bb.min.y;
-            let z = k as f32 * temp.bb.max.z + (1 - k) as f32 * temp.bb.min.z;
-            let newx = temp.cos_theta * x + temp.sin_theta * z;
-            let newz = -temp.sin_theta * x + temp.cos_theta * z;
-            let v = Vec3::new(newx, y, newz);
+            let point = Vec3::new(
+                i as f32 * temp.bb.max.x + (1 - i) as f32 * temp.bb.min.x,
+                j as f32 * temp.bb.max.y + (1 - j) as f32 * temp.bb.min.y,
+                k as f32 * temp.bb.max.z + (1 - k) as f32 * temp.bb.min.z,
+            );
+            let new_a = temp.cos_theta * point.get_axis(axis_a)
+                + temp.sin_theta * point.get_axis(axis_b);
+            let new_b = -temp.sin_theta * point.get_axis(axis_a)
+                + temp.cos_theta * point.get_axis(axis_b);
+            let v = point.set_axis(axis_a, new_a).set_axis(axis_b, new_b);
             temp.bb = temp.bb.combine(&AABB::new(v, v));
         });
         temp
     }
 }
 
-impl<T: Hitable> Hitable for RotateY<T> {
+impl<T: Hitable> Hitable for Rotate<T> {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let (axis_a, axis_b) = Axis::other_two(self.axis);
         let rotated_r = Ray::new(
-            Vec3::new(
-                self.cos_theta * r.origin.x - self.sin_theta * r.origin.z,
-                r.origin.y,
-                self.sin_theta * r.origin.x + self.cos_theta * r.origin.z,
-            ),
-            Vec3::new(
-                self.cos_theta * r.dir.x - self.sin_theta * r.dir.z,
-                r.dir.y,
-                self.sin_theta * r.dir.x + self.cos_theta * r.dir.z,
-            ),
+            r.origin
+                .set_axis(
+                    axis_a,
+                    self.cos_theta * r.origin.get_axis(axis_a)
+                        - self.sin_theta * r.origin.get_axis(axis_b),
+                )
+                .set_axis(
+                    axis_b,
+                    self.sin_theta * r.origin.get_axis(axis_a)
+                        + self.cos_theta * r.origin.get_axis(axis_b),
+                ),
+            r.dir
+                .set_axis(
+                    axis_a,
+                    self.cos_theta * r.dir.get_axis(axis_a)
+                        - self.sin_theta * r.dir.get_axis(axis_b),
+                )
+                .set_axis(
+                    axis_b,
+                    self.sin_theta * r.dir.get_axis(axis_a)
+                        + self.cos_theta * r.dir.get_axis(axis_b),
+                ),
         );
         if let Some(mut rec) = self.obj.hit(rotated_r, t_min, t_max) {
-            rec.point = Vec3::new(
-                self.cos_theta * rec.point.x + self.sin_theta * rec.point.z,
-                rec.point.y,
-                -self.sin_theta * rec.point.x + self.cos_theta * rec.point.z,
-            );
-            rec.normal = Vec3::new(
-                self.cos_theta * rec.normal.x + self.sin_theta * rec.normal.z,
-                rec.normal.y,
-                -self.sin_theta * rec.normal.x + self.cos_theta * rec.normal.z,
-            );
+            rec.point = rec
+                .point
+                .set_axis(
+                    axis_a,
+                    self.cos_theta * rec.point.get_axis(axis_a)
+                        + self.sin_theta * rec.point.get_axis(axis_b),
+                )
+                .set_axis(
+                    axis_b,
+                    -self.sin_theta * rec.point.get_axis(axis_a)
+                        + self.cos_theta * rec.point.get_axis(axis_b),
+                );
+            rec.normal = rec
+                .normal
+                .set_axis(
+                    axis_a,
+                    self.cos_theta * rec.normal.get_axis(axis_a)
+                        + self.sin_theta * rec.normal.get_axis(axis_b),
+                )
+                .set_axis(
+                    axis_b,
+                    -self.sin_theta * rec.normal.get_axis(axis_a)
+                        + self.cos_theta * rec.normal.get_axis(axis_b),
+                );
             Some(rec)
         } else {
             None

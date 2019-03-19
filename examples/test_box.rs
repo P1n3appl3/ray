@@ -1,10 +1,11 @@
 extern crate ray;
+use ray::axis::Axis;
 use ray::camera::Camera;
 use ray::model::bvh::BVHNode;
 use ray::model::hitable::Hitable;
 use ray::model::material::*;
 use ray::model::mesh::Mesh;
-use ray::model::rect::*;
+use ray::model::rect::Rect;
 use ray::model::texture::*;
 use ray::model::transform::*;
 use ray::scene::*;
@@ -23,35 +24,35 @@ pub fn main() {
     let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.0));
     let objects = BVHNode::from(&mut vec![
         // left wall
-        Box::new(FlipNormal::new(Box::new(YZRect::new(
+        Box::new(FlipNormal::new(Rect::yz(
             0.0, 0.0, 555.0, 555.0, 555.0, blue,
-        )))) as Box<Hitable>,
+        ))) as Box<Hitable>,
         // right wall
-        Box::new(YZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, red)),
+        Box::new(Rect::yz(0.0, 0.0, 555.0, 555.0, 0.0, red)),
         // light
-        Box::new(XZRect::new(113.0, 127.0, 443.0, 432.0, 554.0, light)),
+        Box::new(Rect::xz(113.0, 127.0, 443.0, 432.0, 554.0, light)),
         // ceiling
-        Box::new(FlipNormal::new(Box::new(XZRect::new(
+        Box::new(FlipNormal::new(Rect::xz(
             0.0,
             0.0,
             555.0,
             555.0,
             555.0,
             white.clone(),
-        )))),
+        ))),
         // floor
-        Box::new(XZRect::new(0.0, 0.0, 555.0, 555.0, 0.0, white.clone())),
+        Box::new(Rect::xz(0.0, 0.0, 555.0, 555.0, 0.0, white.clone())),
         // back wall
-        Box::new(FlipNormal::new(Box::new(XYRect::new(
+        Box::new(FlipNormal::new(Rect::xy(
             0.0,
             0.0,
             555.0,
             555.0,
             555.0,
             white.clone(),
-        )))),
+        ))),
         Box::new(Translate::new(
-            Box::new(Mesh::new("teapot.obj", 80.0, metal)),
+            Mesh::new("teapot.obj", 80.0, metal),
             Vec3::new(275, 0, 275),
         )),
     ]);
