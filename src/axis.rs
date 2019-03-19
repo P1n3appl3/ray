@@ -7,13 +7,15 @@ pub enum Axis {
 
 impl Axis {
     pub fn other(a: Axis, b: Axis) -> Axis {
+        use Axis::*;
         match (a, b) {
-            (X, Y) => Axis::Z,
-            (Y, Z) => Axis::X,
-            (X, Z) => Axis::Y,
-            (Y, X) => Axis::Z,
-            (Z, Y) => Axis::X,
-            (Z, X) => Axis::Y,
+            (X, Y) => Z,
+            (Y, Z) => X,
+            (X, Z) => Y,
+            (Y, X) => Z,
+            (Z, Y) => X,
+            (Z, X) => Y,
+            _ => panic!("There are two other axis"),
         }
     }
 }

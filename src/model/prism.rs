@@ -19,32 +19,32 @@ impl Prism {
             faces: BVHNode::from(&mut vec![
                 Box::new(Rect::xy(p0.x, p0.y, p1.x, p1.y, p1.z, mat.clone()))
                     as Box<dyn Hitable>,
-                Box::new(FlipNormal::new(Box::new(Rect::xy(
+                Box::new(FlipNormal::new(Rect::xy(
                     p0.x,
                     p0.y,
                     p1.x,
                     p1.y,
                     p0.z,
                     mat.clone(),
-                )))),
+                ))),
                 Box::new(Rect::xz(p0.x, p0.z, p1.x, p1.z, p1.y, mat.clone())),
-                Box::new(FlipNormal::new(Box::new(Rect::xz(
+                Box::new(FlipNormal::new(Rect::xz(
                     p0.x,
                     p0.z,
                     p1.x,
                     p1.z,
                     p0.y,
                     mat.clone(),
-                )))),
+                ))),
                 Box::new(Rect::yz(p0.y, p0.z, p1.y, p1.z, p1.x, mat.clone())),
-                Box::new(FlipNormal::new(Box::new(Rect::yz(
+                Box::new(FlipNormal::new(Rect::yz(
                     p0.y,
                     p0.z,
                     p1.y,
                     p1.z,
                     p0.x,
                     mat.clone(),
-                )))),
+                ))),
             ]),
         }
     }

@@ -5,17 +5,17 @@ use crate::vec3::Vec3;
 use itertools::iproduct;
 
 #[derive(Debug)]
-pub struct FlipNormal {
-    obj: Box<dyn Hitable>,
+pub struct FlipNormal<T: Hitable> {
+    obj: T,
 }
 
-impl FlipNormal {
-    pub fn new(obj: Box<dyn Hitable>) -> Self {
+impl<T: Hitable> FlipNormal<T> {
+    pub fn new(obj: T) -> Self {
         FlipNormal { obj }
     }
 }
 
-impl Hitable for FlipNormal {
+impl<T: Hitable> Hitable for FlipNormal<T> {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if let Some(mut temp) = self.obj.hit(r, t_min, t_max) {
             temp.normal = -temp.normal;
@@ -30,18 +30,18 @@ impl Hitable for FlipNormal {
 }
 
 #[derive(Debug)]
-pub struct Translate {
-    obj: Box<dyn Hitable>,
+pub struct Translate<T: Hitable> {
+    obj: T,
     offset: Vec3,
 }
 
-impl Translate {
-    pub fn new(obj: Box<dyn Hitable>, offset: Vec3) -> Self {
+impl<T: Hitable> Translate<T> {
+    pub fn new(obj: T, offset: Vec3) -> Self {
         Translate { obj, offset }
     }
 }
 
-impl Hitable for Translate {
+impl<T: Hitable> Hitable for Translate<T> {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut moved_r = r;
         moved_r.origin -= self.offset;
@@ -59,16 +59,16 @@ impl Hitable for Translate {
 }
 
 #[derive(Debug)]
-pub struct RotateY {
-    obj: Box<dyn Hitable>,
+pub struct RotateY<T: Hitable> {
+    obj: T,
     sin_theta: f32,
     cos_theta: f32,
     bb: AABB,
 }
 
-impl RotateY {
+impl<T: Hitable> RotateY<T> {
     /// angle is in degrees
-    pub fn new(obj: Box<dyn Hitable>, angle: f32) -> Self {
+    pub fn new(obj: T, angle: f32) -> Self {
         let rad = angle * std::f32::consts::PI / 180.0;
         let mut temp = RotateY {
             obj,
@@ -89,7 +89,7 @@ impl RotateY {
     }
 }
 
-impl Hitable for RotateY {
+impl<T: Hitable> Hitable for RotateY<T> {
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let rotated_r = Ray::new(
             Vec3::new(

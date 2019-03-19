@@ -1,8 +1,6 @@
 use super::aabb::AABB;
-use super::bvh::BVHNode;
 use super::hitable::{HitRecord, Hitable};
 use super::material::Material;
-use super::transform::FlipNormal;
 use crate::axis::Axis;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
