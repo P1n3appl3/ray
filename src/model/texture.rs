@@ -140,6 +140,7 @@ impl Perlin {
     pub fn new(scale: f32, color: Vec3, kind: PerlinVariant) -> Self {
         Perlin { scale, color, kind }
     }
+
     pub fn noise(&self, p: Vec3) -> f32 {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
@@ -160,6 +161,7 @@ impl Perlin {
             })
             .sum()
     }
+
     pub fn turb(&self, p: Vec3) -> f32 {
         let depth = 7;
         let mut weight = 1.0;

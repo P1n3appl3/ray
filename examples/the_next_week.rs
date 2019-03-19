@@ -22,14 +22,14 @@ pub fn main() {
     let light = Arc::new(Light::new(Solid::new(Vec3::from(12))));
     let mirror = Arc::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
     let metal = Arc::new(Specular::new(Vec3::new(0.9, 0.5, 0.5), 0.25));
-    let glass = Arc::new(Dielectric::new(1.5));
+    let glass = Arc::new(Dielectric::new(1.into(), 1.5));
     let glow_rock = Arc::new(Light::new(Perlin::new(
         0.05,
         Vec3::new(1.6, 0.6, 0.2),
         Rock,
     )));
     let smoke = Arc::new(Isotropic::new(Solid::new(Vec3::new(0.2, 0.4, 0.9))));
-    let earth = Arc::new(Diffuse::new(image::open("earth.png").unwrap().to_rgb()));
+    let earth = Arc::new(Diffuse::new(load_ldr_image("earth.png")));
     let internal_reflection =
         Box::new(Sphere::new(Vec3::new(360, 150, 145), 70.0, glass.clone()));
     let objects = BVHNode::from(&mut vec![

@@ -14,7 +14,7 @@ pub fn main() {
     let ground = Arc::new(Diffuse::new(Solid::new(Color::new(0.8, 0.8, 0))));
     let blue = Arc::new(Diffuse::new(Solid::new(Color::new(0.1, 0.2, 0.5))));
     let metal = Arc::new(Specular::new(Color::new(0.8, 0.6, 0.2), 0.1));
-    let glass = Arc::new(Dielectric::new(1.5));
+    let glass = Arc::new(Dielectric::new(1.into(), 1.5));
     let spheres = BVHNode::from(&mut vec![
         Box::new(Sphere::new(Vec3::new(0, -100.5, -1), 100.0, ground))
             as Box<dyn Hitable>,

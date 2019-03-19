@@ -1,5 +1,6 @@
 use crate::model::texture::Texture;
 use crate::ray::Ray;
+use crate::scene::Color;
 use crate::vec3::Vec3;
 use rand::random;
 
@@ -11,7 +12,7 @@ pub trait Material: Send + Sync + std::fmt::Debug {
         point: Vec3,
         u: f32,
         v: f32,
-    ) -> Option<(Vec3, Ray)>;
+    ) -> Option<(Color, Ray)>;
     fn emit(&self, _u: f32, _v: f32, _p: Vec3) -> Vec3 {
         Vec3::default()
     }
@@ -42,7 +43,7 @@ impl<T: Texture> Material for Diffuse<T> {
         point: Vec3,
         u: f32,
         v: f32,
-    ) -> Option<(Vec3, Ray)> {
+    ) -> Option<(Color, Ray)> {
         let target = point + normal + Vec3::rand_in_unit_sphere();
         let scattered = Ray::new(point, target - point);
         Some((self.texture.value(u, v, point), scattered))
@@ -51,12 +52,12 @@ impl<T: Texture> Material for Diffuse<T> {
 
 #[derive(Debug, Clone)]
 pub struct Specular {
-    albedo: Vec3,
+    albedo: Color,
     fuzz: f32,
 }
 
 impl Specular {
-    pub fn new(albedo: Vec3, fuzz: f32) -> Self {
+    pub fn new(albedo: Color, fuzz: f32) -> Self {
         Specular { albedo, fuzz }
     }
 }
@@ -69,7 +70,7 @@ impl Material for Specular {
         point: Vec3,
         _u: f32,
         _v: f32,
-    ) -> Option<(Vec3, Ray)> {
+    ) -> Option<(Color, Ray)> {
         let reflected = r.dir.normalize().reflect(&normal);
         let scattered =
             Ray::new(point, reflected + Vec3::rand_in_unit_sphere() * self.fuzz);
@@ -83,12 +84,16 @@ impl Material for Specular {
 
 #[derive(Debug, Clone)]
 pub struct Dielectric {
+    tint: Color,
     refractive_index: f32,
 }
 
 impl Dielectric {
-    pub fn new(refractive_index: f32) -> Self {
-        Dielectric { refractive_index }
+    pub fn new(tint: Color, refractive_index: f32) -> Self {
+        Dielectric {
+            tint,
+            refractive_index,
+        }
     }
 }
 
@@ -100,8 +105,7 @@ impl Material for Dielectric {
         point: Vec3,
         _u: f32,
         _v: f32,
-    ) -> Option<(Vec3, Ray)> {
-        let attenuation = Vec3::from(1.0);
+    ) -> Option<(Color, Ray)> {
         let reflected = r.dir.reflect(&normal);
         let outward_normal;
         let index_ratio;
@@ -121,12 +125,17 @@ impl Material for Dielectric {
             // If none, the refracted ray is never used
             None => (Vec3::default(), 1.0),
         };
-        if random::<f32>() < reflect_prob {
-            // TODO: maybe adjust to make it more reflective
-            Some((attenuation, Ray::new(point, reflected)))
-        } else {
-            Some((attenuation, Ray::new(point, refracted)))
-        }
+        Some((
+            self.tint,
+            Ray::new(
+                point,
+                if random::<f32>() < reflect_prob {
+                    reflected
+                } else {
+                    refracted
+                },
+            ),
+        ))
     }
 }
 
@@ -142,7 +151,7 @@ impl<T: Texture> Light<T> {
 }
 
 impl<T: Texture> Material for Light<T> {
-    fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Color, Ray)> {
         None
     }
     fn emit(&self, u: f32, v: f32, p: Vec3) -> Vec3 {
@@ -169,7 +178,7 @@ impl<T: Texture> Material for Isotropic<T> {
         point: Vec3,
         u: f32,
         v: f32,
-    ) -> Option<(Vec3, Ray)> {
+    ) -> Option<(Color, Ray)> {
         Some((
             self.texture.value(u, v, point),
             Ray::new(point, Vec3::rand_in_unit_sphere()),

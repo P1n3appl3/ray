@@ -23,7 +23,7 @@ pub fn main() {
     let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.73))));
     let light = Arc::new(Light::new(Solid::new(Vec3::from(5))));
     let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1));
-    let glass = Arc::new(Dielectric::new(1.5));
+    let glass = Arc::new(Dielectric::new(Color::new(0.7, 0.7, 1.0), 1.5));
     let left_box = Box::new(Translate::new(
         Rotate::new(
             Prism::new(Vec3::default(), Vec3::new(165, 330, 165), white.clone()),

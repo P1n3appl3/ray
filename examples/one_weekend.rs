@@ -19,7 +19,7 @@ pub fn main() {
     )));
     let blue = Arc::new(Diffuse::new(Solid::new(Vec3::new(0.2, 0.3, 0.7))));
     let metal = Arc::new(Specular::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
-    let glass = Arc::new(Dielectric::new(1.5));
+    let glass = Arc::new(Dielectric::new(1.into(), 1.5));
     let mut spheres = vec![
         Box::new(Sphere::new(Vec3::new(0, -1000, 0), 1000.0, checker))
             as Box<dyn Hitable>,

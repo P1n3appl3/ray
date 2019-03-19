@@ -24,7 +24,7 @@ pub fn main() {
     )));
     let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.7))));
     let red = Arc::new(Specular::new(Vec3::from_rgb(240, 17, 24), 0.35));
-    let glass = Arc::new(Dielectric::new(1.5));
+    let glass = Arc::new(Dielectric::new(1.into(), 1.5));
     let objects = BVHNode::from(&mut vec![
         Box::new(Rect::xy(
             -100.0,
@@ -35,26 +35,26 @@ pub fn main() {
             checker.clone(),
         )) as Box<dyn Hitable>,
         Box::new(Rect::xz(-100.0, -100.0, 100.0, 100.0, 0.0, checker.clone())),
-        // Box::new(Translate::new(
-        //     Mesh::new("teapot.obj", 8.0, white.clone()),
-        //     Vec3::new(-5, 0, 0),
-        // )),
         Box::new(Translate::new(
-            Rotate::new(
-                Rotate::new(
-                    Rotate::new(
-                        Prism::new((-10).into(), 10.into(), white),
-                        Axis::X,
-                        45.0,
-                    ),
-                    Axis::Z,
-                    45.0,
-                ),
-                Axis::Y,
-                87.0,
-            ),
-            Vec3::new(0, 20, -10),
+            Mesh::new("teapot.obj", 8.0, glass.clone()),
+            Vec3::new(-5, 0, 0),
         )),
+        // Box::new(Translate::new(
+        //     Rotate::new(
+        //         Rotate::new(
+        //             Rotate::new(
+        //                 Prism::new((-10).into(), 10.into(), white),
+        //                 Axis::X,
+        //                 45.0,
+        //             ),
+        //             Axis::Z,
+        //             45.0,
+        //         ),
+        //         Axis::Y,
+        //         87.0,
+        //     ),
+        //     Vec3::new(0, 20, -10),
+        // )),
     ]);
     let width = 300;
     let height = 300;
