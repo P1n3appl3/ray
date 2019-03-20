@@ -33,6 +33,30 @@ fn bench_aabb(c: &mut Criterion) {
     });
 }
 
+lazy_static! {
+    static ref vec_a: Vec3 = black_box(Vec3::new(-1, 5.3, 7.2));
+    static ref vec_b: Vec3 = black_box(Vec3::new(-0.000001, 0, 7.2));
+}
+
+fn bench_vec3(c: &mut Criterion) {
+    c.bench(
+        "add",
+        Benchmark::new("Regular", |b| b.iter(|| *vec_a + *vec_b))
+            .with_function("SIMD", |b| b.iter(|| vec_a.fast_add(&vec_b))),
+    );
+    c.bench(
+        "dot",
+        Benchmark::new("Regular", |b| b.iter(|| vec_a.dot(&vec_b)))
+            .with_function("SIMD", |b| b.iter(|| vec_a.fast_dot(&vec_b))),
+    );
+    c.bench(
+        "cross",
+        Benchmark::new("Regular", |b| b.iter(|| vec_a.cross(&vec_b)))
+            .with_function("SIMD", |b| b.iter(|| vec_a.fast_cross(&vec_b))),
+    );
+}
+
 criterion_group!(rand_bench, bench_rand);
 criterion_group!(aabb_bench, bench_aabb);
-criterion_main!(rand_bench);
+criterion_group!(vec3_bench, bench_vec3);
+criterion_main!(vec3_bench);

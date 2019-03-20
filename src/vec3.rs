@@ -1,4 +1,5 @@
 use crate::axis::Axis;
+use packed_simd::{f32x4, shuffle};
 use rand::distributions::{Distribution, Standard, UnitSphereSurface};
 use rand::prelude::*;
 use std::f32;
@@ -162,6 +163,35 @@ impl Vec3 {
         } else {
             None
         }
+    }
+
+    pub fn fast_cross(&self, other: &Self) -> Self {
+        let a = f32x4::from(*self);
+        let b = f32x4::from(*other);
+        let a_yzx = shuffle!(a, [3, 0, 2, 1]);
+        let b_yzx = shuffle!(b, [3, 0, 2, 1]);
+        let c = a * b_yzx - a_yzx * b;
+        shuffle!(c, [3, 0, 2, 1]).into()
+    }
+
+    pub fn fast_add(&self, other: &Self) -> Self {
+        (f32x4::from(*self) + f32x4::from(*other)).into()
+    }
+
+    pub fn fast_dot(&self, other: &Self) -> Self {
+        (f32x4::from(*self) * f32x4::from(*other)).sum().into()
+    }
+}
+
+impl From<Vec3> for f32x4 {
+    fn from(v: Vec3) -> Self {
+        f32x4::new(v.x, v.y, v.z, 0.0)
+    }
+}
+
+impl From<f32x4> for Vec3 {
+    fn from(v: f32x4) -> Self {
+        Vec3::new(v.extract(0), v.extract(1), v.extract(2))
     }
 }
 
