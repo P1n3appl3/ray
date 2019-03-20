@@ -1,7 +1,7 @@
-- adaptive super sampling
+- real bxdf (or general material handling overhaul)
 - rng performance, consider passing one arround and using xor/small
-- interactive view (update as tracing, pause or save on demand)
 - simd bvh aabb checking (vec3 is bad but try anyway)
+- adaptive super sampling
+- interactive view (update as tracing, pause or save on demand)
 - wasm
 - lens flare (http://resources.mpi-inf.mpg.de/lensflareRendering/)
-- real bxdf (or general material handling overhaul)

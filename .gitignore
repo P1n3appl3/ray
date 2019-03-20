@@ -5,4 +5,5 @@
 *.png
 *.obj
 *.svg
+*.data*
 !earth.png
