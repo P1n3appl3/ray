@@ -7,12 +7,13 @@ use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
 use std::fs::File;
 use std::io::BufReader;
+use serde::Deserialize;
 
 pub trait Texture: Send + Sync + std::fmt::Debug {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Color;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct Solid {
     color: Color,
 }
@@ -29,7 +30,7 @@ impl Texture for Solid {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Checkered<Ta: Texture, Tb: Texture> {
     a: Ta,
     b: Tb,
@@ -51,7 +52,7 @@ impl<Ta: Texture, Tb: Texture> Texture for Checkered<Ta, Tb> {
         }
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 
 pub struct Checkered3D<Ta: Texture, Tb: Texture> {
     a: Ta,
@@ -176,7 +177,7 @@ impl Perlin {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Gradient {}
 
 impl Texture for Gradient {

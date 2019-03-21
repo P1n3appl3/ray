@@ -1,4 +1,4 @@
-use crate::model::texture::Texture;
+use crate::model::texture::*;
 use crate::ray::Ray;
 use crate::scene::Color;
 use crate::vec3::Vec3;

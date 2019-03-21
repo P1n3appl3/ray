@@ -37,8 +37,8 @@ pub fn main() {
         )) as Box<dyn Hitable>,
         Box::new(Rect::xz(-100.0, -100.0, 100.0, 100.0, 0.0, checker.clone())),
         Box::new(Translate::new(
-            Rotate::new(Mesh::new("bunny.obj", 4.0, gold), Axis::Y, 180.0),
-            Vec3::new(-8, 0, 0),
+            Rotate::new(Mesh::new("lucy.obj", 200.0, white), Axis::Y, 180.0),
+            Vec3::new(5, 0, 0),
         )),
     ]);
     let width = 300;

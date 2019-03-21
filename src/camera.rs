@@ -33,25 +33,25 @@ pub struct Camera {
 }
 
 impl Camera {
-    /// vfov is specified in degrees
+    /// fov is specified in degrees
     pub fn new(
-        look_from: Vec3,
+        position: Vec3,
         look_at: Vec3,
-        vup: Vec3,
-        vfov: f32,
+        up_dir: Vec3,
+        fov: f32,
         aspect: f32,
         aperture: f32,
     ) -> Self {
-        let theta = vfov * std::f32::consts::PI / 180.0;
+        let theta = fov * std::f32::consts::PI / 180.0;
         let half_height = (theta / 2.0).tan();
         let half_width = aspect * half_height;
-        let w = (look_from - look_at).normalize();
-        let u = vup.cross(&w).normalize();
+        let w = (position - look_at).normalize();
+        let u = up_dir.cross(&w).normalize();
         let v = w.cross(&u);
-        let focus_dist = (look_from - look_at).len();
+        let focus_dist = (position - look_at).len();
         Camera {
-            origin: look_from,
-            lower_left: look_from - (u * half_width + v * half_height + w) * focus_dist,
+            origin: position,
+            lower_left: position - (u * half_width + v * half_height + w) * focus_dist,
             horizontal: u * (2.0 * half_width * focus_dist),
             vertical: v * (2.0 * half_height * focus_dist),
             lens_radius: aperture / 2.0,

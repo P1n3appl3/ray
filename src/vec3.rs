@@ -2,6 +2,7 @@ use crate::axis::Axis;
 use packed_simd::{f32x4, shuffle};
 use rand::distributions::{Distribution, Standard, UnitSphereSurface};
 use rand::prelude::*;
+use serde::Deserialize;
 use std::f32;
 use std::fmt;
 use std::ops::*;
@@ -28,7 +29,8 @@ impl ToF32 for u8 {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq)]
+// TODO: replace with Deserialize_tuple
+#[derive(Copy, Clone, Debug, Default, Deserialize, PartialEq)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,

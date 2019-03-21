@@ -3,5 +3,7 @@
 - simd bvh aabb checking (vec3 is bad but try anyway)
 - adaptive super sampling
 - interactive view (update as tracing, pause or save on demand)
+- spectral rendering
+- model interning
 - wasm
 - lens flare (http://resources.mpi-inf.mpg.de/lensflareRendering/)

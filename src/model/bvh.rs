@@ -103,9 +103,8 @@ impl From<&mut Vec<Box<dyn Hitable>>> for BVHNode {
                 min_sah_idx = i;
             }
         }
-        let left = Box::new(BVHNode::from(&mut objects.drain(..=min_sah_idx).collect()))
-            as Box<Hitable>;
-        let right = Box::new(BVHNode::from(objects)) as Box<Hitable>;
+        let left = Box::new(BVHNode::from(&mut objects.drain(..=min_sah_idx).collect()));
+        let right = Box::new(BVHNode::from(objects));
         BVHNode::new(main_box, Some(left), Some(right))
     }
 }

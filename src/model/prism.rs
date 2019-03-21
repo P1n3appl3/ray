@@ -37,14 +37,7 @@ impl Prism {
                     mat.clone(),
                 ))),
                 Box::new(Rect::yz(p0.y, p0.z, p1.y, p1.z, p1.x, mat.clone())),
-                Box::new(FlipNormal::new(Rect::yz(
-                    p0.y,
-                    p0.z,
-                    p1.y,
-                    p1.z,
-                    p0.x,
-                    mat.clone(),
-                ))),
+                Box::new(FlipNormal::new(Rect::yz(p0.y, p0.z, p1.y, p1.z, p0.x, mat))),
             ]),
         }
     }
