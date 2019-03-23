@@ -59,7 +59,7 @@ pub fn main() {
         Box::new(Volume::new(0.2, internal_reflection, smoke)),
         // globe
         Box::new(Translate::new(
-            Rotate::new(Sphere::new(Vec3::default(), 100.0, earth), Axis::Y, 60.0),
+            Rotate::new(Sphere::new(Vec3::zero(), 100.0, earth), Axis::Y, 60.0),
             Vec3::new(400, 200, 400),
         )),
         // many tiny spheres
@@ -99,7 +99,7 @@ pub fn main() {
         height,
         samples: 500,
         bounces: 100,
-        background: Box::new(Solid::new(Color::default())),
+        background: Box::new(Solid::new(Color::zero())),
         show_bg: true,
     }
     .render_to_file("the_next_week.png")

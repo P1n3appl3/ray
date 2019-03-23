@@ -2,7 +2,7 @@
 - rng performance, consider passing one arround and using xor/small
 - simd bvh aabb checking (vec3 is bad but try anyway)
 - adaptive super sampling
-- interactive view (update as tracing, pause or save on demand)
+- interactive view: focus rays on rectangular region
 - spectral rendering
 - model interning
 - wasm

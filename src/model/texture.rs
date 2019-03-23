@@ -96,7 +96,7 @@ fn rand_arr() -> [u8; 256] {
 
 lazy_static! {
     static ref RAND_VEC: [Vec3; 256] = {
-        let mut temp = [Vec3::default(); 256];
+        let mut temp = [Vec3::zero(); 256];
         temp.copy_from_slice(
             &(0..256)
                 .map(|_| (random::<Vec3>() * 2.0 - Vec3::from(1.0)).normalize())

@@ -26,7 +26,7 @@ impl Mesh {
                             None
                         }
                     })
-                    .fold(Vec3::default(), |a, b| a + b)
+                    .fold(Vec3::zero(), |a, b| a + b)
                     .normalize()
             })
             .collect()
@@ -51,7 +51,7 @@ impl Mesh {
                 .collect()
         };
         let texture_coords: Vec<Vec3> = if mesh.texcoords.is_empty() {
-            vec![Vec3::default(); points.len() * 3 / 2]
+            vec![Vec3::zero(); points.len() * 3 / 2]
         } else {
             mesh.texcoords
                 .chunks(2)
@@ -111,8 +111,8 @@ impl From<Vec3> for Vertex {
     fn from(v: Vec3) -> Vertex {
         Vertex {
             pos: v,
-            normal: Vec3::default(),
-            texture: Vec3::default(),
+            normal: Vec3::zero(),
+            texture: Vec3::zero(),
         }
     }
 }
@@ -142,22 +142,19 @@ impl Triangle {
 }
 
 impl Hitable for Triangle {
-    /*
-    Solving ray triangle intersection with Möller-Trumbore algorithm:
-
-    Triangle verticies A B and C
-    Triangle edges E1 = B - A and E2 = C - A
-    Ray origin O and direction D
-    Barycentric coords u and v express P = (1-u-v)A * uB * vC
-    Relative position of ray origin to vertex A is called T = (O-A)
-    Solving the system using Cramers rule:
-
-    t        1      |T E1 E2|        (note that scalar tripple product
-    u  = ---------  |D T  E2|         |A B C| is equal to AxB.C and
-    v    |D E1 E2|  |D E1 T |         also A.BxC)
-
-    if 0 <= u <= 1 and 0 <= u + v <= 1 then the collision is valid
-        */
+    /// Solving ray triangle intersection with Möller-Trumbore algorithm:
+    /// Triangle verticies A B and C
+    /// Triangle edges E1 = B - A and E2 = C - A
+    /// Ray origin O and direction D
+    /// Barycentric coords u and v express P = (1-u-v)A * uB * vC
+    /// Relative position of ray origin to vertex A is called T = (O-A)
+    /// Solving the system using Cramers rule:
+    ///
+    /// t        1      |T E1 E2|        (note that scalar tripple product
+    /// u  = ---------  |D T  E2|         |A B C| is equal to AxB.C and
+    /// v    |D E1 E2|  |D E1 T |         also A.BxC)
+    ///
+    /// if 0 <= u <= 1 and 0 <= u + v <= 1 then the collision is valid
     fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let edge1 = self.v1.pos - self.v0.pos;
         let edge2 = self.v2.pos - self.v0.pos;

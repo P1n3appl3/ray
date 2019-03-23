@@ -68,7 +68,7 @@ pub fn main() {
         height,
         samples: 500,
         bounces: 50,
-        background: Box::new(Solid::new(Color::default())),
+        background: Solid::new(Color::zero()),
         show_bg: false,
     }
     .render_to_file("test_box.png")

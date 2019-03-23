@@ -45,7 +45,7 @@ impl Hitable for Volume {
                         u: 0.0, // arbitrary
                         v: 0.0, // arbitrary
                         point: r.point_at_param(hit1.t),
-                        normal: Vec3::default(), // arbitrary
+                        normal: Vec3::zero(), // arbitrary
                         material: self.phase_function.as_ref(),
                     });
                 }

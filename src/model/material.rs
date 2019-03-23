@@ -5,6 +5,9 @@ use crate::vec3::Vec3;
 use rand::random;
 
 pub trait Material: Send + Sync + std::fmt::Debug {
+    /// Once a ray hits an object, it uses it's material to determine 2 things
+    ///     1. How much light/color was absorbed by the surface (if any)
+    ///     2. Which direction the ray bounces off (aka scatters)
     fn scatter(
         &self,
         r: Ray,
@@ -13,15 +16,11 @@ pub trait Material: Send + Sync + std::fmt::Debug {
         u: f32,
         v: f32,
     ) -> Option<(Color, Ray)>;
+    /// Some materials could also be "emissive" meaning that they actively
+    /// give off light instead of just reflecting/absorbing it
     fn emit(&self, _u: f32, _v: f32, _p: Vec3) -> Vec3 {
-        Vec3::default()
+        Vec3::zero()
     }
-}
-
-/// Aproximates the way that glass reflectivity varies with viewing angle
-fn schlick(cosine: f32, refractive_index: f32) -> f32 {
-    let r0 = ((1.0 - refractive_index) / (1.0 + refractive_index)).powi(2);
-    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }
 
 #[derive(Debug)]
@@ -82,6 +81,17 @@ impl Material for Specular {
     }
 }
 
+/// Dielectrics have a specular component, meaning that they can sometimes
+/// reflect rays instead of transmitting them. The only catch is that the
+/// reflectivity vs refractivity is dependent on the angle of incomming light
+/// (google Fresnel equations for the physics). Christophe Schlick figured out
+/// an equation to approximate this effect. It returns a probability in [0..1]
+/// of reflection occurring.
+fn schlick(cosine: f32, refractive_index: f32) -> f32 {
+    let r0 = ((1.0 - refractive_index) / (1.0 + refractive_index)).powi(2);
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+}
+
 #[derive(Debug, Clone)]
 pub struct Dielectric {
     tint: Color,
@@ -123,7 +133,7 @@ impl Material for Dielectric {
         {
             Some(x) => (x, schlick(cosine, self.refractive_index)),
             // If none, the refracted ray is never used
-            None => (Vec3::default(), 1.0),
+            None => (Vec3::zero(), 1.0),
         };
         Some((
             self.tint,
@@ -151,7 +161,14 @@ impl<T: Texture> Light<T> {
 }
 
 impl<T: Texture> Material for Light<T> {
-    fn scatter(&self, _: Ray, _: Vec3, _: Vec3, _: f32, _: f32) -> Option<(Color, Ray)> {
+    fn scatter(
+        &self,
+        _r: Ray,
+        _normal: Vec3,
+        _point: Vec3,
+        _u: f32,
+        _v: f32,
+    ) -> Option<(Color, Ray)> {
         None
     }
     fn emit(&self, u: f32, v: f32, p: Vec3) -> Vec3 {

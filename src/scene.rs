@@ -48,11 +48,11 @@ fn color(
     } else if show_bg || depth > 0 {
         bg.get_color(r)
     } else {
-        Color::default()
+        Color::zero()
     }
 }
 
-pub struct Scene {
+pub struct Scene<T: Background> {
     pub width: usize,
     pub height: usize,
     pub objects: BVHNode,
@@ -60,12 +60,10 @@ pub struct Scene {
     pub samples: u16,
     pub bounces: u16,
     pub show_bg: bool,
-    pub background: Box<dyn Background>,
+    pub background: T,
 }
 
-static PROGRESS_COUNTER: AtomicUsize = AtomicUsize::new(0);
-
-impl Scene {
+impl<T: Background> Scene<T> {
     pub fn render(&self) -> Vec<Rgb<f32>> {
         if cfg!(feature = "single_thread") {
             iproduct!((0..self.height).rev(), 0..self.width)
@@ -91,27 +89,17 @@ impl Scene {
                         (y as f32 + random::<f32>()) / self.height as f32,
                     ),
                     &self.objects,
-                    self.background.as_ref(),
+                    &self.background,
                     self.show_bg,
                     0,
                     self.bounces,
                 )
             })
-            .fold(Color::default(), |a, b| a + b)
+            .fold(Color::zero(), |a, b| a + b)
             / f32::from(self.samples);
         Rgb {
             data: [col.x, col.y, col.z],
         }
-    }
-
-    fn show_progress(start: Instant, goal: usize, current: usize) {
-        let percent = current as f32 / goal as f32;
-        let elapsed = (Instant::now() - start).as_millis() as f32 / 1000.0;
-        print!("{}", cursor::Up(4));
-        println!("progress: {:.1}%    ", percent * 100.0);
-        println!("elapsed: {:.1}s    ", elapsed);
-        println!("remaining: {:.1}s    ", elapsed / percent - elapsed);
-        println!("speed: {} rays/s    ", (current as f32 / elapsed) as usize);
     }
 
     pub fn render_to_file(&self, filename: &str) -> std::io::Result<()> {
@@ -123,12 +111,12 @@ impl Scene {
             let mut prog = 0;
             while prog < goal {
                 thread::sleep(Duration::from_millis(100));
-                Scene::show_progress(start_time, goal, prog);
+                show_progress(start_time, goal, prog);
                 prog = PROGRESS_COUNTER.load(Ordering::Relaxed) * samples;
             }
         });
         let data = self.render();
-        Scene::show_progress(start_time, goal, goal);
+        show_progress(start_time, goal, goal);
         #[cfg(feature = "hdr_output")]
         {
             let buffer = File::create(PathBuf::from(filename).with_extension("hdr"))?;
@@ -151,4 +139,16 @@ impl Scene {
         output.save(filename)?;
         Ok(())
     }
+}
+
+static PROGRESS_COUNTER: AtomicUsize = AtomicUsize::new(0);
+
+fn show_progress(start: Instant, goal: usize, current: usize) {
+    let percent = current as f32 / goal as f32;
+    let elapsed = (Instant::now() - start).as_millis() as f32 / 1000.0;
+    print!("{}", cursor::Up(4));
+    println!("progress: {:.1}%    ", percent * 100.0);
+    println!("elapsed: {:.1}s    ", elapsed);
+    println!("remaining: {:.1}s    ", elapsed / percent - elapsed);
+    println!("speed: {} rays/s    ", (current as f32 / elapsed) as usize);
 }

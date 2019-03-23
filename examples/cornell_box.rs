@@ -26,7 +26,7 @@ pub fn main() {
     let glass = Arc::new(Dielectric::new(Color::new(0.7, 0.7, 1.0), 1.5));
     let left_box = Box::new(Translate::new(
         Rotate::new(
-            Prism::new(Vec3::default(), Vec3::new(165, 330, 165), white.clone()),
+            Prism::new(Vec3::zero(), Vec3::new(165, 330, 165), white.clone()),
             Axis::Y,
             19.0,
         ),
@@ -34,7 +34,7 @@ pub fn main() {
     ));
     let right_box = Box::new(Translate::new(
         Rotate::new(
-            Prism::new(Vec3::default(), Vec3::new(165, 165, 165), white.clone()),
+            Prism::new(Vec3::zero(), Vec3::new(165, 165, 165), white.clone()),
             Axis::Y,
             -22.0,
         ),
@@ -88,7 +88,7 @@ pub fn main() {
         height,
         samples: 500,
         bounces: 50,
-        background: Box::new(Solid::new(Color::default())),
+        background: Box::new(Solid::new(Color::zero())),
         show_bg: false,
     }
     .render_to_file("cornell_box.png")

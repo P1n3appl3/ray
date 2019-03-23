@@ -7,7 +7,7 @@ fn main() {
         .skip(1)
         .next()
         .expect("Pass a scene file or run an example");
-    load_scene(&name)
-        .render_to_file(PathBuf::from(name).with_extension("png").to_str().unwrap())
-        .unwrap();
+    // load_scene(&name)
+    //     .render_to_file(PathBuf::from(name).with_extension("png").to_str().unwrap())
+    //     .unwrap();
 }

@@ -95,7 +95,7 @@ impl Hitable for Rect {
             u: (a - self.a0) / (self.a1 - self.a0),
             v: (b - self.b0) / (self.b1 - self.b0),
             point: r.point_at_param(t),
-            normal: Vec3::default().set_axis(other_axis, 1.0),
+            normal: Vec3::zero().set_axis(other_axis, 1.0),
             material: self.material.as_ref(),
         })
     }
@@ -103,11 +103,11 @@ impl Hitable for Rect {
     fn get_bb(&self) -> AABB {
         let other_axis = Axis::other(self.axis_a, self.axis_b);
         AABB::new(
-            Vec3::default()
+            Vec3::zero()
                 .set_axis(self.axis_a, self.a0)
                 .set_axis(self.axis_b, self.b0)
                 .set_axis(other_axis, self.k - 0.0001),
-            Vec3::default()
+            Vec3::zero()
                 .set_axis(self.axis_a, self.a1)
                 .set_axis(self.axis_b, self.b1)
                 .set_axis(other_axis, self.k + 0.0001),

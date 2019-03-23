@@ -58,10 +58,10 @@ pub fn main() {
         height,
         samples: 50,
         bounces: 50,
-        background: Box::new(Gradient {
+        background: Gradient {
             a: Color::new(1.0, 1.0, 1.0),
             b: Color::new(0.5, 0.7, 1.0),
-        }),
+        },
         show_bg: true,
     }
     .render_to_file("test.png")

@@ -46,6 +46,10 @@ impl Vec3 {
         }
     }
 
+    pub fn zero() -> Self {
+        Vec3::default()
+    }
+
     pub fn rand_in_unit_sphere() -> Self {
         let mut p;
         while {

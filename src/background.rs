@@ -28,6 +28,6 @@ where
         let v = r.dir.normalize();
         let phi = v.z.atan2(v.x);
         let theta = v.y.asin();
-        self.value((1.0 + phi / PI) / 2.0, theta / PI + 0.5, Vec3::default())
+        self.value((1.0 + phi / PI) / 2.0, theta / PI + 0.5, Vec3::zero())
     }
 }
