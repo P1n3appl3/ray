@@ -14,17 +14,29 @@ If I do more renders I'll put them [here](https://imgur.com/a/CIZrqYd).
 
 - Geometric primatives: sphere, rectangle, and rectancular prism
 - 3D Mesh support (using .obj files)
-- Materials: diffuse, specular, and dielectric
+- Materials: diffuse, specular, dielectric, isotropic, and emissive
 - Textures: constant, image based (including hdr), and procedural (checkered/perlin noise/gradient)
 - Acceleration using bounded volume heirarchy and [parallelization](https://github.com/rayon-rs/rayon)
-- Global illumination using textured world sphere and emmisive entities
+- Global illumination using radiant textured world sphere and emmisive entities
 - Camera with depth of field
+
+See [the todo file](todo.md) for stuff that I'm considering implementing in the future.
+
+## Non-Features
+These are techniques or features that I'm aware of but I've given up on implementing due to difficulty or lack of interest.
+
+- Motion blur
+- Animation
+- Importance sampling
+- GPU acceleration
+- Networked/distributed rendering
+- Tone mapping
 
 ## Resources
 - [Real Time Rendering](http://www.realtimerendering.com) hosts a bunch of free ray tracing books including the "in One Weekend" series. They also link to ["Physically Based Rendering"](http://www.pbr-book.org/3ed-2018/contents.html) which is like the bible of raytracing (haven't read it myself but everyone recommends it) and [Abrash's Black Book](http://www.jagregory.com/abrash-black-book/) which has nothing to do with raytracing but is full of really cool optimizations for graphics code.
 - [Peter Shirley's blog](http://in1weekend.blogspot.com) is a great companion to his books. It goes more in depth on the topics covered as well as showing off more modern ray tracing techniques.
 - [Scratchapixel](https://www.scratchapixel.com) is my favorite comprehensive resource for computer graphics basics. It covers many techniques and algorithms used in raytracing with code samples and visualizations.
-- In terms of inspiration, I've always loved minimalist graphics programs like [the business card raytracer](http://fabiensanglard.net/rayTracing_back_of_business_card/), [smallpt](http://www.kevinbeason.com/smallpt), and [donut.c](https://www.a1k0n.net/2011/07/20/donut-math.html). I also watch a youtube series called [Two Minute Papers](https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg) which gives brief explanations of academic papers mostly in the fields of computer graphics and machine learning. The guy who runs it also happens to teach a [college level raytracing course](https://www.cg.tuwien.ac.at/courses/Rendering/VU.SS2017.html) that I've checked out
+- In terms of inspiration, I've always loved minimalist graphics programs like [the business card raytracer](http://fabiensanglard.net/rayTracing_back_of_business_card/), [smallpt](http://www.kevinbeason.com/smallpt), and [donut.c](https://www.a1k0n.net/2011/07/20/donut-math.html). I also watch a youtube series called [Two Minute Papers](https://www.youtube.com/channel/UCbfYPyITQ-7l4upoX8nvctg) which gives brief explanations of academic papers mostly in the fields of computer graphics and machine learning. The guy who runs it also happens to teach a [college level raytracing course](https://www.cg.tuwien.ac.at/courses/Rendering/VU.SS2017.html) which I quite enjoyed the lectures from.
 - I've mostly stayed away from reading academic papers or following real college level graphics courses, but there are a few that I've skimmed and gotten something out of. These inlcude [UT Austin's graphics course](https://www.cs.utexas.edu/users/fussell/courses/cs384g-fall2011) which had a good lesson on adaptive super sampling, an [MIT OCW graphics course](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-837-computer-graphics-fall-2012), and the [University of Tartu's online resources](https://cglearn.codelight.eu/pub/computer-graphics/environment-mapping#material-sphere-map-1).
 - I've looked at dozens of blog posts and repos from others building their own ray tracers varrying in complexity from just as "toy" as mine to large scale projects. They've been a great source of inspiration, as well as being good mini-lessons for raytracing problems like [generating random points in a sphere](https://karthikkaranth.me/blog/generating-random-points-in-a-sphere). In no particular order here are some that I read while working on mine:
   - [Will Usher](https://www.willusher.io/projects) made a bunch of awesome graphics projects. In particular I really like [tray_rust](https://github.com/Twinklebear/tray_rust)

@@ -1,25 +1,23 @@
 extern crate ray;
 use ray::axis::Axis;
+use ray::bvh::BVHNode;
 use ray::camera::Camera;
-use ray::model::bvh::BVHNode;
-use ray::model::hitable::Hitable;
-use ray::model::material::*;
-use ray::model::prism::Prism;
-use ray::model::rect::Rect;
-use ray::model::sphere::Sphere;
-use ray::model::texture::*;
-use ray::model::transform::*;
+use ray::geometry::prism::Prism;
+use ray::geometry::rect::Rect;
+use ray::geometry::sphere::Sphere;
+use ray::geometry::transform::*;
+use ray::geometry::Hitable;
+use ray::material::{
+    dielectric::Dielectric, diffuse::Diffuse, light::Light, specular::Specular,
+};
 use ray::scene::*;
+use ray::texture::solid::Solid;
 use ray::vec3::Vec3;
 use std::sync::Arc;
 
 pub fn main() {
-    let red = Arc::new(Diffuse::new(Solid::new(Vec3::new(
-        0.65, 0.05, 0.05,
-    ))));
-    let green = Arc::new(Diffuse::new(Solid::new(Vec3::new(
-        0.12, 0.45, 0.15,
-    ))));
+    let red = Arc::new(Diffuse::new(Solid::new(Vec3::new(0.65, 0.05, 0.05))));
+    let green = Arc::new(Diffuse::new(Solid::new(Vec3::new(0.12, 0.45, 0.15))));
     let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.73))));
     let light = Arc::new(Light::new(Solid::new(Vec3::from(5))));
     let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.1));
@@ -88,7 +86,7 @@ pub fn main() {
         height,
         samples: 500,
         bounces: 50,
-        background: Box::new(Solid::new(Color::zero())),
+        background: Solid::new(Color::zero()),
         show_bg: false,
     }
     .render_to_file("cornell_box.png")

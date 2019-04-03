@@ -1,5 +1,5 @@
 use super::aabb::AABB;
-use super::hitable::{HitRecord, Hitable};
+use super::{HitRecord, Hitable};
 use crate::axis::Axis;
 use crate::ray::Ray;
 use crate::vec3::Vec3;

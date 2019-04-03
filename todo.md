@@ -1,7 +1,7 @@
 - real bxdf (or general material handling overhaul)
 - rng performance, consider passing one arround and using xor/small
 - simd bvh aabb checking (vec3 is bad but try anyway)
-- adaptive super sampling
+- adaptive super sampling and early ray termination
 - interactive view: focus rays on rectangular region
 - spectral rendering
 - model interning

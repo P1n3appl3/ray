@@ -4,10 +4,7 @@ use std::path::PathBuf;
 
 fn main() {
     let name = env::args()
-        .skip(1)
-        .next()
+        .nth(1)
         .expect("Pass a scene file or run an example");
-    // load_scene(&name)
-    //     .render_to_file(PathBuf::from(name).with_extension("png").to_str().unwrap())
-    //     .unwrap();
+    //TODO: load from file and render scene
 }

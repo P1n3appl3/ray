@@ -2,17 +2,21 @@ extern crate ray;
 use itertools::iproduct;
 use rand::random;
 use ray::axis::Axis;
+use ray::bvh::BVHNode;
 use ray::camera::Camera;
-use ray::model::bvh::BVHNode;
-use ray::model::hitable::Hitable;
-use ray::model::material::*;
-use ray::model::prism::Prism;
-use ray::model::rect::Rect;
-use ray::model::sphere::Sphere;
-use ray::model::texture::{PerlinVariant::*, *};
-use ray::model::transform::{Rotate, Translate};
-use ray::model::volume::Volume;
+use ray::geometry::{
+    prism::Prism, rect::Rect, sphere::Sphere, transform::*, volume::Volume, Hitable,
+};
+use ray::material::{
+    dielectric::Dielectric, diffuse::Diffuse, isotropic::Isotropic, light::Light,
+    specular::Specular,
+};
 use ray::scene::*;
+use ray::texture::{
+    image::*,
+    perlin::{Perlin, PerlinVariant::*},
+    solid::Solid,
+};
 use ray::vec3::Vec3;
 use std::sync::Arc;
 
@@ -99,7 +103,7 @@ pub fn main() {
         height,
         samples: 500,
         bounces: 100,
-        background: Box::new(Solid::new(Color::zero())),
+        background: Solid::new(Color::zero()),
         show_bg: true,
     }
     .render_to_file("the_next_week.png")

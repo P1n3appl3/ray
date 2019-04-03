@@ -1,6 +1,6 @@
-use crate::model::texture::Texture;
 use crate::ray::Ray;
 use crate::scene::Color;
+use crate::texture::Texture;
 use crate::vec3::Vec3;
 
 pub trait Background: Send + Sync {

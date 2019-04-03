@@ -1,13 +1,12 @@
 extern crate ray;
 use rand::prelude::*;
 use ray::background::Gradient;
+use ray::bvh::BVHNode;
 use ray::camera::Camera;
-use ray::model::bvh::BVHNode;
-use ray::model::hitable::Hitable;
-use ray::model::material::*;
-use ray::model::sphere::Sphere;
-use ray::model::texture::*;
+use ray::geometry::{sphere::Sphere, Hitable};
+use ray::material::{dielectric::Dielectric, diffuse::Diffuse, specular::Specular};
 use ray::scene::*;
+use ray::texture::{checker::*, solid::Solid};
 use ray::vec3::Vec3;
 use std::sync::Arc;
 
@@ -75,10 +74,10 @@ pub fn main() {
         height,
         samples: 50,
         bounces: 50,
-        background: Box::new(Gradient {
+        background: Gradient {
             a: Color::new(1.0, 1.0, 1.0),
             b: Color::new(0.5, 0.7, 1.0),
-        }),
+        },
         show_bg: true,
     }
     .render_to_file("one_weekend.png")

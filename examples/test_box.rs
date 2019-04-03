@@ -1,13 +1,13 @@
 extern crate ray;
+use ray::axis::Axis;
+use ray::bvh::BVHNode;
 use ray::camera::Camera;
-use ray::model::bvh::BVHNode;
-use ray::model::hitable::Hitable;
-use ray::model::material::*;
-use ray::model::mesh::Mesh;
-use ray::model::rect::Rect;
-use ray::model::texture::*;
-use ray::model::transform::*;
+use ray::geometry::{mesh::Mesh, rect::Rect, transform::*, Hitable};
+use ray::material::{
+    dielectric::Dielectric, diffuse::Diffuse, light::Light, specular::Specular,
+};
 use ray::scene::*;
+use ray::texture::solid::Solid;
 use ray::vec3::Vec3;
 use std::sync::Arc;
 
@@ -20,12 +20,12 @@ pub fn main() {
     let objects = BVHNode::from(&mut vec![
         // left wall
         Box::new(FlipNormal::new(Rect::yz(
-            0.0, 0.0, 555.0, 555.0, 555.0, blue,
+            0.0, -555.0, 555.0, 0.0, 555.0, blue,
         ))) as Box<Hitable>,
         // right wall
-        Box::new(Rect::yz(0.0, 0.0, 555.0, 555.0, 0.0, red)),
+        Box::new(Rect::yz(0.0, -555.0, 555.0, 0.0, 0.0, red)),
         // light
-        Box::new(Rect::xz(113.0, 127.0, 443.0, 432.0, 554.0, light)),
+        Box::new(Rect::xz(113.0, -432.0, 443.0, -127.0, 554.0, light)),
         // ceiling
         Box::new(FlipNormal::new(Rect::xz(
             0.0,
@@ -36,25 +36,18 @@ pub fn main() {
             white.clone(),
         ))),
         // floor
-        Box::new(Rect::xz(0.0, 0.0, 555.0, 555.0, 0.0, white.clone())),
+        Box::new(Rect::xz(0.0, -555.0, 555.0, 0.0, 0.0, white.clone())),
         // back wall
-        Box::new(FlipNormal::new(Rect::xy(
-            0.0,
-            0.0,
-            555.0,
-            555.0,
-            555.0,
-            white.clone(),
-        ))),
+        Box::new(Rect::xy(0.0, 0.0, 555.0, 555.0, -555.0, white.clone())),
         Box::new(Translate::new(
             Mesh::new("teapot.obj", 80.0, metal),
-            Vec3::new(275, 0, 275),
+            Vec3::new(275, 0, -275),
         )),
     ]);
     let width = 500;
     let height = 500;
     let camera = Camera::new(
-        Vec3::new(278, 278, -760),
+        Vec3::new(278, 278, 760),
         Vec3::new(278, 278, 0),
         Vec3::new(0, 1, 0),
         40.0,

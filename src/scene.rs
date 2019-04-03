@@ -1,7 +1,7 @@
 use crate::background::Background;
+use crate::bvh::BVHNode;
 use crate::camera::Camera;
-use crate::model::bvh::BVHNode;
-use crate::model::hitable::Hitable;
+use crate::geometry::Hitable;
 use crate::ray::Ray;
 use crate::vec3::{ToF32, Vec3};
 use image::{ImageBuffer, Pixel, Rgb, RgbImage};

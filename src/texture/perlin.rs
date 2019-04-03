@@ -1,82 +1,9 @@
+use super::Texture;
 use crate::scene::Color;
-use crate::vec3::{ToF32, Vec3};
-use image::hdr::HDRDecoder;
-use image::{ImageBuffer, Pixel, Primitive, Rgb, RgbImage};
+use crate::vec3::Vec3;
 use itertools::iproduct;
 use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
-use std::fs::File;
-use std::io::BufReader;
-use serde::Deserialize;
-
-pub trait Texture: Send + Sync + std::fmt::Debug {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Color;
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct Solid {
-    color: Color,
-}
-
-impl Solid {
-    pub fn new(color: Vec3) -> Self {
-        Solid { color }
-    }
-}
-
-impl Texture for Solid {
-    fn value(&self, _u: f32, _v: f32, _p: Vec3) -> Color {
-        self.color
-    }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Checkered<Ta: Texture, Tb: Texture> {
-    a: Ta,
-    b: Tb,
-    size: f32,
-}
-
-impl<Ta: Texture, Tb: Texture> Checkered<Ta, Tb> {
-    pub fn new(a: Ta, b: Tb, size: f32) -> Self {
-        Checkered { a, b, size }
-    }
-}
-
-impl<Ta: Texture, Tb: Texture> Texture for Checkered<Ta, Tb> {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Color {
-        if (self.size * u).sin() * (self.size * v).sin() < 0.0 {
-            self.a.value(u, v, p)
-        } else {
-            self.b.value(u, v, p)
-        }
-    }
-}
-#[derive(Debug, Deserialize)]
-
-pub struct Checkered3D<Ta: Texture, Tb: Texture> {
-    a: Ta,
-    b: Tb,
-    size: f32,
-}
-
-impl<Ta: Texture, Tb: Texture> Checkered3D<Ta, Tb> {
-    pub fn new(a: Ta, b: Tb, size: f32) -> Self {
-        Checkered3D { a, b, size }
-    }
-}
-
-impl<Ta: Texture, Tb: Texture> Texture for Checkered3D<Ta, Tb> {
-    fn value(&self, u: f32, v: f32, p: Vec3) -> Color {
-        if (self.size * p.x).sin() * (self.size * p.y).sin() * (self.size * p.z).sin()
-            < 0.0
-        {
-            self.a.value(u, v, p)
-        } else {
-            self.b.value(u, v, p)
-        }
-    }
-}
 
 #[derive(Clone)]
 pub enum PerlinVariant {
@@ -175,47 +102,4 @@ impl Perlin {
         }
         accum.abs()
     }
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Gradient {}
-
-impl Texture for Gradient {
-    fn value(&self, u: f32, v: f32, _p: Vec3) -> Color {
-        Color::new(u, v, 1.0 - u - v)
-    }
-}
-
-impl<T> Texture for ImageBuffer<Rgb<T>, Vec<T>>
-where
-    T: 'static + Send + Sync + Primitive + ToF32 + std::fmt::Debug,
-{
-    fn value(&self, u: f32, v: f32, _p: Vec3) -> Color {
-        let x = (u * self.width() as f32) as u32;
-        let y = ((1.0 - v) * self.height() as f32 - 0.001) as u32;
-        let channels = self.get_pixel(x, y).channels();
-        Color::new(channels[0].to(), channels[1].to(), channels[2].to())
-    }
-}
-
-pub fn load_ldr_image(filename: &str) -> RgbImage {
-    image::open(filename).unwrap().to_rgb()
-}
-
-pub fn load_hdr_image(filename: &str) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
-    let hdr_decoder =
-        HDRDecoder::new(BufReader::new(File::open(filename).unwrap())).unwrap();
-    let metadata = hdr_decoder.metadata();
-    ImageBuffer::from_vec(
-        metadata.width,
-        metadata.height,
-        hdr_decoder
-            .read_image_hdr()
-            .unwrap()
-            .into_iter()
-            .map(|p| p.channels().to_vec())
-            .flatten()
-            .collect::<Vec<f32>>(),
-    )
-    .unwrap()
 }

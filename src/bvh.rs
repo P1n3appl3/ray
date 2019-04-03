@@ -1,5 +1,7 @@
-use super::aabb::AABB;
-use super::hitable::{HitRecord, Hitable};
+use crate::geometry::{
+    aabb::AABB,
+    {HitRecord, Hitable},
+};
 use crate::ray::Ray;
 
 #[derive(Debug)]

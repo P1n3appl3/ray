@@ -1,9 +1,9 @@
 use super::aabb::AABB;
-use super::bvh::BVHNode;
-use super::hitable::{HitRecord, Hitable};
-use super::material::Material;
 use super::rect::Rect;
 use super::transform::FlipNormal;
+use super::{HitRecord, Hitable};
+use crate::bvh::BVHNode;
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use std::sync::Arc;

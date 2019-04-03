@@ -1,12 +1,12 @@
 extern crate ray;
 use ray::background;
+use ray::bvh::BVHNode;
 use ray::camera::Camera;
-use ray::model::bvh::BVHNode;
-use ray::model::hitable::Hitable;
-use ray::model::material::*;
-use ray::model::sphere::Sphere;
-use ray::model::texture::*;
+use ray::geometry::sphere::Sphere;
+use ray::geometry::Hitable;
+use ray::material::{dielectric::Dielectric, diffuse::Diffuse, specular::Specular};
 use ray::scene::*;
+use ray::texture::solid::Solid;
 use ray::vec3::Vec3;
 use std::sync::Arc;
 
@@ -40,10 +40,10 @@ pub fn main() {
         height,
         samples: 100,
         bounces: 50,
-        background: Box::new(background::Gradient {
+        background: background::Gradient {
             a: Color::new(1.0, 1.0, 1.0),
             b: Color::new(0.5, 0.7, 1.0),
-        }),
+        },
         show_bg: true,
     }
     .render_to_file("three_spheres.png")

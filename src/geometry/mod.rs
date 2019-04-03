@@ -1,7 +1,15 @@
-use super::aabb::AABB;
-use super::material::Material;
+pub mod aabb;
+pub mod mesh;
+pub mod prism;
+pub mod rect;
+pub mod sphere;
+pub mod transform;
+pub mod volume;
+
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+use aabb::AABB;
 
 /// The relevant geometric information for a ray collision with an object
 #[derive(Clone)]

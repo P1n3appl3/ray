@@ -2,16 +2,12 @@
 extern crate ray;
 use ray::axis::Axis;
 use ray::background::Gradient;
+use ray::bvh::BVHNode;
 use ray::camera::Camera;
-use ray::model::bvh::BVHNode;
-use ray::model::hitable::Hitable;
-use ray::model::material::*;
-use ray::model::mesh::Mesh;
-use ray::model::prism::Prism;
-use ray::model::rect::Rect;
-use ray::model::texture::{Checkered, Solid};
-use ray::model::transform::*;
+use ray::geometry::{mesh::Mesh, prism::Prism, rect::Rect, transform::*, Hitable};
+use ray::material::{dielectric::Dielectric, diffuse::Diffuse, specular::Specular};
 use ray::scene::*;
+use ray::texture::{checker::Checkered, solid::Solid};
 use ray::vec3::Vec3;
 use std::sync::Arc;
 
@@ -37,7 +33,7 @@ pub fn main() {
         )) as Box<dyn Hitable>,
         Box::new(Rect::xz(-100.0, -100.0, 100.0, 100.0, 0.0, checker.clone())),
         Box::new(Translate::new(
-            Rotate::new(Mesh::new("lucy.obj", 200.0, white), Axis::Y, 180.0),
+            Rotate::new(Mesh::new("lucy.obj", 200.0, glass), Axis::Y, 180.0),
             Vec3::new(5, 0, 0),
         )),
     ]);
