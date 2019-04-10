@@ -1,14 +1,14 @@
 use criterion::*;
 use lazy_static::lazy_static;
 use ray::camera;
-use ray::model::aabb::AABB;
+use ray::geometry::aabb::AABB;
 use ray::ray::Ray;
 use ray::vec3::Vec3;
 
 lazy_static! {
-    static ref BB: AABB = AABB::new(Vec3::from(0), Vec3::from(1));
-    static ref R1: Ray = Ray::new(Vec3::from(-1), Vec3::from(1));
-    static ref R2: Ray = Ray::new(Vec3::from(-1), Vec3::from(-1));
+    static ref BB: AABB = black_box(AABB::new(Vec3::from(0), Vec3::from(1)));
+    static ref R1: Ray = black_box(Ray::new(Vec3::from(-1), Vec3::from(1)));
+    static ref R2: Ray = black_box(Ray::new(Vec3::from(-1), Vec3::from(-1)));
 }
 
 fn bench_rand(c: &mut Criterion) {
@@ -39,21 +39,17 @@ lazy_static! {
 }
 
 fn bench_vec3(c: &mut Criterion) {
-    c.bench(
-        "add",
-        Benchmark::new("Regular", |b| b.iter(|| *vec_a + *vec_b))
-            .with_function("SIMD", |b| b.iter(|| vec_a.fast_add(&vec_b))),
-    );
-    c.bench(
-        "dot",
-        Benchmark::new("Regular", |b| b.iter(|| vec_a.dot(&vec_b)))
-            .with_function("SIMD", |b| b.iter(|| vec_a.fast_dot(&vec_b))),
-    );
-    c.bench(
-        "cross",
-        Benchmark::new("Regular", |b| b.iter(|| vec_a.cross(&vec_b)))
-            .with_function("SIMD", |b| b.iter(|| vec_a.fast_cross(&vec_b))),
-    );
+    c.bench_function("add", |b| b.iter(|| *vec_a + *vec_b));
+    c.bench_function("sub", |b| b.iter(|| *vec_a - *vec_b));
+    c.bench_function("mul", |b| b.iter(|| *vec_a * *vec_b));
+    c.bench_function("div", |b| b.iter(|| *vec_a / *vec_b));
+    c.bench_function("mul scalar", |b| b.iter(|| *vec_a * 3.14));
+    c.bench_function("div scalar", |b| b.iter(|| *vec_a / 13.37));
+    c.bench_function("max", |b| b.iter(|| vec_a.piecewise_max(&vec_b)));
+    c.bench_function("min", |b| b.iter(|| vec_a.piecewise_min(&vec_b)));
+    c.bench_function("dot", |b| b.iter(|| vec_a.dot(&vec_b)));
+    c.bench_function("cross", |b| b.iter(|| vec_a.cross(&vec_b)));
+    c.bench_function("len", |b| b.iter(|| vec_a.len()));
 }
 
 criterion_group!(rand_bench, bench_rand);

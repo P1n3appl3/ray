@@ -199,13 +199,13 @@ impl Hitable for Triangle {
         let min = self
             .v0
             .pos
-            .piecewise_min(self.v1.pos)
-            .piecewise_min(self.v2.pos);
+            .piecewise_min(&self.v1.pos)
+            .piecewise_min(&self.v2.pos);
         let max = self
             .v0
             .pos
-            .piecewise_max(self.v1.pos)
-            .piecewise_max(self.v2.pos);
+            .piecewise_max(&self.v1.pos)
+            .piecewise_max(&self.v2.pos);
         AABB::new(min, max)
     }
 }

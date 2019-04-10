@@ -1,5 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+use packed_simd::{f32x4, shuffle};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct AABB {
@@ -10,8 +11,8 @@ pub struct AABB {
 impl AABB {
     pub fn new(a: Vec3, b: Vec3) -> Self {
         AABB {
-            min: a.piecewise_min(b),
-            max: a.piecewise_max(b),
+            min: a.piecewise_min(&b),
+            max: a.piecewise_max(&b),
         }
     }
 
@@ -24,21 +25,23 @@ impl AABB {
     pub fn hit(&self, r: Ray, t_min: f32, t_max: f32) -> bool {
         let temp0 = (self.min - r.origin) / r.dir;
         let temp1 = (self.max - r.origin) / r.dir;
-        let t0 = temp0.piecewise_min(temp1).piecewise_max(Vec3::from(t_min));
-        let t1 = temp0.piecewise_max(temp1).piecewise_min(Vec3::from(t_max));
-        !(t1.x <= t0.y
-            || t1.x <= t0.z
-            || t1.y <= t0.x
-            || t1.y <= t0.z
-            || t1.z <= t0.x
-            || t1.z <= t0.y)
+        let t0 = temp0
+            .piecewise_min(&temp1)
+            .piecewise_max(&Vec3::from(t_min));
+        let t1 = temp0
+            .piecewise_max(&temp1)
+            .piecewise_min(&Vec3::from(t_max));
+        let t0 = f32x4::from(t0);
+        let t1 = f32x4::new(t1.x, t1.y, t1.z, std::f32::MAX);
+        !(t1.le(shuffle!(t0, [1, 2, 0, 3])).any()
+            || t1.le(shuffle!(t0, [2, 0, 1, 3])).any())
     }
 
     /// Generates an enclosing AABB which encloses two others
     pub fn combine(&self, other: &Self) -> Self {
         AABB {
-            min: self.min.piecewise_min(other.min),
-            max: self.max.piecewise_max(other.max),
+            min: self.min.piecewise_min(&other.min),
+            max: self.max.piecewise_max(&other.max),
         }
     }
 
@@ -61,6 +64,7 @@ mod tests {
         assert!(on_origin.hit(r, 0.0, MAX));
     }
 
+    #[test]
     fn test_miss() {
         let off_origin = AABB::new(Vec3::new(2.0, 3.0, 4.0), Vec3::new(3.0, 4.0, 5.0));
         let r = Ray::new(Vec3::new(0.0, 0.0, -10.0), Vec3::new(0.0, 0.0, 1.0));

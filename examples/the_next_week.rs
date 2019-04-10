@@ -52,14 +52,14 @@ pub fn main() {
                         ground.clone(),
                     )) as Box<Hitable>
                 })
-                .collect::<Vec<Box<Hitable>>>(),
+                .collect::<Vec<_>>(),
         )) as Box<Hitable>,
         Box::new(Rect::xz(123.0, 147.0, 423.0, 412.0, 554.0, light)),
         Box::new(Sphere::new(Vec3::new(220, 280, 300), 70.0, mirror)),
         Box::new(Sphere::new(Vec3::new(400, 375, 200), 70.0, metal)),
         Box::new(Sphere::new(Vec3::new(260, 150, 45), 50.0, glass)),
         Box::new(Sphere::new(Vec3::new(0, 150, 145), 80.0, glow_rock)),
-        Box::new((*internal_reflection).clone()),
+        internal_reflection.clone(),
         Box::new(Volume::new(0.2, internal_reflection, smoke)),
         // globe
         Box::new(Translate::new(

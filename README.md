@@ -1,6 +1,6 @@
 # Ray
 
-A toy raytracer made by following the excellent tutorials: "Ray Tracing in One Weekend" and "Ray Tracing: the Next Week".
+A toy unbiased path tracer made by following the excellent tutorials: "Ray Tracing in One Weekend" and "Ray Tracing: the Next Week".
 
 ## Examples
 

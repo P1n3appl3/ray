@@ -54,7 +54,7 @@ impl Vec3 {
         let mut p;
         while {
             p = random::<Vec3>() * 2.0 - Vec3::from(1.0);
-            p.square_len() > 1.0
+            p.dot(&p) > 1.0
         } {}
         p
     }
@@ -116,39 +116,34 @@ impl Vec3 {
         }
     }
 
-    pub fn square_len(&self) -> f32 {
-        self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
-    }
-
     pub fn len(&self) -> f32 {
-        self.square_len().sqrt()
+        self.dot(self).sqrt()
     }
 
     pub fn normalize(&self) -> Self {
         *self / Self::from(self.len())
     }
 
-    pub fn piecewise_max(&self, other: Self) -> Self {
-        Vec3::new(
-            self.x.max(other.x),
-            self.y.max(other.y),
-            self.z.max(other.z),
-        )
+    pub fn piecewise_max(&self, other: &Self) -> Self {
+        f32x4::from(*self).max(f32x4::from(*other)).into()
     }
 
-    pub fn piecewise_min(&self, other: Self) -> Self {
-        Vec3::new(
-            self.x.min(other.x),
-            self.y.min(other.y),
-            self.z.min(other.z),
-        )
+    pub fn piecewise_min(&self, other: &Self) -> Self {
+        f32x4::from(*self).min(f32x4::from(*other)).into()
     }
 
     pub fn dot(&self, other: &Self) -> f32 {
+        // (f32x4::from(*self) * f32x4::from(*other)).sum().into()
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
     pub fn cross(&self, other: &Self) -> Self {
+        // let a = f32x4::from(*self);
+        // let b = f32x4::from(*other);
+        // let a_yzx = shuffle!(a, [3, 0, 2, 1]);
+        // let b_yzx = shuffle!(b, [3, 0, 2, 1]);
+        // let c = a * b_yzx - a_yzx * b;
+        // shuffle!(c, [3, 0, 2, 1]).into()
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: -(self.x * other.z - self.z * other.x),
@@ -169,23 +164,6 @@ impl Vec3 {
         } else {
             None
         }
-    }
-
-    pub fn fast_cross(&self, other: &Self) -> Self {
-        let a = f32x4::from(*self);
-        let b = f32x4::from(*other);
-        let a_yzx = shuffle!(a, [3, 0, 2, 1]);
-        let b_yzx = shuffle!(b, [3, 0, 2, 1]);
-        let c = a * b_yzx - a_yzx * b;
-        shuffle!(c, [3, 0, 2, 1]).into()
-    }
-
-    pub fn fast_add(&self, other: &Self) -> Self {
-        (f32x4::from(*self) + f32x4::from(*other)).into()
-    }
-
-    pub fn fast_dot(&self, other: &Self) -> Self {
-        (f32x4::from(*self) * f32x4::from(*other)).sum().into()
     }
 }
 
@@ -222,6 +200,7 @@ impl fmt::Display for Vec3 {
 impl Add for Vec3 {
     type Output = Self;
     fn add(self, other: Self) -> Self {
+        // (f32x4::from(self) + f32x4::from(other)).into()
         Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
@@ -235,6 +214,7 @@ impl AddAssign for Vec3 {
 impl Neg for Vec3 {
     type Output = Self;
     fn neg(self) -> Self {
+        // (-f32x4::from(self)).into()
         Vec3::new(-self.x, -self.y, -self.z)
     }
 }
@@ -242,6 +222,7 @@ impl Neg for Vec3 {
 impl Sub for Vec3 {
     type Output = Self;
     fn sub(self, other: Self) -> Self {
+        // (f32x4::from(self) + f32x4::from(other)).into()
         Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 }
@@ -255,6 +236,7 @@ impl SubAssign for Vec3 {
 impl Mul for Vec3 {
     type Output = Self;
     fn mul(self, other: Self) -> Self {
+        // (f32x4::from(self) * f32x4::from(other)).into()
         Vec3::new(self.x * other.x, self.y * other.y, self.z * other.z)
     }
 }
@@ -262,6 +244,7 @@ impl Mul for Vec3 {
 impl Mul<f32> for Vec3 {
     type Output = Self;
     fn mul(self, other: f32) -> Self {
+        // (f32x4::from(self) + f32x4::splat(other)).into()
         Vec3::new(self.x * other, self.y * other, self.z * other)
     }
 }
@@ -282,6 +265,7 @@ impl MulAssign<f32> for Vec3 {
 impl Div for Vec3 {
     type Output = Self;
     fn div(self, other: Self) -> Self {
+        // (f32x4::from(self) / f32x4::from(other)).into()
         Vec3::new(self.x / other.x, self.y / other.y, self.z / other.z)
     }
 }
@@ -289,6 +273,7 @@ impl Div for Vec3 {
 impl Div<f32> for Vec3 {
     type Output = Self;
     fn div(self, other: f32) -> Self {
+        // (f32x4::from(self) + f32x4::splat(other)).into()
         Vec3::new(self.x / other, self.y / other, self.z / other)
     }
 }

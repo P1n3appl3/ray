@@ -29,9 +29,9 @@ pub fn main() {
         // ceiling
         Box::new(FlipNormal::new(Rect::xz(
             0.0,
+            -555.0,
+            555.0,
             0.0,
-            555.0,
-            555.0,
             555.0,
             white.clone(),
         ))),

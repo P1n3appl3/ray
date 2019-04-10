@@ -27,6 +27,7 @@ serde = { version = "1.0", features = ["derive"] }
 
 [profile.release]
 debug = true
+lto = true
 
 [features]
 default = ["hdr_output"]
