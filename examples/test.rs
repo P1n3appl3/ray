@@ -18,13 +18,7 @@ pub fn main() {
     ]);
     let width = 225;
     let height = 300;
-    let camera = Camera::simple(
-        Vec3::new(15, 30, -100),
-        Vec3::new(2, 18, 0),
-        width,
-        height,
-        30.0,
-    );
+    let camera = camera!((15, 30, -100), (2, 18, 0), width, height, 30.0);
     Scene {
         objects,
         camera,

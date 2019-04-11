@@ -25,7 +25,7 @@ macro_rules! use_all {
         };
         use ray::scene::*;
         use ray::texture::{
-            checker::Checkered, gradient::SimpleGradient, image::*, perlin::*, solid::Solid,
+            checker::*, gradient::SimpleGradient, image::*, perlin::*, solid::Solid,
         };
         use ray::vec3::Vec3;
         use std::sync::Arc;

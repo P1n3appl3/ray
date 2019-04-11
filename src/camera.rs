@@ -4,6 +4,20 @@ use rand::distributions::UnitCircle;
 use rand::prelude::*;
 use rand::random;
 
+#[macro_export]
+macro_rules! camera {
+    ($pos:expr, $at:expr, $width:expr, $height:expr, $fov:expr) => {
+        Camera::new(
+            $pos.into(),
+            $at.into(),
+            (0, 1, 0).into(),
+            $fov as f32,
+            $width as f32 / $height as f32,
+            0.0,
+        )
+    };
+}
+
 pub fn rand_in_unit_disk() -> Vec3 {
     let mut p;
     while {
@@ -58,23 +72,6 @@ impl Camera {
             u,
             v,
         }
-    }
-
-    pub fn simple(
-        position: Vec3,
-        look_at: Vec3,
-        width: usize,
-        height: usize,
-        fov: f32,
-    ) -> Self {
-        Camera::new(
-            position,
-            look_at,
-            Vec3::new(0, 1, 0),
-            fov,
-            width as f32 / height as f32,
-            0.0,
-        )
     }
 
     pub fn get_ray(&self, h: f32, v: f32) -> Ray {

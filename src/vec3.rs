@@ -29,6 +29,12 @@ impl ToF32 for i32 {
     }
 }
 
+impl ToF32 for usize {
+    fn to(&self) -> f32 {
+        *self as f32
+    }
+}
+
 impl ToF32 for u8 {
     fn to(&self) -> f32 {
         f32::from(*self) / 255.0
@@ -190,7 +196,7 @@ impl From<f32x4> for Vec3 {
 }
 
 impl<T: ToF32, U: ToF32, V: ToF32> From<(T, U, V)> for Vec3 {
-    fn from(v: (T, U, V)) -> Self{
+    fn from(v: (T, U, V)) -> Self {
         Vec3::new(v.0.to(), v.1.to(), v.2.to())
     }
 }

@@ -9,7 +9,7 @@ use std::sync::Arc;
 #[macro_export]
 macro_rules! sphere {
     ($center:expr, $radius:expr, $mat:expr) => {
-        Box::new(Sphere::new($center, $p1 as f32, $mat))
+        Box::new(Sphere::new($center.into(), $radius as f32, $mat))
     };
 }
 

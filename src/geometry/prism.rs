@@ -11,7 +11,7 @@ use std::sync::Arc;
 #[macro_export]
 macro_rules! prism {
     ($p0:expr, $p1:expr, $mat:expr) => {
-        Box::new(Prism::new($p0, $p1, $mat))
+        Box::new(Prism::new($p0.into(), $p1.into(), $mat))
     };
 }
 
