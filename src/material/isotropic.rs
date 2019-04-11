@@ -4,6 +4,13 @@ use crate::scene::Color;
 use crate::texture::Texture;
 use crate::vec3::Vec3;
 
+#[macro_export]
+macro_rules! isotropic {
+    ($texture:expr) => {
+        Arc::new(Isotropic::new($texture))
+    };
+}
+
 #[derive(Debug)]
 pub struct Isotropic<T: Texture> {
     texture: T,

@@ -3,6 +3,13 @@ use crate::ray::Ray;
 use crate::scene::Color;
 use crate::vec3::Vec3;
 
+#[macro_export]
+macro_rules! specular {
+    ($color:expr, $fuzz:expr) => {
+        Arc::new(Specular::new($color.into(), $fuzz as f32))
+    };
+}
+
 #[derive(Debug, Clone)]
 pub struct Specular {
     albedo: Color,

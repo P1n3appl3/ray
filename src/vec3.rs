@@ -2,10 +2,16 @@ use crate::axis::Axis;
 use packed_simd::{f32x4, shuffle};
 use rand::distributions::{Distribution, Standard, UnitSphereSurface};
 use rand::prelude::*;
-use serde::Deserialize;
 use std::f32;
 use std::fmt;
 use std::ops::*;
+
+#[macro_export]
+macro_rules! vec3 {
+    ($x:expr, $y:expr, $z:expr) => {
+        Vec3::new($x, $y, $z)
+    };
+}
 
 pub trait ToF32: Copy {
     fn to(&self) -> f32;
@@ -29,8 +35,7 @@ impl ToF32 for u8 {
     }
 }
 
-// TODO: replace with Deserialize_tuple
-#[derive(Copy, Clone, Debug, Default, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -126,6 +131,11 @@ impl Vec3 {
 
     pub fn piecewise_max(&self, other: &Self) -> Self {
         f32x4::from(*self).max(f32x4::from(*other)).into()
+        // Vec3::new(
+        //     self.x.min(other.x),
+        //     self.y.min(other.y),
+        //     self.z.min(other.z),
+        // )
     }
 
     pub fn piecewise_min(&self, other: &Self) -> Self {
@@ -176,6 +186,12 @@ impl From<Vec3> for f32x4 {
 impl From<f32x4> for Vec3 {
     fn from(v: f32x4) -> Self {
         Vec3::new(v.extract(0), v.extract(1), v.extract(2))
+    }
+}
+
+impl<T: ToF32, U: ToF32, V: ToF32> From<(T, U, V)> for Vec3 {
+    fn from(v: (T, U, V)) -> Self{
+        Vec3::new(v.0.to(), v.1.to(), v.2.to())
     }
 }
 

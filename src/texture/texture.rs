@@ -5,9 +5,8 @@ use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
 use std::fs::File;
 use std::io::BufReader;
-use serde::Deserialize;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Solid {
     color: Color,
 }

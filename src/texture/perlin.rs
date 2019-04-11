@@ -5,6 +5,13 @@ use itertools::iproduct;
 use lazy_static::lazy_static;
 use rand::{random, seq::SliceRandom, thread_rng};
 
+#[macro_export]
+macro_rules! perlin {
+    ($kind:expr, $color:expr, $scale: expr) => {
+        Solid::new(Perlin::new($scale as f32, $color, PerlinVariant::$kind))
+    };
+}
+
 #[derive(Clone)]
 pub enum PerlinVariant {
     Noise,

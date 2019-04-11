@@ -2,6 +2,16 @@ use super::Texture;
 use crate::scene::Color;
 use crate::vec3::Vec3;
 
+#[macro_export]
+macro_rules! solid {
+    ($x:expr) => {
+        Solid::new($x.into())
+    };
+    ($x:expr, $y:expr, $z: expr) => {
+        Solid::new(Color::new($x, $y, $z))
+    };
+}
+
 #[derive(Debug, Clone)]
 pub struct Solid {
     color: Color,

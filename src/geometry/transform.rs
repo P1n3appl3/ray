@@ -5,6 +5,27 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use itertools::iproduct;
 
+#[macro_export]
+macro_rules! flip_normal {
+    ($obj:expr) => {
+        Box::new(FlipNormal::new(*$obj))
+    };
+}
+
+#[macro_export]
+macro_rules! translate {
+    ($obj:expr, $move:expr) => {
+        Box::new(Translate::new(*$obj, $move.into()))
+    };
+}
+
+#[macro_export]
+macro_rules! rotate {
+    ($axis:ident, $obj:expr, $amount:expr) => {
+        Box::new(Rotate::new(*$obj, Axis::$axis, $amount as f32))
+    };
+}
+
 #[derive(Debug)]
 pub struct FlipNormal<T: Hitable> {
     obj: T,

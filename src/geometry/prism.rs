@@ -8,6 +8,13 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use std::sync::Arc;
 
+#[macro_export]
+macro_rules! prism {
+    ($p0:expr, $p1:expr, $mat:expr) => {
+        Box::new(Prism::new($p0, $p1, $mat))
+    };
+}
+
 #[derive(Debug)]
 pub struct Prism {
     faces: BVHNode,

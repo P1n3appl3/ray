@@ -6,6 +6,13 @@ use crate::vec3::Vec3;
 use std::f32::consts::PI;
 use std::sync::Arc;
 
+#[macro_export]
+macro_rules! sphere {
+    ($center:expr, $radius:expr, $mat:expr) => {
+        Box::new(Sphere::new($center, $p1 as f32, $mat))
+    };
+}
+
 #[derive(Debug, Clone)]
 pub struct Sphere {
     center: Vec3,

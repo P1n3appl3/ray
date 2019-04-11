@@ -60,6 +60,23 @@ impl Camera {
         }
     }
 
+    pub fn simple(
+        position: Vec3,
+        look_at: Vec3,
+        width: usize,
+        height: usize,
+        fov: f32,
+    ) -> Self {
+        Camera::new(
+            position,
+            look_at,
+            Vec3::new(0, 1, 0),
+            fov,
+            width as f32 / height as f32,
+            0.0,
+        )
+    }
+
     pub fn get_ray(&self, h: f32, v: f32) -> Ray {
         let rand = rand_in_unit_disk() * self.lens_radius;
         let offset = self.u * rand.x + self.v * rand.y;

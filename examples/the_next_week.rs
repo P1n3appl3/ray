@@ -33,7 +33,7 @@ pub fn main() {
         Rock,
     )));
     let smoke = Arc::new(Isotropic::new(Solid::new(Vec3::new(0.2, 0.4, 0.9))));
-    let earth = Arc::new(Diffuse::new(load_ldr_image("earth.png")));
+    let earth = Arc::new(Diffuse::new(ldr_image("earth.png")));
     let internal_reflection =
         Box::new(Sphere::new(Vec3::new(360, 150, 145), 70.0, glass.clone()));
     let objects = BVHNode::from(&mut vec![

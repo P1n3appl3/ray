@@ -1,58 +1,31 @@
 extern crate ray;
-use ray::axis::Axis;
-use ray::bvh::BVHNode;
-use ray::camera::Camera;
-use ray::geometry::{mesh::Mesh, rect::Rect, transform::*, Hitable};
-use ray::material::{
-    dielectric::Dielectric, diffuse::Diffuse, light::Light, specular::Specular,
-};
-use ray::scene::*;
-use ray::texture::solid::Solid;
-use ray::vec3::Vec3;
-use std::sync::Arc;
+use ray::*;
+use_all!();
 
 pub fn main() {
-    let red = Arc::new(Diffuse::new(Solid::new(Vec3::new(0.65, 0.05, 0.05))));
-    let blue = Arc::new(Diffuse::new(Solid::new(Vec3::from_rgb(32, 32, 237))));
-    let white = Arc::new(Diffuse::new(Solid::new(Vec3::from(0.73))));
-    let light = Arc::new(Light::new(Solid::new(Vec3::from(5))));
-    let metal = Arc::new(Specular::new(Vec3::new(0.91, 0.91, 0.92), 0.0));
+    let red = diffuse!(solid!(0.65, 0.05, 0.05));
+    let blue = diffuse!(solid!(rgb!(32, 32, 237)));
+    let white = diffuse!(solid!(0.73));
+    let light = light!(solid!(5));
+    let metal = specular!((0.91, 0.91, 0.92), 0);
     let objects = BVHNode::from(&mut vec![
         // left wall
-        Box::new(FlipNormal::new(Rect::yz(
-            0.0, -555.0, 555.0, 0.0, 555.0, blue,
-        ))) as Box<Hitable>,
-        // right wall
-        Box::new(Rect::yz(0.0, -555.0, 555.0, 0.0, 0.0, red)),
-        // light
-        Box::new(Rect::xz(113.0, -432.0, 443.0, -127.0, 554.0, light)),
-        // ceiling
-        Box::new(FlipNormal::new(Rect::xz(
-            0.0,
-            -555.0,
-            555.0,
-            0.0,
-            555.0,
-            white.clone(),
-        ))),
-        // floor
-        Box::new(Rect::xz(0.0, -555.0, 555.0, 0.0, 0.0, white.clone())),
-        // back wall
-        Box::new(Rect::xy(0.0, 0.0, 555.0, 555.0, -555.0, white.clone())),
-        Box::new(Translate::new(
-            Mesh::new("teapot.obj", 80.0, metal),
-            Vec3::new(275, 0, -275),
-        )),
+        flip_normal!(rect!(xz, (0, -555), (555, 0), 555, blue)) as Box<dyn Hitable>,
+        rect!(yz, (0, -555), (555, 0), 0, red), // right wall
+        rect!(yz, (113, -432), (443, -127), 554, light), // light
+        flip_normal!(rect!(xz, (0, -555), (555, 0), 555, white.clone())), // ceiling
+        rect!(xz, (0, -555), (555, 0), 0, white.clone()), // floor
+        rect!(xy, (0, 0), (555, 555), -555, white.clone()), // back wall
+        translate!(mesh!("teapot.obj", 80, metal), (275, 0, -275)),
     ]);
     let width = 500;
     let height = 500;
-    let camera = Camera::new(
+    let camera = Camera::simple(
         Vec3::new(278, 278, 760),
         Vec3::new(278, 278, 0),
-        Vec3::new(0, 1, 0),
+        width,
+        height,
         40.0,
-        width as f32 / height as f32,
-        0.0,
     );
     Scene {
         objects,
@@ -61,7 +34,7 @@ pub fn main() {
         height,
         samples: 500,
         bounces: 50,
-        background: Solid::new(Color::zero()),
+        background: solid!(0),
         show_bg: false,
     }
     .render_to_file("test_box.png")

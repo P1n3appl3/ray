@@ -7,6 +7,13 @@ use crate::vec3::Vec3;
 use std::sync::Arc;
 use tobj;
 
+#[macro_export]
+macro_rules! mesh {
+    ($name:expr, $size:expr, $mat:expr) => {
+        Box::new(Mesh::new($name, $size as f32, $mat))
+    };
+}
+
 #[derive(Debug)]
 pub struct Mesh {
     pub faces: BVHNode,
@@ -164,6 +171,7 @@ impl Hitable for Triangle {
             // ray is parallel to plane
             return None;
         }
+        //TODO: only back-face cull for dielectrics
         if det <= 0.0 {
             // intersection is with the back-face of the triangle
             return None;

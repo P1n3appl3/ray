@@ -18,11 +18,11 @@ where
     }
 }
 
-pub fn load_ldr_image(filename: &str) -> RgbImage {
+pub fn ldr_image(filename: &str) -> RgbImage {
     image::open(filename).unwrap().to_rgb()
 }
 
-pub fn load_hdr_image(filename: &str) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
+pub fn hdr_image(filename: &str) -> ImageBuffer<Rgb<f32>, Vec<f32>> {
     let hdr_decoder =
         HDRDecoder::new(BufReader::new(File::open(filename).unwrap())).unwrap();
     let metadata = hdr_decoder.metadata();

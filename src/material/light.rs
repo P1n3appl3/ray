@@ -4,6 +4,13 @@ use crate::scene::Color;
 use crate::texture::Texture;
 use crate::vec3::Vec3;
 
+#[macro_export]
+macro_rules! light {
+    ($texture:expr) => {
+        Arc::new(Light::new($texture))
+    };
+}
+
 #[derive(Debug)]
 pub struct Light<T: Texture> {
     texture: T,

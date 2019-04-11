@@ -6,6 +6,13 @@ use crate::vec3::Vec3;
 use rand::random;
 use std::sync::Arc;
 
+#[macro_export]
+macro_rules! volume {
+    ($density:expr, $boundary:expr, $phase_function:expr) => {
+        Box::new(Volume::new($density, $boundary, $phase_function))
+    };
+}
+
 #[derive(Debug)]
 pub struct Volume {
     density: f32,

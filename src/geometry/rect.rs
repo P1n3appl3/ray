@@ -6,6 +6,20 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use std::sync::Arc;
 
+#[macro_export]
+macro_rules! rect {
+    ($axis:ident, ($mina:expr, $minb:expr), ($maxa:expr, $maxb:expr), $k:expr, $mat:expr) => {
+        Box::new(Rect::$axis(
+            $mina as f32,
+            $minb as f32,
+            $maxa as f32,
+            $maxb as f32,
+            $k as f32,
+            $mat,
+        ))
+    };
+}
+
 #[derive(Debug)]
 pub struct Rect {
     axis_a: Axis,

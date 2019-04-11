@@ -4,10 +4,17 @@ use crate::scene::Color;
 use crate::vec3::Vec3;
 use rand::random;
 
+#[macro_export]
+macro_rules! dielectric {
+    ($color:expr, $refidx:expr) => {
+        Arc::new(Dielectric::new($color.into(), $refidx))
+    };
+}
+
 /// Dielectrics have a specular component, meaning that they can sometimes
 /// reflect rays instead of transmitting them. The only catch is that the
 /// reflectivity vs refractivity is dependent on the angle of incomming light
-/// (google Fresnel equations for the physics). Christophe Schlick figured out
+/// (google "Fresnel equations" for the physics). Christophe Schlick figured out
 /// an equation to approximate this effect. It returns a probability in [0..1]
 /// of reflection occurring.
 fn schlick(cosine: f32, refractive_index: f32) -> f32 {

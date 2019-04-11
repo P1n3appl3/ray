@@ -4,6 +4,13 @@ use crate::scene::Color;
 use crate::texture::Texture;
 use crate::vec3::Vec3;
 
+#[macro_export]
+macro_rules! diffuse {
+    ($texture:expr) => {
+        Arc::new(Diffuse::new($texture))
+    };
+}
+
 #[derive(Debug)]
 pub struct Diffuse<T: Texture> {
     texture: T,

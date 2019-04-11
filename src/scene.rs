@@ -16,8 +16,21 @@ use std::thread;
 use std::time::{Duration, Instant};
 use termion::cursor;
 
+#[macro_export]
+macro_rules! rgb {
+    ($r:expr, $g:expr, $b:expr) => {
+        Color::from_rgb($r, $g, $b)
+    };
+}
+
+#[macro_export]
+macro_rules! color {
+    ($r:expr, $g:expr, $b:expr) => {
+        Color::new($r, $g, $b)
+    };
+}
+
 pub type Color = Vec3;
-pub type MatID = u16;
 
 impl Color {
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {

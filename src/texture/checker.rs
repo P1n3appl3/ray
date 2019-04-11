@@ -2,6 +2,20 @@ use super::Texture;
 use crate::scene::Color;
 use crate::vec3::Vec3;
 
+#[macro_export]
+macro_rules! checker {
+    ($a:expr, $b:expr, $size:expr) => {
+        Checkered::new($a, $b, $size as f32)
+    };
+}
+
+#[macro_export]
+macro_rules! checker3d {
+    ($a:expr, $b:expr, $size:expr) => {
+        Checkered3D::new($a, $b, $size as f32)
+    };
+}
+
 #[derive(Debug)]
 pub struct Checkered<Ta: Texture, Tb: Texture> {
     a: Ta,
