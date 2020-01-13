@@ -40,8 +40,7 @@ impl Mesh {
     }
 
     pub fn new(filename: &str, scale: f32, material: Arc<dyn Material>) -> Self {
-        let teapot = tobj::load_obj(&std::path::Path::new(filename));
-        let (model, _material) = teapot.unwrap();
+        let (model, _material) = tobj::load_obj(&std::path::Path::new(filename)).unwrap();
         // TODO: support objs with more than 1 mesh
         let mesh = &model[0].mesh;
         let points: Vec<Vec3> = mesh

@@ -14,8 +14,8 @@ pub fn main() {
         10000,
         diffuse!(checker3d!(solid!(0.1), solid!(0.8), 1.75))
     ));
-    let width = 500;
-    let height = 120;
+    let width = 400;
+    let height = 100;
     let camera = camera!((0, 150, 500), (0, 3, -20), width, height, 0.85);
     Scene {
         objects: BVHNode::from(&mut objects),

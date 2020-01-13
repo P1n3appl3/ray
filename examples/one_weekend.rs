@@ -41,8 +41,8 @@ pub fn main() {
                 pos,
                 0.2,
                 match (thread_rng().gen_range(0, 100)) as u8 {
-                    0...5 => glass.clone(),
-                    5...30 => Arc::new(Specular::new(
+                    0..=5 => glass.clone(),
+                    5..=30 => Arc::new(Specular::new(
                         (Vec3::new(1, 1, 1) + random::<Vec3>()) / 2.0,
                         random::<f32>().powi(4),
                     )),
@@ -53,7 +53,6 @@ pub fn main() {
                     )))),
                 },
             )));
-                                              ;
         }
     }
 

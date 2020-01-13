@@ -6,13 +6,13 @@ pub fn main() {
     let red = diffuse!(solid!(0.65, 0.05, 0.05));
     let blue = diffuse!(solid!(rgb!(32, 32, 237)));
     let white = diffuse!(solid!(0.73));
-    let light = light!(solid!(5));
+    let light = light!(solid!(rgb!(244, 170, 60) * 5.5));
     let metal = specular!((0.91, 0.91, 0.92), 0);
     let objects = BVHNode::from(&mut vec![
         // left wall
-        flip_normal!(rect!(xz, (0, -555), (555, 0), 555, blue)) as Box<dyn Hitable>,
+        flip_normal!(rect!(yz, (0, -555), (555, 0), 555, blue)) as Box<dyn Hitable>,
         rect!(yz, (0, -555), (555, 0), 0, red), // right wall
-        rect!(yz, (113, -432), (443, -127), 554, light), // light
+        rect!(xz, (113, -432), (443, -127), 554, light), // light
         flip_normal!(rect!(xz, (0, -555), (555, 0), 555, white.clone())), // ceiling
         rect!(xz, (0, -555), (555, 0), 0, white.clone()), // floor
         rect!(xy, (0, 0), (555, 555), -555, white.clone()), // back wall

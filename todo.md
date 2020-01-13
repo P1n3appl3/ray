@@ -1,9 +1,20 @@
 - real bxdf (or general material handling overhaul)
+  - phong
+  - gaussian
+  - beckmann
+  - heidrich-seidel
+  - ward
+  - blinn-torrance
+  - cook-torrance
+  - he-torrance
+  - oren-nayar
+  - lafortune
 - rng performance, consider passing one arround and using xor/small
 - simd bvh aabb checking (vec3 is bad but try anyway)
 - adaptive super sampling and early ray termination
-- interactive view: focus rays on rectangular region
+- interactive view: focus rays on region
 - spectral rendering
 - model interning
 - wasm
 - lens flare (http://resources.mpi-inf.mpg.de/lensflareRendering/)
+- rasterizer to build scene

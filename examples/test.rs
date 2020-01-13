@@ -16,15 +16,16 @@ pub fn main() {
             vec3!(5, 0, 0)
         ),
     ]);
-    let width = 225;
-    let height = 300;
+    let width = 450;
+    let height = 600;
     let camera = camera!((15, 30, -100), (2, 18, 0), width, height, 30.0);
+    let x = Vec3::new(252u8, -1i32, 0.25);
     Scene {
         objects,
         camera,
         width,
         height,
-        samples: 50,
+        samples: 300,
         bounces: 50,
         background: Gradient {
             a: Color::from(1),

@@ -19,10 +19,7 @@ impl Background for Gradient {
     }
 }
 
-impl<T> Background for T
-where
-    T: Texture,
-{
+impl<T: Texture> Background for T {
     fn get_color(&self, r: Ray) -> Color {
         use std::f32::consts::PI;
         let v = r.dir.normalize();

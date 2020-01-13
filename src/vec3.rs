@@ -37,7 +37,7 @@ impl ToF32 for usize {
 
 impl ToF32 for u8 {
     fn to(&self) -> f32 {
-        f32::from(*self) / 255.0
+        *self as f32 / 255.0
     }
 }
 
@@ -274,12 +274,14 @@ impl Mul<f32> for Vec3 {
 // TODO: make this a blanket impl
 impl MulAssign for Vec3 {
     fn mul_assign(&mut self, other: Self) {
+        // (f32x4::from(self) * f32x4::from(other)).into()
         *self = *self * other;
     }
 }
 
 impl MulAssign<f32> for Vec3 {
     fn mul_assign(&mut self, other: f32) {
+        // (f32x4::from(self) * f32x4::splat(other)).into()
         *self = *self * other;
     }
 }
@@ -295,7 +297,7 @@ impl Div for Vec3 {
 impl Div<f32> for Vec3 {
     type Output = Self;
     fn div(self, other: f32) -> Self {
-        // (f32x4::from(self) + f32x4::splat(other)).into()
+        // (f32x4::from(self) / f32x4::splat(other)).into()
         Vec3::new(self.x / other, self.y / other, self.z / other)
     }
 }

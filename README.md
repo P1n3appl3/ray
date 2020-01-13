@@ -23,6 +23,7 @@ If I do more renders I'll put them [here](https://imgur.com/a/CIZrqYd).
 See [the todo file](todo.md) for stuff that I'm considering implementing in the future.
 
 ## Non-Features
+
 These are techniques or features I've given up on implementing due to difficulty or lack of interest.
 
 - Motion blur
@@ -34,6 +35,7 @@ These are techniques or features I've given up on implementing due to difficulty
 - Non-code scene description
 
 ## Resources
+
 - [Real Time Rendering](http://www.realtimerendering.com) hosts a bunch of free ray tracing books including the "in One Weekend" series. They also link to ["Physically Based Rendering"](http://www.pbr-book.org/3ed-2018/contents.html) which is like the bible of raytracing (haven't read it myself but everyone recommends it) and [Abrash's Black Book](http://www.jagregory.com/abrash-black-book/) which has nothing to do with raytracing but is full of really cool optimizations for graphics code.
 - [Peter Shirley's blog](http://in1weekend.blogspot.com) is a great companion to his books. It goes more in depth on the topics covered as well as showing off more modern ray tracing techniques.
 - [Scratchapixel](https://www.scratchapixel.com) is my favorite comprehensive resource for computer graphics basics. It covers many techniques and algorithms used in raytracing with code samples and visualizations.
